@@ -87,7 +87,7 @@ FocusScope {
     property real margins: isNarrow ? 12 : 16
     property real minWidth: isNarrow ? 24 : 132
 
-    property real backgroundRadius: 0 // Pauta: square corners (Treco)
+    property real backgroundRadius: 3 // Pauta: slightly rounded pixel buttons (Aseprite)
 
     property bool drawFocusBorderInsideRect: false
 
@@ -187,6 +187,23 @@ FocusScope {
             radius: root.backgroundRadius
             border.width: ui.theme.borderWidth
             border.color: ui.theme.strokeColor
+
+            // Pauta: pixel "relief" like Aseprite buttons (light edge on top, shadow at the bottom; flips when pressed)
+            readonly property bool pautaBevel: !root.transparent && ui.theme.borderWidth > 0
+            Rectangle {
+                visible: background.pautaBevel
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: ui.theme.borderWidth }
+                height: 2
+                color: mouseArea.pressed ? "#9E958A" : "#FFFFFF"
+                opacity: root.accentButton ? 0.35 : 1.0
+            }
+            Rectangle {
+                visible: background.pautaBevel
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: ui.theme.borderWidth }
+                height: 3
+                color: mouseArea.pressed ? "#FFFFFF" : "#9E958A"
+                opacity: root.accentButton ? 0.5 : 1.0
+            }
 
             NavigationFocusBorder {
                 navigationCtrl: navCtrl

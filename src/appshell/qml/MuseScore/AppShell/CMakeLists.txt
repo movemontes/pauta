@@ -28,6 +28,8 @@ qt_add_qml_module(appshell_qml
         aboutmodel.h
         commandpalettemodel.cpp
         commandpalettemodel.h
+        pautatoolsmodel.cpp
+        pautatoolsmodel.h
         appmenumodel.cpp
         appmenumodel.h
         DevTools/Settings/settingslistmodel.cpp
@@ -56,6 +58,7 @@ qt_add_qml_module(appshell_qml
         CommandPaletteDialog.qml
         ExportToProgramDialog.qml
         QuickGuideDialog.qml
+        PautaToolsBar.qml
         AppWindow.qml
         DevTools/CorruptScore/CorruptScoreDevTools.qml
         DevTools/CrashHandler/CrashHandlerDevTools.qml
@@ -93,6 +96,7 @@ qt_add_qml_module(appshell_qml
         FirstLaunchSetup/resources/MuseSounds.png
         FirstLaunchSetup/resources/VideoTutorials.png
         resources/mu_logo.svg
+        resources/pauta_pixel_icon.png
     IMPORTS
         TARGET muse_ui_qml
         TARGET muse_uicomponents_qml

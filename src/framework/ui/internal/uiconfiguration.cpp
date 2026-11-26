@@ -645,10 +645,11 @@ Notification UiConfiguration::musicalTextFontChanged() const
 std::string UiConfiguration::defaultFontFamily() const
 {
     // Pauta: Treco's typeface. Loaded here because this runs before UiModule::onInit.
-    static const QString pautaFamily = "Pauta Archivo";
+    static const QString pautaFamily = "Pauta Pixel"; // Pauta: thick pixel font (Jersey 10, OFL), Aseprite style
     static const bool pautaLoaded = [] {
         bool ok = true;
-        for (const char* f : { ":/ui/data/PautaArchivo-Regular.ttf", ":/ui/data/PautaArchivo-Bold.ttf" }) {
+        for (const char* f : { ":/ui/data/PautaArchivo-Regular.ttf", ":/ui/data/PautaArchivo-Bold.ttf",
+                               ":/ui/data/PautaPixel-Regular.ttf", ":/ui/data/PautaPixel-Bold.ttf" }) {
             ok = QFontDatabase::addApplicationFont(f) != -1 && ok;
         }
         return ok;
@@ -670,7 +671,7 @@ std::string UiConfiguration::defaultFontFamily() const
 
 int UiConfiguration::defaultFontSize() const
 {
-    return 12;
+    return 20; // Pauta: Jersey 10 pixel font is compact; 20 px reads like ~14 px
 }
 
 void UiConfiguration::resetFonts()

@@ -215,6 +215,27 @@ DockPage {
     ]
 
     toolBars: [
+        // Pauta: always-visible tool column on the right (Aseprite style)
+        DockToolBar {
+            id: pautaToolsBar
+
+            objectName: "pautaToolsBar"
+            title: qsTrc("appshell", "Tools")
+
+            location: Location.Right
+            orientation: Qt.Vertical
+            thickness: 116
+            resizable: false
+            floatable: false
+
+            navigationSection: root.noteInputKeyNavSec
+
+            PautaToolsBar {
+                navigationSection: pautaToolsBar.navigationSection
+                navigationOrder: 2
+            }
+        },
+
         DockToolBar {
             id: noteInputBar
 

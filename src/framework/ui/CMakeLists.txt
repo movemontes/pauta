@@ -158,6 +158,8 @@ qt_add_resources(muse_ui "muse_ui_resources"
         "data/MusescoreIcon.ttf"
         "data/PautaArchivo-Regular.ttf"
         "data/PautaArchivo-Bold.ttf"
+        "data/PautaPixel-Regular.ttf"
+        "data/PautaPixel-Bold.ttf"
 )
 
 if (MUSE_QT_SUPPORT)

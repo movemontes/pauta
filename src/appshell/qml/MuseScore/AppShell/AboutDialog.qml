@@ -59,8 +59,9 @@ StyledDialogView {
                 id: logo
                 Layout.alignment: Qt.AlignHCenter
 
-                source: "resources/mu_logo.svg"
+                source: "resources/pauta_pixel_icon.png"
                 sourceSize: Qt.size(100, 100)
+                smooth: false // Pauta: keep the pixels sharp
 
                 MouseArea {
                     anchors.fill: parent

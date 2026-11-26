@@ -22,6 +22,8 @@
 
 #include "loadingscreenview.h"
 
+#include <QImage>
+
 #include <QApplication>
 #include <QPainter>
 #include <QScreen>
@@ -59,33 +61,20 @@ void LoadingScreenView::draw(QPainter* painter)
 {
     painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 
-    const QColor blue(0, 0, 255), black(0, 0, 0), white(255, 255, 255), gray(92, 92, 92);
-    const int shadow = 10, border = 4;
+    const QColor slate(0x7D, 0x92, 0x9E), black(0x1B, 0x1A, 0x1F), beige(0xD3, 0xCB, 0xBE), gray(0x4F, 0x5F, 0x6E);
+    const QColor blue = gray, white = beige; // used below for text colours
+    const int shadow = 8, border = 3;
     const QRect card(0, 0, width() - shadow, height() - shadow);
 
-    // hard blue shadow, white card with thick black border
-    painter->fillRect(card.translated(shadow, shadow), blue);
+    // Pauta (pixel look): beige card, black outline, hard slate shadow
+    painter->fillRect(card.translated(shadow, shadow), slate);
     painter->fillRect(card, black);
-    painter->fillRect(card.adjusted(border, border, -border, -border), white);
+    painter->fillRect(card.adjusted(border, border, -border, -border), beige);
 
-    // app icon: blue square with a white block "P" and black shadow (same drawing as the .icns)
-    const QRectF icon(36, 52, 112, 112);
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(blue);
-    painter->drawRoundedRect(icon, 20, 20);
-    auto letter = [&](qreal off, const QColor& c) {
-        const qreal u = icon.width() / 824.0; // icon art is 824 units wide (100..924 in the 1024 canvas)
-        auto r = [&](qreal x0, qreal y0, qreal x1, qreal y1) {
-            painter->fillRect(QRectF(icon.left() + (x0 - 100 + off) * u, icon.top() + (y0 - 100 + off) * u,
-                                     (x1 - x0) * u, (y1 - y0) * u), c);
-        };
-        r(300, 272, 458, 752);
-        r(300, 272, 700, 392);
-        r(580, 272, 724, 592);
-        r(300, 472, 700, 592);
-    };
-    letter(38, black);
-    letter(0, white);
+    // pixel-art app icon, kept sharp
+    static const QImage icon(":/resources/pauta_pixel_icon.png");
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
+    painter->drawImage(QRect(36, 52, 112, 112), icon);
 
     // name, tagline and version
     QFont title(QString::fromStdString(uiConfiguration()->fontFamily()));
