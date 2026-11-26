@@ -13,7 +13,7 @@ export PATH="$ROOT/venv/bin:$QT/bin:$PATH"
 
 VERSION=$(grep 'set(PAUTA_VERSION' "$SRC/version.cmake" | sed -E 's/.*"([^"]+)".*/\1/')
 APP=$INSTALL/Pauta.app
-DMG="$OUT/Pauta-$VERSION-mac.dmg"
+DMG="$OUT/Pauta-mac.dmg" # owner standard: fixed name for the updater and the download link
 
 echo "== build"
 cd "$BUILD" && ninja -j8 && ninja install >/dev/null

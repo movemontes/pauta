@@ -135,6 +135,10 @@ Promise<RetVal<ReleaseInfo> > AppUpdateService::checkForUpdate()
         }
 
         QUrl url = QString::fromStdString(configuration()->checkForAppUpdateUrl());
+        if (url.isEmpty()) { // Pauta: repository not published yet -> do not look
+            m_lastCheckResult.ret = make_ret(Err::NoUpdate);
+            return resolve(m_lastCheckResult);
+        }
         RequestHeaders headers = prepareHeaders(historyRv.val);
         auto buff = std::make_shared<QBuffer>();
 

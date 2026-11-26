@@ -18,6 +18,8 @@ StyledDialogView {
 
     readonly property string pixKey: "e2a1f4a9-ebfe-4c3c-a531-92a0e7433f14"
     property bool copied: false
+    // Pauta: Pix only in Portuguese (owner standard)
+    readonly property bool portuguese: Qt.locale().name.startsWith("pt")
 
     Column {
         id: content
@@ -61,6 +63,7 @@ StyledDialogView {
             width: parent.width
             spacing: 4
             topPadding: 6
+            visible: root.portuguese
 
             StyledTextLabel {
                 text: qsTrc("appshell/welcome", "Pix (random key, PicPay):")
@@ -88,6 +91,7 @@ StyledDialogView {
 
             FlatButton {
                 id: laterButton
+                visible: root.portuguese
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 width: 150
@@ -105,10 +109,15 @@ StyledDialogView {
                 width: 210
                 height: 36
                 accentButton: true
-                text: root.copied ? qsTrc("appshell/welcome", "Copied!") : qsTrc("appshell/welcome", "Copy Pix key")
+                visible: true
+                text: !root.portuguese ? qsTrc("appshell/welcome", "Let's go") : root.copied ? qsTrc("appshell/welcome", "Copied!") : qsTrc("appshell/welcome", "Copy Pix key")
                 navigation.panel: buttonsPanel
                 navigation.column: 1
                 onClicked: {
+                    if (!root.portuguese) {
+                        root.accept()
+                        return
+                    }
                     clipHelper.copyText(root.pixKey)
                     root.copied = true
                 }

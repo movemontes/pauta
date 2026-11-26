@@ -20,7 +20,7 @@ Tudo fica em `/Volumes/Dados/PautaCodigo` (o caminho não pode ter espaços nem 
      -DMUSE_MODULE_LEARN=OFF -DMUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT=OFF \
      -DMUE_BUILD_MACOS_INTEGRATION=OFF
    ```
-3. Gerar o app e o .dmg: `bash buildscripts/pauta/make_dmg.sh` (sai em `Pauta/dist/Pauta-<versão>-mac.dmg`).
+3. Gerar o app e o .dmg: `bash buildscripts/pauta/make_dmg.sh` (sai em `Pauta/dist/Pauta-mac.dmg`).
 
 Ícone: `python3 buildscripts/pauta/make_icon.py`. Fontes: `venv/bin/python buildscripts/pauta/make_fonts.py <Archivo-Variable.ttf>`.
 Versão do Pauta: `PAUTA_VERSION` em `version.cmake` (a `MUSE_APP_VERSION` fica na versão do MuseScore de origem, porque vai dentro dos arquivos de partitura).

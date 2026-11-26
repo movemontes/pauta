@@ -21,6 +21,8 @@
  */
 #include "appmenumodel.h"
 
+#include <QLocale>
+
 #include "types/translatablestring.h"
 
 #include "muse_framework_config.h"
@@ -451,13 +453,15 @@ MenuItem* AppMenuModel::makeHelpMenu(bool addDiagnosticsSubMenu)
     MenuItemList helpItems;
 
     if (updateConfiguration()->isAppUpdatable()) {
-        helpItems << makeMenuItem("check-update");
+        helpItems << makeMenuItem("check-update", MenuItemRole::ApplicationSpecificRole); // Pauta: app menu
         helpItems << makeSeparator();
     }
 
     helpItems << makeMenuItem("online-handbook");
     helpItems << makeSeparator();
-    helpItems << makeMenuItem("pauta-support");
+    if (QLocale().name().startsWith(u"pt")) { // Pauta: Pix only in Portuguese
+        helpItems << makeMenuItem("pauta-support");
+    }
     // Pauta: language switch goes to the app menu ("Pauta") on macOS
     helpItems << makeMenuItem("pauta-language-system", MenuItemRole::ApplicationSpecificRole);
     helpItems << makeMenuItem("pauta-language-pt", MenuItemRole::ApplicationSpecificRole);
