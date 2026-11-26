@@ -71,6 +71,41 @@ const UiActionList ApplicationUiActions::m_actions = {
              mu::context::CTX_ANY,
              TranslatableString("action", "Support Pauta with Pix…")
              ),
+    UiAction("pauta-theme-aseprite",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Aseprite (classic)")
+             ),
+    UiAction("pauta-theme-night",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Night")
+             ),
+    UiAction("pauta-theme-mint",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Mint")
+             ),
+    UiAction("pauta-theme-peach",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Peach")
+             ),
+    UiAction("pauta-theme-sky",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Sky")
+             ),
+    UiAction("pauta-theme-grape",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Grape")
+             ),
+    UiAction("pauta-theme-treco",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Colors: Treco (white and blue)")
+             ),
     UiAction("pauta-quick-guide",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,

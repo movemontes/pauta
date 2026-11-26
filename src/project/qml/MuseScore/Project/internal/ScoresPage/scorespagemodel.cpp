@@ -42,7 +42,7 @@ void ScoresPageModel::createNewScore()
 
 void ScoresPageModel::convertFileToScore()
 {
-    dispatcher()->dispatch("file-convert-to-score");
+    dispatcher()->dispatch("pauta-import-pdf"); // Pauta: PDF -> editable score (Audiveris)
 }
 
 void ScoresPageModel::openOther()

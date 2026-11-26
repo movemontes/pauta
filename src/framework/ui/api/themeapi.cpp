@@ -931,6 +931,14 @@ void ProxyStyle::drawButtonBackground(QPainter* painter, const QRect& rect, cons
                                      : m_theme->buttonOpacityNormal());
 
             drawRoundedRect(painter, rect, DEFAULT_RADIUS, backgroundColor, QPen(penBorderColor, m_theme->borderWidth()));
+        } else if (!flat) {
+            // Pauta: pixel button with outline and relief (Aseprite)
+            drawRoundedRect(painter, rect, DEFAULT_RADIUS, backgroundColor, QPen(m_theme->strokeColor(), 2));
+            const QColor base = accentButton ? m_theme->accentColor() : m_theme->buttonColor();
+            const QColor light = styleState.pressed ? base.darker(145) : base.lighter(160);
+            const QColor dark = styleState.pressed ? base.lighter(160) : base.darker(145);
+            painter->fillRect(QRect(rect.left() + 2, rect.top() + 2, rect.width() - 4, 2), light);
+            painter->fillRect(QRect(rect.left() + 2, rect.bottom() - 4, rect.width() - 4, 3), dark);
         } else {
             drawRoundedRect(painter, rect, DEFAULT_RADIUS, backgroundColor, NO_BORDER);
         }
@@ -971,6 +979,18 @@ void ProxyStyle::drawCheckboxIndicator(QPainter* painter, const QRect& rect, con
         drawRoundedRect(painter, rect, borderRadius, backgroundColor, QPen(penBorderColor, penBorderWidth));
     }
 
+    if (!inMenu) {
+        // Pauta: white box, dark outline, sunken inner edge (Aseprite)
+        QColor field = m_theme->textFieldColor();
+        if (!styleState.enabled) {
+            field.setAlphaF(m_theme->itemOpacityDisabled());
+        }
+        drawRoundedRect(painter, rect, borderRadius, field, QPen(m_theme->strokeColor(), 2));
+        const QColor shade = m_theme->textFieldColor().darker(130);
+        painter->fillRect(QRect(rect.left() + 2, rect.top() + 2, rect.width() - 4, 2), shade);
+        painter->fillRect(QRect(rect.left() + 2, rect.top() + 2, 2, rect.height() - 4), shade);
+    }
+
     if (styleState.focused) {
         drawRoundedRect(painter, rect, borderRadius, NO_FILL, QPen(m_theme->fontPrimaryColor(), m_theme->navCtrlBorderWidth()));
     }
@@ -1002,7 +1022,7 @@ void ProxyStyle::drawRadioButtonIndicator(QPainter* painter, const QRect& rect, 
         borderColor.setAlphaF(m_theme->buttonOpacityNormal());
     }
 
-    const int borderWidth = 1;
+    const int borderWidth = 2; // Pauta: pixel look
     qreal outerCircleRadius = 10; // diameter = 20
 
     if (styleState.focused) {
@@ -1018,10 +1038,13 @@ void ProxyStyle::drawRadioButtonIndicator(QPainter* painter, const QRect& rect, 
     const QRect outerCircleRect(rect.center() + QPoint(1, 1) - QPoint(outerCircleRadius, outerCircleRadius),
                                 QSize(outerCircleRadius, outerCircleRadius) * 2);
     drawRoundedRect(painter, outerCircleRect, outerCircleRadius, backgroundColor, QPen(borderColor, borderWidth));
+    // Pauta: sunken ring inside
+    drawRoundedRect(painter, outerCircleRect.adjusted(2, 2, -2, -2), outerCircleRadius - 2, NO_FILL,
+                    QPen(m_theme->textFieldColor().darker(130), 2));
 
     if (selected || styleState.pressed) {
-        QColor centerColor = m_theme->accentColor();
-        const int innerCircleRadius = 5; // diameter = 10
+        QColor centerColor = m_theme->fontPrimaryColor(); // Pauta: dark dot like Aseprite
+        const int innerCircleRadius = 4; // Pauta
         const QRect innerCircleRect(rect.center() + QPoint(1, 1) - QPoint(innerCircleRadius, innerCircleRadius),
                                     QSize(innerCircleRadius, innerCircleRadius) * 2);
         drawRoundedRect(painter, innerCircleRect, innerCircleRadius, centerColor);

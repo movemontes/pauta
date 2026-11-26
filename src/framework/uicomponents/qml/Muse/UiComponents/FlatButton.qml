@@ -194,14 +194,14 @@ FocusScope {
                 visible: background.pautaBevel
                 anchors { left: parent.left; right: parent.right; top: parent.top; margins: ui.theme.borderWidth }
                 height: 2
-                color: mouseArea.pressed ? "#9E958A" : "#FFFFFF"
+                color: mouseArea.pressed ? Qt.darker(ui.theme.buttonColor, 1.45) : Qt.lighter(ui.theme.buttonColor, 1.6)
                 opacity: root.accentButton ? 0.35 : 1.0
             }
             Rectangle {
                 visible: background.pautaBevel
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: ui.theme.borderWidth }
                 height: 3
-                color: mouseArea.pressed ? "#FFFFFF" : "#9E958A"
+                color: mouseArea.pressed ? Qt.lighter(ui.theme.buttonColor, 1.6) : Qt.darker(ui.theme.buttonColor, 1.45)
                 opacity: root.accentButton ? 0.5 : 1.0
             }
 

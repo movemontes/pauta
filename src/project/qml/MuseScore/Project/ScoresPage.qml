@@ -173,6 +173,7 @@ FocusScope {
 
             StyledTabButton {
                 text: qsTrc("project", "New & recent")
+                width: implicitWidth + 32 // Pauta: wider pixel font
 
                 navigation.name: "NewAndRecent"
                 navigation.panel: navTabPanel
@@ -378,6 +379,7 @@ FocusScope {
             navigation.panel: navBottomPanel
             navigation.column: 1
 
+            visible: false // Pauta: no online account
             minWidth: 216
             text: qsTrc("project", "Score manager (online)")
 
@@ -411,7 +413,7 @@ FocusScope {
                 navigation.panel: navBottomPanel
                 navigation.column: 3
 
-                text: qsTrc("project", "Convert…")
+                text: qsTrc("project", "PDF to score…")
 
                 onClicked: {
                     scoresPageModel.convertFileToScore()

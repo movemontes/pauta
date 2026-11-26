@@ -1157,7 +1157,7 @@ void NotationViewInputController::mouseMoveEvent(QMouseEvent* event)
             }
 
             return;
-        } else if (hitElement == nullptr && (keyState & Qt::ShiftModifier)) {
+        } else if (hitElement == nullptr) { // Pauta: dragging on empty space draws a selection box (no Shift needed)
             if (!viewInteraction()->isDragStarted()) {
                 viewInteraction()->startDrag(std::vector<EngravingItem*>(), PointF(), [](const EngravingItem*) { return false; });
             }
@@ -1168,7 +1168,9 @@ void NotationViewInputController::mouseMoveEvent(QMouseEvent* event)
     }
 
     // move canvas
-    if (!isNoteEnterMode || isMiddleButton) {
+    // Pauta: the page moves only with the scroll wheel, two fingers on the trackpad or the middle button,
+    // never by dragging with a normal click (people clicked and the score slid away)
+    if (isMiddleButton) {
         const PointF logicalDragDelta = logicPos - m_mouseDownInfo.logicalBeginPoint;
         m_view->moveCanvas(logicalDragDelta.x(), logicalDragDelta.y());
 

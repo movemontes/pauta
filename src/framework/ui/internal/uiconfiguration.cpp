@@ -592,7 +592,8 @@ std::string UiConfiguration::iconsFontFamily() const
 
 int UiConfiguration::iconsFontSize(IconSizeType type) const
 {
-    int bodyFontSize = fontSize(FontSizeType::BODY) + 4;
+    // Pauta: icons keep their designed size; the larger pixel text font must not make them spill out of buttons
+    int bodyFontSize = 16;
 
     switch (type) {
     case IconSizeType::Regular: return bodyFontSize;

@@ -30,6 +30,7 @@
 #include "ui/iuiactionsregister.h"
 #include "async/asyncable.h"
 #include "ui/imainwindow.h"
+#include "ui/iuiconfiguration.h"
 #include "languages/ilanguagesservice.h"
 #include "languages/ilanguagesconfiguration.h"
 #include "iinteractive.h"
@@ -55,6 +56,7 @@ class ApplicationActionController : public QObject, public muse::Contextable, pu
 {
     muse::GlobalInject<muse::mi::IMultiWindowsProvider> multiwindowsProvider;
     muse::GlobalInject<IAppShellConfiguration> configuration;
+    muse::GlobalInject<muse::ui::IUiConfiguration> uiConfiguration;
     muse::GlobalInject<muse::languages::ILanguagesService> languagesService;
     muse::GlobalInject<muse::languages::ILanguagesConfiguration> languagesConfiguration;
     muse::ContextInject<muse::ui::IUiActionsRegister> actionsRegister = { this };
@@ -118,6 +120,7 @@ private:
     void pautaSetLanguage(const QString& code);
     void pautaImportPdf();
     bool pautaCloseAllTabs();
+    void pautaApplyColors(const std::string& name);
     muse::Progress m_pautaPdfProgress;
 
     bool hasProjectAndIsFocused() const;

@@ -314,6 +314,10 @@ MenuItem* AppMenuModel::makeViewMenu()
         makeMenuItem("toggle-percussion-panel"),
         makeMenuItem("playback-setup"),
         makeMenuItem("pauta-toggle-reverb"),
+        makeMenu(TranslatableString("appshell/menu/view", "Interface colors"), {
+            makeMenuItem("pauta-theme-aseprite"), makeMenuItem("pauta-theme-night"), makeMenuItem("pauta-theme-mint"),
+            makeMenuItem("pauta-theme-peach"), makeMenuItem("pauta-theme-sky"), makeMenuItem("pauta-theme-grape"),
+            makeMenuItem("pauta-theme-treco") }, "menu-pauta-colors"),
         //makeMenuItem("toggle-scorecmp-tool"), // not implemented
         makeSeparator(),
         makeMenu(TranslatableString("appshell/menu/view", "&Toolbars"), makeToolbarsItems(), "menu-toolbars")

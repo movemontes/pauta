@@ -29,6 +29,8 @@
 #include <QFileOpenEvent>
 #include <QWindow>
 #include <QDir>
+#include <map>
+#include "settings.h"
 #include <QProcess>
 #include <QFileInfo>
 #include <QDirIterator>
@@ -76,6 +78,10 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "about-musicxml", this, &ApplicationActionController::openAboutMusicXMLDialog);
     dispatcher()->reg(this, "online-handbook", this, &ApplicationActionController::openOnlineHandbookPage);
     // Pauta
+    for (const char* preset : { "aseprite", "night", "mint", "peach", "sky", "grape", "treco" }) {
+        const std::string name(preset);
+        dispatcher()->reg(this, "pauta-theme-" + name, [this, name]() { pautaApplyColors(name); });
+    }
     dispatcher()->reg(this, "pauta-quick-guide", [this]() { interactive()->open("musescore://pauta/guide"); });
     dispatcher()->reg(this, "pauta-import-pdf", this, &ApplicationActionController::pautaImportPdf);
     dispatcher()->reg(this, "pauta-export-to-program", [this]() { interactive()->open("musescore://pauta/exportto"); });
@@ -505,6 +511,44 @@ void ApplicationActionController::pautaImportPdf()
         }
     });
     proc->start();
+}
+
+// Pauta: ready-made interface color palettes (pixel look). The score page stays white.
+void ApplicationActionController::pautaApplyColors(const std::string& name)
+{
+    struct Palette {
+        const char* primary; const char* secondary; const char* button; const char* field;
+        const char* accent; const char* font; const char* fontOnAccent; const char* stroke; const char* canvas;
+    };
+    static const std::map<std::string, Palette> palettes {
+        { "aseprite", { "#D3CBBE", "#7D929E", "#F2ECE2", "#FFFFFF", "#5B7A93", "#1B1A1F", "#FFFFFF", "#1B1A1F", "#5D5163" } },
+        { "night",    { "#3A3946", "#25242C", "#55536A", "#2B2A33", "#E0862C", "#EDE7DB", "#1B1A1F", "#0E0D12", "#16151B" } },
+        { "mint",     { "#D3E6D6", "#6E9C88", "#EEF7EF", "#FFFFFF", "#3E7C62", "#18231E", "#FFFFFF", "#18231E", "#2F4A44" } },
+        { "peach",    { "#F2DCCB", "#C98F78", "#FBF0E7", "#FFFFFF", "#B5523B", "#2A1A16", "#FFFFFF", "#2A1A16", "#5A3A3A" } },
+        { "sky",      { "#D6E4F0", "#6F8FB3", "#EEF4FA", "#FFFFFF", "#3E66A8", "#141C2B", "#FFFFFF", "#141C2B", "#2C3E5C" } },
+        { "grape",    { "#E3D8EE", "#8A72A6", "#F4EEFA", "#FFFFFF", "#6A4A9A", "#1E1428", "#FFFFFF", "#1E1428", "#3E2E52" } },
+        { "treco",    { "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#0000FF", "#000000", "#FFFFFF", "#000000", "#BCC1CC" } },
+    };
+    auto it = palettes.find(name);
+    if (it == palettes.end()) {
+        return;
+    }
+    const Palette& p = it->second;
+    using namespace muse::ui;
+    auto set = [this](ThemeStyleKey key, const char* hex) { uiConfiguration()->setCurrentThemeStyleValue(key, muse::Val(QColor(hex))); };
+    set(BACKGROUND_PRIMARY_COLOR, p.primary);
+    set(POPUP_BACKGROUND_COLOR, p.primary);
+    set(BACKGROUND_SECONDARY_COLOR, p.secondary);
+    set(BUTTON_COLOR, p.button);
+    set(TEXT_FIELD_COLOR, p.field);
+    set(ACCENT_COLOR, p.accent);
+    set(FONT_PRIMARY_COLOR, p.font);
+    set(FONT_SECONDARY_COLOR, p.fontOnAccent);
+    set(STROKE_COLOR, p.stroke);
+
+    // the area around the page
+    muse::settings()->setSharedValue(muse::Settings::Key("notation", "ui/canvas/background/lightTheme_score_background_color"),
+                                     muse::Val(QColor(p.canvas)));
 }
 
 void ApplicationActionController::pautaSetLanguage(const QString& code)

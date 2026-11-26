@@ -28,7 +28,7 @@ ScrollBar {
     property alias color: handle.color
     property alias border: handle.border
 
-    property real thickness: 8
+    property real thickness: 12 // Pauta: chunky pixel scrollbar
     property real minimumSizeInPixels: 30
 
     readonly property bool isVertical: orientation === Qt.Vertical
@@ -44,8 +44,10 @@ ScrollBar {
         implicitWidth: root.thickness
         implicitHeight: root.thickness
 
-        radius: root.thickness / 2
-        color: ui.theme.fontPrimaryColor
+        radius: 2
+        color: ui.theme.buttonColor // Pauta: beige thumb with dark outline (Aseprite)
+        border.width: 2
+        border.color: ui.theme.strokeColor
         opacity: 0.0
         visible: false
 
@@ -59,7 +61,7 @@ ScrollBar {
                 PropertyChanges {
                     target: handle
                     visible: true
-                    opacity: root.pressed ? 0.7 : 0.3
+                    opacity: root.pressed ? 1.0 : 0.9
                 }
             }
         ]
