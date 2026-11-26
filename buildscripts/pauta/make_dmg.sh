@@ -28,6 +28,9 @@ rm -f "$APP/Contents/PlugIns/sqldrivers/"libqsql{mimer,odbc,psql}.dylib
 # keep Qt's QML folder as macdeployqt made it (Resources/qml, listed in qt.conf)
 grep -q "Resources/qml$" "$APP/Contents/Resources/qt.conf" || { echo "qt.conf inesperado"; cat "$APP/Contents/Resources/qt.conf"; exit 1; }
 
+# Qt 6.10 needs macOS 13; say so in the bundle so older Macs get a clear message
+plutil -replace LSMinimumSystemVersion -string 13.0 "$APP/Contents/Info.plist"
+
 echo "== ad-hoc signature (no paid Apple account)"
 codesign --force --deep --sign - "$APP"
 codesign --verify --deep --strict "$APP"
