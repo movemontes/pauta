@@ -40,6 +40,8 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     maximumFlickVelocity: ui.theme.flickableMaxVelocity
 
+    PautaWheelScroll { flickable: root }
+
     ScrollBar.vertical: root.arrowControlsAvailable ? null : scrollBarComp.createObject(root)
     ScrollBar.horizontal: root.arrowControlsAvailable ? null : scrollBarComp.createObject(root)
 

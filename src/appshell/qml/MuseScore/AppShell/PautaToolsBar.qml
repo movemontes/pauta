@@ -3,6 +3,7 @@
  * Pauta: vertical column of tools, always visible (like Aseprite's tool bar).
  */
 import QtQuick
+import QtQuick.Window
 
 import Muse.Ui
 import Muse.UiComponents
@@ -24,7 +25,8 @@ Item {
         "pauta-chord-from-notes": "#7A4FB0", "play": "#2E9E4F", "metronome": "#C0392B",
         "zoomin": "#2F6FC0", "zoomout": "#2F6FC0", "pauta-command-palette": "#5B7A93"
     })
-    implicitHeight: column.implicitHeight
+    // Pauta: small minimum so the dock never asks for more height than the window has; the list scrolls instead
+    implicitHeight: Math.max(240, Math.min(column.implicitHeight, (root.Window.height > 0 ? root.Window.height : 900) - 150))
 
     PautaToolsModel {
         id: toolsModel
@@ -46,7 +48,7 @@ Item {
         Column {
             id: column
             width: root.width
-            spacing: 4
+            spacing: 3
             topPadding: 4
             bottomPadding: 4
 
@@ -60,7 +62,7 @@ Item {
                     itemData: item
                     width: column.width - 8
                     x: 4
-                    height: 66
+                    height: 58
                     orientation: Qt.Vertical
                     textFont: ui.theme.bodyFont
                     maximumLineCount: 2

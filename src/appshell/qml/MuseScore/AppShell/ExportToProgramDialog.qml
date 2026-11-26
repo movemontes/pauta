@@ -47,22 +47,15 @@ StyledDialogView {
             horizontalAlignment: Text.AlignLeft
         }
 
-        StyledTextLabel {
-            width: parent.width
-            text: qsTrc("appshell", "MuseScore Studio opens Pauta files (.mscz) directly, no export needed.")
-            color: "#5C5C5C"
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignLeft
-        }
-
         Repeater {
             model: root.targets
 
             delegate: Rectangle {
                 width: column.width
-                height: 64
-                color: area.containsMouse ? "#E2E2FF" : "#FFFFFF"
-                border.color: "#000000"
+                height: 70
+                // Pauta: theme colours so titles stay readable in every colour preset
+                color: area.containsMouse ? Qt.tint(ui.theme.textFieldColor, "#335B7A93") : ui.theme.textFieldColor
+                border.color: ui.theme.strokeColor
                 border.width: 2
 
                 Column {
@@ -84,9 +77,11 @@ StyledDialogView {
                     StyledTextLabel {
                         width: parent.width
                         text: modelData.info
-                        color: "#5C5C5C"
+                        color: ui.theme.fontPrimaryColor
+                        opacity: 0.8
                         horizontalAlignment: Text.AlignLeft
-                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 2
                     }
                 }
 

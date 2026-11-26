@@ -69,7 +69,7 @@ elseif(OS_IS_MAC)
     set(MACOSX_BUNDLE_LONG_VERSION_STRING ${PAUTA_VERSION})
     set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${PAUTA_VERSION})
     set(MACOSX_BUNDLE_BUNDLE_VERSION ${CMAKE_BUILD_NUMBER})
-    set(MACOSX_BUNDLE_COPYRIGHT "Pauta © 2026 movemontes. Based on MuseScore Studio © 1999-2026 MuseScore Limited and others. GNU General Public License version 3.")
+    set(MACOSX_BUNDLE_COPYRIGHT "Pauta © 2026 movemontes. GNU General Public License version 3.")
 
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_INSTALL_LIBS};@loader_path/../Frameworks")
     if (MUE_COMPILE_MACOS_PRECOMPILED_DEPS_PATH)
@@ -257,6 +257,9 @@ if (OS_IS_MAC)
     set(PAUTA_ICNS ${PROJECT_SOURCE_DIR}/share/icons/AppIcon/PautaAppIcon.icns)
     target_sources(MuseScoreStudio PRIVATE ${PAUTA_ICNS})
     set_source_files_properties(${PAUTA_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set(PAUTA_DOC_ICNS ${PROJECT_SOURCE_DIR}/share/icons/AppIcon/PautaDocIcon.icns)
+    target_sources(MuseScoreStudio PRIVATE ${PAUTA_DOC_ICNS})
+    set_source_files_properties(${PAUTA_DOC_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     set_target_properties(MuseScoreStudio PROPERTIES MACOSX_BUNDLE_ICON_FILE PautaAppIcon.icns)
 
     set_target_properties(MuseScoreStudio PROPERTIES

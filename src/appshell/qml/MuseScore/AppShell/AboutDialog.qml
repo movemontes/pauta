@@ -119,22 +119,14 @@ StyledDialogView {
 
             StyledTextLabel {
                 Layout.fillWidth: true
-
-                text: qsTrc("appshell/about", "Pauta is free software based on MuseScore Studio.")
-                      + " " + qsTrc("appshell/about", "Pauta is not affiliated with or endorsed by MuseScore Limited or Muse Group.")
-
-                wrapMode: Text.WordWrap
-                maximumLineCount: 3
-            }
-
-            StyledTextLabel {
-                Layout.fillWidth: true
-                text: "Pauta © 2026 movemontes. MuseScore Studio © 1999-2026 MuseScore Limited and others.<br>GNU General Public License version 3: <a href=\"%1\">gnu.org/licenses/gpl-3.0</a>"
+                text: "Pauta © 2026 movemontes. Contains GPL code © 1999-2026 MuseScore Limited and others.<br>GNU General Public License version 3, no warranty: <a href=\"%1\">gnu.org/licenses/gpl-3.0</a>"
                       .arg("https://www.gnu.org/licenses/gpl-3.0.html")
                       .replace("\n", "<br>")
 
                 wrapMode: Text.WordWrap
                 maximumLineCount: 3
+                font: ui.theme.tabFont
+                opacity: 0.7
             }
         }
 

@@ -9,14 +9,14 @@
 
 	<key>UTExportedTypeDeclarations</key>
 	<array>
-		<!-- MuseScore documents -->
+		<!-- Pauta documents -->
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>org.musescore.mscz</string>
+			<string>io.github.movemontes.pauta.mscz</string>
 			<key>UTTypeDescription</key>
-			<string>MuseScore File</string>
+			<string>Pauta File</string>
 			<key>UTTypeIconFile</key>
-			<string>MsczIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -30,17 +30,17 @@
 				</array>
 				<key>public.mime-type</key>
 				<array>
-					<string>application/x-musescore</string>
+					<string>application/x-pauta</string>
 				</array>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>org.musescore.mscx</string>
+			<string>io.github.movemontes.pauta.mscx</string>
 			<key>UTTypeDescription</key>
-			<string>MuseScore Uncompressed File</string>
+			<string>Pauta Uncompressed File</string>
 			<key>UTTypeIconFile</key>
-			<string>MscxIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -54,15 +54,15 @@
 				</array>
 				<key>public.mime-type</key>
 				<array>
-					<string>application/x-musescore+xml</string>
+					<string>application/x-pauta+xml</string>
 				</array>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>org.musescore.mscs</string>
+			<string>io.github.movemontes.pauta.mscs</string>
 			<key>UTTypeDescription</key>
-			<string>MuseScore Stand-alone File</string>
+			<string>Pauta Stand-alone File</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -76,17 +76,17 @@
 				</array>
 				<key>public.mime-type</key>
 				<array>
-					<string>application/x-musescore+xml</string>
+					<string>application/x-pauta+xml</string>
 				</array>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>org.musescore.mscz,</string>
+			<string>io.github.movemontes.pauta.mscz,</string>
 			<key>UTTypeDescription</key>
-			<string>MuseScore Backup File</string>
+			<string>Pauta Backup File</string>
 			<key>UTTypeIconFile</key>
-			<string>MsczIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
@@ -100,7 +100,7 @@
 				</array>
 				<key>public.mime-type</key>
 				<array>
-					<string>application/x-musescore</string>
+					<string>application/x-pauta</string>
 				</array>
 			</dict>
 		</dict>
@@ -109,12 +109,12 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>MuseScore File</string>
+			<string>Pauta File</string>
 			<key>CFBundleTypeIconFile</key>
-			<string>MsczIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>org.musescore.mscz</string>
+				<string>io.github.movemontes.pauta.mscz</string>
 			</array>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -129,12 +129,12 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>MuseScore Uncompressed File</string>
+			<string>Pauta Uncompressed File</string>
 			<key>CFBundleTypeIconFile</key>
-			<string>MscxIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>org.musescore.mscx</string>
+				<string>io.github.movemontes.pauta.mscx</string>
 			</array>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -149,10 +149,10 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>MuseScore Stand-alone File</string>
+			<string>Pauta Stand-alone File</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>org.musescore.mscs</string>
+				<string>io.github.movemontes.pauta.mscs</string>
 			</array>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -167,12 +167,12 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>MuseScore Backup File</string>
+			<string>Pauta Backup File</string>
 			<key>CFBundleTypeIconFile</key>
-			<string>MsczIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>org.musescore.mscz,</string>
+				<string>io.github.movemontes.pauta.mscz,</string>
 			</array>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -187,12 +187,12 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>MuseScore Uncompressed Backup File</string>
+			<string>Pauta Uncompressed Backup File</string>
 			<key>CFBundleTypeIconFile</key>
-			<string>MscxIcon.icns</string>
+			<string>PautaDocIcon.icns</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>org.musescore.mscx,</string>
+				<string>io.github.movemontes.pauta.mscx,</string>
 			</array>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -557,20 +557,6 @@
 			<string>Alternate</string>
 			<key>LSTypeIsPackage</key>
 			<false/>
-		</dict>
-	</array>
-
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>org.musescore.musescore.musescoreurl</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>musescore</string>
-			</array>
 		</dict>
 	</array>
 

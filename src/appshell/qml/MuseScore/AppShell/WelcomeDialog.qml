@@ -54,7 +54,8 @@ StyledDialogView {
                   + "\n\n"
                   + qsTrc("appshell/welcome", "If it makes your music easier, any amount helps my family a lot. Thank you so much!")
             font: ui.theme.bodyFont
-            color: "#5C5C5C"
+            color: ui.theme.fontPrimaryColor
+            opacity: 0.85
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignLeft
         }

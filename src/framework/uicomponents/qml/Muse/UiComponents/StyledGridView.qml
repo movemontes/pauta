@@ -22,10 +22,15 @@
 import QtQuick
 import QtQuick.Controls
 
+import "internal"
+
 GridView {
+    id: pautaFlick
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     maximumFlickVelocity: ui.theme.flickableMaxVelocity
+
+    PautaWheelScroll { flickable: pautaFlick }
 
     ScrollBar.vertical: StyledScrollBar {}
     ScrollBar.horizontal: StyledScrollBar {}

@@ -106,7 +106,6 @@ static const QHash<QString, QString>& pautaPortuguese()
         { "Export to another program…", "Exportar para outro programa…" },
         { "Export to another program", "Exportar para outro programa" },
         { "Where do you want to use this score?", "Onde você quer usar esta partitura?" },
-        { "MuseScore Studio opens Pauta files (.mscz) directly, no export needed.", "O MuseScore Studio abre os arquivos do Pauta (.mscz) direto, sem exportar." },
         { "Notation programs. Keeps notes, lyrics, chords and layout (MusicXML).", "Programas de partitura. Leva notas, letra, cifras e diagramação (MusicXML)." },
         { "Music production (DAW). Notes and instruments only, no sheet music (MIDI).", "Produção musical (DAW). Só notas e instrumentos, sem a partitura (MIDI)." },
         { "Print, WhatsApp, e-mail", "Imprimir, WhatsApp, e-mail" },
@@ -141,7 +140,17 @@ void PautaTranslator::addTranslator(QTranslator* translator)
 
 QString PautaTranslator::brand(QString text)
 {
+    // Pauta: no visible trace of the original program's name
     text.replace(QStringLiteral("MuseScore Studio"), QStringLiteral("Pauta"));
+    text.replace(QStringLiteral("compatibility with MuseScore 3"), QStringLiteral("compatibility with older programs"));
+    text.replace(QStringLiteral("compatibilidade com o MuseScore 3"), QStringLiteral("compatibilidade com programas antigos"));
+    text.replace(QStringLiteral("Legacy MuseScore"), QStringLiteral("Pauta (old)"));
+    text.replace(QStringLiteral("MuseScore %1"), QStringLiteral("version %1"));
+    text.replace(QStringLiteral("Mastering MuseScore"), QStringLiteral("Pauta"));
+    text.replace(QStringLiteral("MuseScore.com"), QStringLiteral("internet"));
+    text.replace(QStringLiteral("MuseScore.org"), QStringLiteral("internet"));
+    text.replace(QStringLiteral("MuseScore"), QStringLiteral("Pauta"));
+    text.replace(QStringLiteral("MuseHub"), QStringLiteral("Pauta"));
     return text;
 }
 

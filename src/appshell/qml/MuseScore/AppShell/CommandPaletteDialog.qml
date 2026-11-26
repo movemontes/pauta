@@ -76,7 +76,7 @@ StyledDialogView {
             delegate: Rectangle {
                 width: ListView.view.width
                 height: 36
-                color: ListView.isCurrentItem ? ui.theme.accentColor : (mouse.containsMouse ? "#E2E2FF" : "transparent")
+                color: ListView.isCurrentItem ? ui.theme.accentColor : (mouse.containsMouse ? Qt.tint(ui.theme.backgroundPrimaryColor, "#335B7A93") : "transparent")
 
                 StyledTextLabel {
                     anchors.left: parent.left
@@ -95,7 +95,8 @@ StyledDialogView {
                     anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: model.shortcut
-                    color: parent.ListView.isCurrentItem ? "#FFFFFF" : "#5C5C5C"
+                    color: parent.ListView.isCurrentItem ? "#FFFFFF" : ui.theme.fontPrimaryColor
+                    opacity: parent.ListView.isCurrentItem ? 1.0 : 0.8
                 }
 
                 MouseArea {
