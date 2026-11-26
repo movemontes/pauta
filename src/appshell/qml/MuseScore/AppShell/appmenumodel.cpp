@@ -201,6 +201,7 @@ MenuItem* AppMenuModel::makeFileMenu()
     MenuItemList fileItems {
         makeMenuItem("file-new"),
         makeMenuItem("file-open"),
+        makeMenuItem("pauta-import-pdf"),
         makeMenu(TranslatableString("appshell/menu/file", "Open &recent"), recentScoresList, "menu-file-open", openRecentEnabled),
         makeMenuItem("file-close"),
         makeSeparator(),
@@ -209,6 +210,7 @@ MenuItem* AppMenuModel::makeFileMenu()
         makeMenu(TranslatableString("appshell/menu/file", "Save o&ther"), makeSaveOtherSubItems()),
         makeSeparator(),
         makeMenuItem("file-export"),
+        makeMenuItem("pauta-export-to-program"),
         makeSeparator(),
         makeMenuItem("project-properties"),
         makeMenuItem("parts", TranslatableString("action", "Parts…")),
@@ -396,6 +398,7 @@ MenuItem* AppMenuModel::makeToolsMenu()
     };
 
     MenuItemList toolsItems {
+        makeMenuItem("pauta-change-key"),
         makeMenuItem("transpose"),
         makeSeparator(),
         makeMenuItem("explode"),

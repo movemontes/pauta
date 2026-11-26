@@ -37,8 +37,17 @@ StyledDialogView {
     contentHeight: 420
     margins: 24
 
+    // Pauta: "Export to another program" opens this dialog with the right format already chosen
+    property string presetType: ""
+
     ExportDialogModel {
         id: exportModel
+    }
+
+    onOpened: {
+        if (root.presetType !== "") {
+            exportModel.selectExportTypeById(root.presetType)
+        }
     }
 
     onNavigationActivateRequested: {

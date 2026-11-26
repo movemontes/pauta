@@ -420,6 +420,12 @@ const UiActionList NotationUiActions::s_actions = {
              TranslatableString("action", "S&ave style…"),
              TranslatableString("action", "Save style")
              ),
+    UiAction("pauta-change-key",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Change key…"),
+             TranslatableString("action", "Change the key of the whole score")
+             ),
     UiAction("transpose",
              mu::context::UiCtxProjectOpened,
              mu::context::CTX_NOTATION_OPENED,

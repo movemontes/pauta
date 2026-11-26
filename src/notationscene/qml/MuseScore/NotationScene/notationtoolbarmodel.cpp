@@ -35,6 +35,8 @@ void NotationToolBarModel::load()
     }
 
     muse::actions::ActionCodeList itemsCodes = {
+        "pauta-change-key",          // Pauta
+        "pauta-export-to-program",   // Pauta
         "parts",
         "toggle-mixer"
     };

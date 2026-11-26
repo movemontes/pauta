@@ -30,6 +30,9 @@
 #include <QWindow>
 #include <QDir>
 #include <QProcess>
+#include <QFileInfo>
+#include <QDirIterator>
+#include <QDateTime>
 #include <QCoreApplication>
 #include "muse_framework_config.h"
 #include <QMimeData>
@@ -73,6 +76,8 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "about-musicxml", this, &ApplicationActionController::openAboutMusicXMLDialog);
     dispatcher()->reg(this, "online-handbook", this, &ApplicationActionController::openOnlineHandbookPage);
     // Pauta
+    dispatcher()->reg(this, "pauta-import-pdf", this, &ApplicationActionController::pautaImportPdf);
+    dispatcher()->reg(this, "pauta-export-to-program", [this]() { interactive()->open("musescore://pauta/exportto"); });
     dispatcher()->reg(this, "pauta-command-palette", [this]() { interactive()->open("musescore://pauta/commandpalette"); });
     dispatcher()->reg(this, "pauta-support", [this]() { interactive()->open("musescore://welcomedialog"); });
     dispatcher()->reg(this, "pauta-language-system", [this]() { pautaSetLanguage("system"); });
@@ -425,6 +430,79 @@ void ApplicationActionController::revertToFactorySettings()
             }
         });
     });
+}
+
+// Pauta: PDF or picture of printed sheet music -> editable score, on this Mac (no cloud).
+// Uses Audiveris (free, AGPL, separate app the person installs once): https://github.com/Audiveris/audiveris
+static QString findAudiveris()
+{
+    for (const QString& app : { QStringLiteral("/Applications/Audiveris.app"), QDir::homePath() + "/Applications/Audiveris.app" }) {
+        const QString exe = app + "/Contents/MacOS/Audiveris";
+        if (QFileInfo::exists(exe)) {
+            return exe;
+        }
+    }
+    return QString();
+}
+
+void ApplicationActionController::pautaImportPdf()
+{
+    const QString audiveris = findAudiveris();
+    if (audiveris.isEmpty()) {
+        int getBtn = int(IInteractive::Button::Apply);
+        interactive()->info(muse::trc("appshell", "To read sheet music from a PDF, Pauta uses Audiveris"),
+                            muse::trc("appshell", "Audiveris is a free program that turns printed sheet music (PDF or photo) into an editable score, "
+                                                  "right on your Mac. Download the version for Apple chips (macosx-arm64.dmg), drag it to "
+                                                  "Applications, open it once, and then come back here."),
+                            { interactive()->buttonData(IInteractive::Button::Cancel),
+                              IInteractive::ButtonData(getBtn, muse::trc("appshell", "Download Audiveris"), true) },
+                            getBtn)
+        .onResolve(this, [this, getBtn](const IInteractive::Result& res) {
+            if (res.isButton(getBtn)) {
+                interactive()->openUrl(std::string("https://github.com/Audiveris/audiveris/releases/latest"));
+            }
+        });
+        return;
+    }
+
+    const muse::io::path_t file = interactive()->selectOpeningFileSync(
+        muse::trc("appshell", "Choose the PDF or picture of the sheet music"), "",
+        { muse::trc("appshell", "PDF and pictures") + " (*.pdf *.png *.jpg *.jpeg *.tif *.tiff)" });
+    if (file.empty()) {
+        return;
+    }
+
+    const QString outDir = QDir::tempPath() + "/pauta-pdf-" + QString::number(QDateTime::currentMSecsSinceEpoch());
+    QDir().mkpath(outDir);
+
+    auto* proc = new QProcess(this);
+    proc->setProgram(audiveris);
+    proc->setArguments({ "-batch", "-export", "-output", outDir, "--", file.toQString() });
+
+    m_pautaPdfProgress = muse::Progress();
+    m_pautaPdfProgress.start();
+    interactive()->showProgress(muse::trc("appshell", "Reading the sheet music… (this can take a minute)"), m_pautaPdfProgress);
+
+    QObject::connect(proc, &QProcess::finished, this, [this, proc, outDir](int, QProcess::ExitStatus) {
+        proc->deleteLater();
+        m_pautaPdfProgress.finish(muse::make_ok());
+
+        QStringList found;
+        QDirIterator it(outDir, { "*.mxl", "*.musicxml", "*.xml" }, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            found << it.next();
+        }
+        found.sort();
+        if (found.isEmpty()) {
+            interactive()->warning(muse::trc("appshell", "Couldn't read this sheet music"),
+                                   muse::trc("appshell", "It works best with clean printed scores (not handwritten or blurry photos)."));
+            return;
+        }
+        for (const QString& f : found) {
+            projectFilesController()->openProject(project::ProjectFile(muse::io::path_t(f)));
+        }
+    });
+    proc->start();
 }
 
 void ApplicationActionController::pautaSetLanguage(const QString& code)

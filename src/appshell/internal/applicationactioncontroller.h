@@ -40,6 +40,7 @@
 #include "audio/main/isoundfontcontroller.h"
 #include "istartupscenario.h"
 #include "iapplication.h"
+#include "progress.h"
 #include "extensions/iextensioninstaller.h"
 #include "context/iglobalcontext.h"
 #include "context/iuicontextresolver.h"
@@ -115,6 +116,8 @@ private:
 
     void revertToFactorySettings();
     void pautaSetLanguage(const QString& code);
+    void pautaImportPdf();
+    muse::Progress m_pautaPdfProgress;
 
     bool hasProjectAndIsFocused() const;
     void doGlobalCopy();

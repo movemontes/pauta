@@ -71,6 +71,16 @@ const UiActionList ApplicationUiActions::m_actions = {
              mu::context::CTX_ANY,
              TranslatableString("action", "Support Pauta with Pix…")
              ),
+    UiAction("pauta-import-pdf",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Open PDF as editable score (beta)…")
+             ),
+    UiAction("pauta-export-to-program",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Export to another program…")
+             ),
     UiAction("pauta-command-palette",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,

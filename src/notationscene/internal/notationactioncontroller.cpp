@@ -315,6 +315,7 @@ void NotationActionController::init()
     registerAction("edit-strings", &Controller::openEditStringsDialog);
     registerAction("measures-per-system", &Controller::openBreaksDialog);
     registerAction("transpose", &Controller::openTransposeDialog);
+    registerAction("pauta-change-key", &Controller::pautaChangeKey); // Pauta
     registerAction("parts", &Controller::openPartsDialog);
     registerAction("staff-text-properties", &Controller::openStaffTextPropertiesDialog);
     registerAction("system-text-properties", &Controller::openStaffTextPropertiesDialog);
@@ -1828,6 +1829,15 @@ void NotationActionController::openTransposeDialog()
     interactive()->open("musescore://notation/transpose").onResolve(this, [this](const Val&) {
         currentNotationInteraction()->checkAndShowError();
     });
+}
+
+void NotationActionController::pautaChangeKey()
+{
+    // Pauta: change the key of the whole score in one step (notes, key signatures and chord symbols)
+    if (auto interaction = currentNotationInteraction()) {
+        interaction->selectAll();
+    }
+    openTransposeDialog();
 }
 
 void NotationActionController::openPartsDialog()
