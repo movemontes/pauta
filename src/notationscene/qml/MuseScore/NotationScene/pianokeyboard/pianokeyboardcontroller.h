@@ -27,6 +27,7 @@
 #include "modularity/ioc.h"
 #include "context/iglobalcontext.h"
 #include "notation/inotationconfiguration.h"
+#include "playback/iplaybackcontroller.h"
 
 #include "pianokeyboardtypes.h"
 
@@ -35,6 +36,7 @@ class PianoKeyboardController : public muse::Contextable, public muse::async::As
 {
     muse::GlobalInject<INotationConfiguration> notationConfiguration;
     muse::ContextInject<context::IGlobalContext> context = { this };
+    muse::ContextInject<playback::IPlaybackController> playbackController = { this };
 
 public:
     PianoKeyboardController(const muse::modularity::ContextPtr& iocCtx);
@@ -49,6 +51,8 @@ public:
     bool isFromMidi() const;
 
 private:
+    // Pauta: light up the keys that sound during playback
+    void updatePlaybackKeys(muse::midi::tick_t tick);
     INotationPtr currentNotation() const;
 
     void onNotationChanged();

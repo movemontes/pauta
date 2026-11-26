@@ -128,6 +128,17 @@ void PlaybackController::init()
     dispatcher()->reg(this, PLAYBACK_SETUP, this, &PlaybackController::openPlaybackSetupDialog);
     dispatcher()->reg(this, TOGGLE_HEAR_PLAYBACK_WHEN_EDITING_CODE, this, &PlaybackController::toggleHearPlaybackWhenEditing);
     dispatcher()->reg(this, "playback-reload-cache", this, &PlaybackController::reloadPlaybackCache);
+    // Pauta: one click to turn the reverb off and on (it comes on by default)
+    dispatcher()->reg(this, "pauta-toggle-reverb", [this]() {
+        if (!audioSettings()) {
+            return;
+        }
+        auto state = audioSettings()->auxSoloMuteState(REVERB_CHANNEL_IDX);
+        state.mute = !state.mute;
+        audioSettings()->setAuxSoloMuteState(REVERB_CHANNEL_IDX, state);
+        updateAuxMuteStates();
+        notifyActionCheckedChanged("pauta-toggle-reverb");
+    });
 
     m_onlineSoundsController->regActions();
 
@@ -1580,7 +1591,8 @@ bool PlaybackController::actionChecked(const ActionCode& actionCode) const
         { PAN_CODE, notationConfiguration()->isAutomaticallyPanEnabled() },
         { METRONOME_CODE, notationConfiguration()->isMetronomeEnabled() },
         { COUNT_IN_CODE, notationConfiguration()->isCountInEnabled() },
-        { TOGGLE_HEAR_PLAYBACK_WHEN_EDITING_CODE, configuration()->playNotesWhenEditing() }
+        { TOGGLE_HEAR_PLAYBACK_WHEN_EDITING_CODE, configuration()->playNotesWhenEditing() },
+        { "pauta-toggle-reverb", audioSettings() ? !audioSettings()->auxSoloMuteState(REVERB_CHANNEL_IDX).mute : true }
     };
 
     return isChecked[actionCode];

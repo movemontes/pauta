@@ -42,6 +42,7 @@ static const QHash<QString, QString>& pautaPortuguese()
         { "Command palette…", "Paleta de comandos…" },
         { "Type a command", "Digite um comando" },
         { "Tap tempo", "Bater o tempo" },
+        { "Reverb (on/off)", "Reverb (ligar/desligar)" },
         { "Language: Automatic (system)", "Idioma: Automático (do sistema)" },
         { "Language: Português (Brasil)", "Idioma: Português (Brasil)" },
         { "Language: English", "Idioma: English" },

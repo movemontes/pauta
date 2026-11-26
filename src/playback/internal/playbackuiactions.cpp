@@ -150,6 +150,13 @@ const UiActionList PlaybackUiActions::s_settingsActions = {
              IconCode::Code::CHORD_SYMBOL,
              Checkable::Yes
              ),
+    UiAction("pauta-toggle-reverb",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Reverb (on/off)"),
+             TranslatableString("action", "Reverb (on/off)"),
+             Checkable::Yes
+             ),
     UiAction("toggle-hear-playback-when-editing",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,

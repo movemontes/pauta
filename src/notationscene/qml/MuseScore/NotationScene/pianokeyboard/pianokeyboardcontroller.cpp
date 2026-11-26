@@ -22,6 +22,9 @@
 #include "pianokeyboardcontroller.h"
 
 #include "defer.h"
+#include "engraving/dom/score.h"
+#include "engraving/dom/chord.h"
+#include "engraving/dom/note.h"
 #include "log.h"
 
 using namespace mu::notation;
@@ -35,6 +38,59 @@ PianoKeyboardController::PianoKeyboardController(const muse::modularity::Context
     context()->currentNotationChanged().onNotify(this, [this]() {
         onNotationChanged();
     });
+
+    // Pauta: show the notes on the keyboard while the score plays (MuseScore issue #14428)
+    if (playbackController()) {
+        playbackController()->currentPlaybackPositionChanged().onReceive(this, [this](muse::audio::secs_t, muse::midi::tick_t tick) {
+            if (playbackController()->isPlaying()) {
+                updatePlaybackKeys(tick);
+            }
+        });
+        playbackController()->isPlayingChanged().onNotify(this, [this]() {
+            if (!playbackController()->isPlaying()) {
+                m_keys.clear();
+                m_otherNotesInChord.clear();
+                m_keyStatesChanged.notify();
+            }
+        });
+    }
+}
+
+void PianoKeyboardController::updatePlaybackKeys(muse::midi::tick_t rawTick)
+{
+    auto notation = currentNotation();
+    if (!notation) {
+        return;
+    }
+    const mu::engraving::Score* score = notation->elements()->msScore();
+    if (!score) {
+        return;
+    }
+
+    const mu::engraving::Fraction tick = mu::engraving::Fraction::fromTicks(rawTick);
+    std::unordered_set<piano_key_t> keys;
+    const bool useWrittenPitch = notationConfiguration()->midiUseWrittenPitch().val;
+
+    for (mu::engraving::track_idx_t track = 0; track < score->ntracks(); ++track) {
+        const mu::engraving::ChordRest* cr = score->findCR(tick, track);
+        if (!cr || !cr->isChord()) {
+            continue;
+        }
+        if (tick < cr->tick() || tick >= cr->tick() + cr->actualTicks()) {
+            continue;
+        }
+        for (const mu::engraving::Note* note : mu::engraving::toChord(cr)->notes()) {
+            if (note->play()) {
+                keys.insert(static_cast<piano_key_t>(useWrittenPitch ? note->epitch() : note->ppitch()));
+            }
+        }
+    }
+
+    if (keys != m_keys || !m_otherNotesInChord.empty()) {
+        m_keys = std::move(keys);
+        m_otherNotesInChord.clear();
+        m_keyStatesChanged.notify();
+    }
 }
 
 KeyState PianoKeyboardController::keyState(piano_key_t key) const

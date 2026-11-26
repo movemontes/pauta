@@ -1,90 +1,28 @@
-# ![MuseScore Studio](share/icons/musescore_logo_full.png)
+# Pauta
 
-Music notation and composition software
+**Programa de partitura grátis para Mac.** Escreva, toque e imprima partituras: notas pelo teclado, mouse ou teclado MIDI, letra, cifra, tablatura, partes individuais, MusicXML, MIDI, PDF e áudio.
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
-[![Coverage](https://s3.us-east-1.amazonaws.com/extensions.musescore.org/test/code_coverage/coverage_badge.svg?)](https://github.com/musescore/MuseScore/actions/workflows/check_unit_tests.yml)
+- Grátis, sem anúncio, sem conta e sem mandar nada seu para a internet.
+- Em português e inglês (segue o idioma do Mac; dá para trocar no menu **Pauta**).
+- Visual do [Treco](https://github.com/movemontes/treco): branco, preto e azul. A partitura continua com a gravura musical normal.
+- Se o Pauta te ajudar, um Pix de qualquer valor ajuda muito: a chave está em **Ajuda › Apoiar o Pauta com Pix**.
 
-MuseScore Studio is an open source and free music notation software. For support, contribution, and bug reports visit MuseScore.org. Fork and make pull requests!
+## Novidades em relação ao programa de origem
 
-## Features
+- Paleta de comandos: **Cmd+Shift+P** e digite o nome de qualquer função.
+- O teclado de piano na tela acende as notas enquanto a música toca.
+- Reverb liga/desliga com um clique (menu **Exibir**).
+- Abre direto, sem assistente, sem MuseHub e sem login.
+- Atualização automática pelos lançamentos deste repositório no GitHub.
 
-- WYSIWYG design, notes are entered on a "virtual notepaper"
-- TrueType font(s) for printing & display allows for high quality scaling to all sizes
-- Easy & fast note entry
-- Many editing functions
-- MusicXML import/export
-- MIDI (SMF) import/export
-- MEI import/export
-- MuseData import
-- MIDI input for note entry
-- Integrated sequencer and software synthesizer to play the score
-- Print or create PDF files
+## Origem e licença
 
-## More info
+O Pauta é um programa livre **baseado no [MuseScore Studio](https://github.com/musescore/MuseScore)** (versão 4.7.7), © 1999-2026 MuseScore Limited e colaboradores.
+Como o original, é distribuído sob a **GNU General Public License versão 3** (veja `LICENSE.txt`).
+O Pauta não tem ligação com a MuseScore Limited nem com o Muse Group. "MuseScore" é marca deles e não é usada como nome deste app.
 
-- [MuseScore Homepage](https://musescore.org)
-- [MuseScore Git workflow instructions](https://musescore.org/en/developers-handbook/git-workflow)
-- [How to compile MuseScore?](https://github.com/musescore/MuseScore/wiki/Set-up-developer-environment)
+A fonte da interface é a Archivo (SIL Open Font License, `src/framework/ui/data/PautaArchivo-OFL.txt`).
 
-## License
+## Como compilar (Mac)
 
-MuseScore Studio is licensed under GPL version 3.0. See [license file](https://github.com/musescore/MuseScore/blob/master/LICENSE.txt) in the same directory.
-
-## Packages
-
-See [Code Structure on Wiki](https://github.com/musescore/MuseScore/wiki/CodeStructure)
-
-## Building
-
-**Read the [Compilation section](https://github.com/musescore/MuseScore/wiki/Set-up-developer-environment) of the [MuseScore Wiki](https://github.com/musescore/MuseScore/wiki) for a complete build walkthrough and a list of dependencies.**
-
-### Getting sources
-
-If using git to download repo of entire code history, type:
-
-    git clone https://github.com/musescore/MuseScore.git
-    cd MuseScore
-
-Otherwise, you can just download the latest source release tarball from the [Releases page](https://github.com/musescore/MuseScore/releases), and then from your download directory type:
-
-    tar xzf MuseScore-x.x.x.tar.gz
-    cd MuseScore-x.x.x
-
-### Release Build
-
-To compile MuseScore Studio for release, type:
-
-    cmake -P build.cmake -DCMAKE_BUILD_TYPE=Release
-
-If something goes wrong, append the word "clean" to the above command to delete the build subdirectory:
-
-    cmake -P build.cmake -DCMAKE_BUILD_TYPE=Release clean
-
-Then try running the first command again.
-
-### Running
-
-To start MuseScore Studio, type:
-
-    cmake -P build.cmake -DCMAKE_BUILD_TYPE=Release run
-
-Or run the compiled executable directly.
-
-### Debug Build
-
-A debug version can be built and run by replacing `-DCMAKE_BUILD_TYPE=Release`
-with `-DCMAKE_BUILD_TYPE=Debug` in the above commands.
-
-If you omit the `-DCMAKE_BUILD_TYPE` option entirely then `RelWithDebInfo` is
-used by default, as it provides a useful compromise between Release and Debug.
-
-### Testing
-
-See the [Unit tests section](https://github.com/musescore/MuseScore/wiki/Unit-tests) of the [MuseScore Wiki](https://github.com/musescore/MuseScore/wiki) for instructions on how to run the test suite.
-
-### Code Formatting
-
-Run `./hooks/install.sh` to install a pre-commit hook that will format your staged files. Requires that you install `uncrustify`.
-
-If you have problems, please report them. To uninstall, run `./hooks/uninstall.sh`.
+Veja `buildscripts/pauta/COMPILAR.md`.
