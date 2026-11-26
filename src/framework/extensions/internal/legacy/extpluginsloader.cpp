@@ -26,6 +26,7 @@
 #include "global/io/fileinfo.h"
 #include "global/runtime.h"
 
+#include "translation.h"
 #include "log.h"
 
 const std::string DEV_PLUGINS("dev_test_");
@@ -33,6 +34,16 @@ const std::string DEV_PLUGINS("dev_test_");
 using namespace muse;
 using namespace muse::extensions;
 using namespace muse::extensions::legacy;
+
+// Pauta: bundled plugins only have English names; pass them through the translator (Pauta has Portuguese for them)
+static muse::String pautaTr(const muse::String& s)
+{
+    if (s.isEmpty()) {
+        return s;
+    }
+    const std::string key = s.toStdString();
+    return muse::String::fromQString(muse::qtrc("extensions", key.c_str()));
+}
 
 static Uri makeUri(const io::path_t& rootPath, const io::path_t& path)
 {
@@ -229,10 +240,10 @@ Manifest ExtPluginsLoader::parseManifest(const io::path_t& rootPath, const io::p
                 insideMuseScoreItem = true;
             }
         } else if (line.startsWith(u"title:")) {
-            m.title = dropQuotes(line.mid(6).trimmed());
+            m.title = pautaTr(dropQuotes(line.mid(6).trimmed()));
             ++propertiesFound;
         } else if (line.startsWith(u"description:")) {
-            m.description = dropQuotes(line.mid(12).trimmed());
+            m.description = pautaTr(dropQuotes(line.mid(12).trimmed()));
             ++propertiesFound;
         } else if (line.startsWith(u"pluginType:")) {
             String pluginType = dropQuotes(line.mid(11).trimmed());

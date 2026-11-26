@@ -57,6 +57,9 @@ DockPage {
     }
 
     function setCurrentCentral(name) {
+        if (name === "plugins") {
+            name = "extensions" // Pauta: same page, one name, so the rail marks it
+        }
         if (section === name || !Boolean(name)) {
             return
         }

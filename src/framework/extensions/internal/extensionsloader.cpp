@@ -29,11 +29,22 @@
 #include "global/stringutils.h"
 #include "global/runtime.h"
 
+#include "translation.h"
 #include "log.h"
 #include "types/ret.h"
 
 using namespace muse;
 using namespace muse::extensions;
+
+// Pauta: bundled plugins only have English names; pass them through the translator (Pauta has Portuguese for them)
+static muse::String pautaTr(const muse::String& s)
+{
+    if (s.isEmpty()) {
+        return s;
+    }
+    const std::string key = s.toStdString();
+    return muse::String::fromQString(muse::qtrc("extensions", key.c_str()));
+}
 
 const std::string MANIFEST("manifest.json");
 const std::string DEV_EXTENSIONS("extensions/dev/");
@@ -153,10 +164,10 @@ RetVal<Manifest> ExtensionsLoader::parseManifest(const ByteArray& data) const
     if (!ret) {
         return RetVal<Manifest>::make_ret(ret);
     }
-    m.title = obj.value("title").toString();
+    m.title = pautaTr(obj.value("title").toString());
 
     // optional
-    m.description = obj.value("description").toString();
+    m.description = pautaTr(obj.value("description").toString());
     m.category = obj.value("category").toString();
     m.thumbnail = obj.value("thumbnail").toStdString();
     m.version = obj.value("version").toString();

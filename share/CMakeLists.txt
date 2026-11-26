@@ -24,12 +24,21 @@ install (DIRECTORY
     plugins
     DESTINATION ${Mscore_SHARE_NAME}${Mscore_INSTALL_NAME}
     PATTERN ".*" EXCLUDE
+    PATTERN "dev_test_*" EXCLUDE # Pauta: developer test plugins stay out of the app
     )
 
 install (DIRECTORY
     extensions
     DESTINATION ${Mscore_SHARE_NAME}${Mscore_INSTALL_NAME}
     PATTERN ".*" EXCLUDE
+    # Pauta: developer examples and API tests stay out of the app
+    PATTERN "apitests" EXCLUDE
+    PATTERN "batch_example" EXCLUDE
+    PATTERN "example1" EXCLUDE
+    PATTERN "example2" EXCLUDE
+    PATTERN "example3" EXCLUDE
+    PATTERN "quickstart" EXCLUDE
+    PATTERN "quickstart_v" EXCLUDE
     )
 
 install (DIRECTORY
