@@ -21,7 +21,7 @@ if pgrep -f "$APP/Contents/MacOS/Pauta" >/dev/null; then
     exit 2
 fi
 rm -rf "$APP"   # always start from a clean bundle (old runs left a broken qt.conf)
-cd "$BUILD" && ninja -j8 && ninja install >/dev/null
+cd "$BUILD" && ninja -j3 && ninja install >/dev/null   # -j3: more parallel jobs once froze the Mac
 
 echo "== bundle Qt (macdeployqt)"
 macdeployqt "$APP" -qmldir="$SRC/src" -verbose=1
