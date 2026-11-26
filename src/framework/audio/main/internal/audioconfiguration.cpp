@@ -81,7 +81,7 @@ void AudioConfiguration::init()
         m_driverSampleRateChanged.notify();
     });
 
-    settings()->setDefaultValue(USER_SOUNDFONTS_PATHS, Val(globalConfiguration()->userDataPath() + "/SoundFonts"));
+    settings()->setDefaultValue(USER_SOUNDFONTS_PATHS, Val(globalConfiguration()->userAppDataPath() + "/SoundFonts" /* Pauta: outside Documents, so macOS does not ask for Documents access at every start */));
     settings()->valueChanged(USER_SOUNDFONTS_PATHS).onReceive(nullptr, [this](const Val&) {
         m_soundFontDirsChanged.send(soundFontDirectories());
     });

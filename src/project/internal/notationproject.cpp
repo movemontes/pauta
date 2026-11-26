@@ -117,6 +117,11 @@ static bool pautaFitSystemsToPage(mu::engraving::MasterScore* score)
         return false;
     }
 
+    if (score->pages().empty()) {
+        score->setLayoutAll();
+        score->doLayout(); // the window lays out later; measure now
+    }
+
     bool changed = false;
     for (int attempt = 0; attempt < 3; ++attempt) {
         double worst = 0.0;

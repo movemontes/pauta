@@ -269,6 +269,9 @@ void StartupScenario::showStartupDialogsIfNeed(StartupModeType modeType)
                                                      || modeType == StartupModeType::StartWithNewScore;
 
         if (shouldShowWelcomeDialog(modeType)) {
+            // Pauta: counts as seen as soon as it appears, however it is closed (button or the window's x)
+            configuration()->setWelcomeDialogShowOnStartup(false);
+            configuration()->setWelcomeDialogLastShownVersion(configuration()->museScoreVersion());
             interactive()->open(WELCOME_DIALOG_URI).onResolve(this, [this, shouldCheckForMuseSamplerUpdate](const Val&) {
                 configuration()->setWelcomeDialogLastShownVersion(configuration()->museScoreVersion());
                 // Pauta: the thank-you note shows only once (it is also in the Help menu)

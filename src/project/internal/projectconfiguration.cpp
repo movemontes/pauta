@@ -79,7 +79,7 @@ ProjectConfiguration::ProjectConfiguration(const muse::modularity::ContextPtr& i
 
 void ProjectConfiguration::init()
 {
-    settings()->setDefaultValue(USER_TEMPLATES_PATH, Val(globalConfiguration()->userDataPath() + "/Templates"));
+    settings()->setDefaultValue(USER_TEMPLATES_PATH, Val(globalConfiguration()->userAppDataPath() + "/Templates" /* Pauta: outside Documents, so macOS does not ask for Documents access at every start */));
     settings()->valueChanged(USER_TEMPLATES_PATH).onReceive(nullptr, [this](const Val& val) {
         m_userTemplatesPathChanged.send(val.toPath());
     });

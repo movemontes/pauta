@@ -209,7 +209,7 @@ void NotationConfiguration::init()
         m_mouseZoomPrecisionChanged.notify();
     });
 
-    settings()->setDefaultValue(USER_STYLES_PATH, Val(globalConfiguration()->userDataPath() + "/Styles"));
+    settings()->setDefaultValue(USER_STYLES_PATH, Val(globalConfiguration()->userAppDataPath() + "/Styles" /* Pauta: outside Documents, so macOS does not ask for Documents access at every start */));
     settings()->valueChanged(USER_STYLES_PATH).onReceive(nullptr, [this](const Val& val) {
         m_userStylesPathChanged.send(val.toPath());
     });

@@ -39,7 +39,7 @@ static const std::string EXTENSIONS_RESOURCE_NAME("EXTENSIONS");
 
 void ExtensionsConfiguration::init()
 {
-    settings()->setDefaultValue(USER_PLUGINS_PATH, Val(globalConfiguration()->userDataPath() + "/Plugins"));
+    settings()->setDefaultValue(USER_PLUGINS_PATH, Val(globalConfiguration()->userAppDataPath() + "/Plugins" /* Pauta: outside Documents, so macOS does not ask for Documents access at every start */));
     settings()->valueChanged(USER_PLUGINS_PATH).onReceive(nullptr, [this](const Val& val) {
         m_pluginsUserPathChanged.send(val.toString());
     });
