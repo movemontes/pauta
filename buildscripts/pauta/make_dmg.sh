@@ -16,6 +16,10 @@ APP=$INSTALL/Pauta.app
 DMG="$OUT/Pauta-mac.dmg" # owner standard: fixed name for the updater and the download link
 
 echo "== build"
+if pgrep -f "$APP/Contents/MacOS/Pauta" >/dev/null; then
+    echo "O Pauta desta pasta está aberto. Feche-o antes de gerar de novo (trocar os arquivos com ele aberto faz ele fechar sozinho)."
+    exit 2
+fi
 rm -rf "$APP"   # always start from a clean bundle (old runs left a broken qt.conf)
 cd "$BUILD" && ninja -j8 && ninja install >/dev/null
 
