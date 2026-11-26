@@ -271,6 +271,8 @@ void StartupScenario::showStartupDialogsIfNeed(StartupModeType modeType)
         if (shouldShowWelcomeDialog(modeType)) {
             interactive()->open(WELCOME_DIALOG_URI).onResolve(this, [this, shouldCheckForMuseSamplerUpdate](const Val&) {
                 configuration()->setWelcomeDialogLastShownVersion(configuration()->museScoreVersion());
+                // Pauta: the thank-you note shows only once (it is also in the Help menu)
+                configuration()->setWelcomeDialogShowOnStartup(false);
 
                 if (shouldCheckForMuseSamplerUpdate) {
                     checkAndShowMuseSamplerStatusIfNeed();

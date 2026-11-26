@@ -18,13 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>. 
 
-set(MUSE_APP_NAME_HUMAN_READABLE "MuseScore Studio")
-set(MUSE_APP_NAME_MACHINE_READABLE "MuseScoreStudio")
+set(MUSE_APP_NAME_HUMAN_READABLE "Pauta")
+set(MUSE_APP_NAME_MACHINE_READABLE "Pauta")
 
-set(MUSE_APP_NAME_HUMAN_READABLE_COMPAT "MuseScore")
-set(MUSE_APP_NAME_MACHINE_READABLE_COMPAT "MuseScore")
+set(MUSE_APP_NAME_HUMAN_READABLE_COMPAT "Pauta")
+set(MUSE_APP_NAME_MACHINE_READABLE_COMPAT "Pauta")
 
-set(MUSE_APP_GUI_IDENTIFIER org.musescore.${MUSE_APP_NAME_MACHINE_READABLE_COMPAT})
+set(MUSE_APP_GUI_IDENTIFIER io.github.movemontes.pauta)
 
 set(MUSE_APP_VERSION_MAJOR "4")
 set(MUSE_APP_VERSION_MINOR "7")
@@ -34,6 +34,12 @@ set(MUSE_APP_VERSION "${MUSE_APP_VERSION_MAJ_MIN}.${MUSE_APP_VERSION_PATCH}")
 
 set(MUSE_APP_VERSION_LABEL "")
 
+# Pauta: its own version (shown to the user, used by the updater and the .app bundle).
+# MUSE_APP_VERSION above stays at the MuseScore base version, because it is written
+# into score files and drives file-compatibility checks.
+set(PAUTA_VERSION "1.0.0")
+set(PAUTA_BASE_VERSION "${MUSE_APP_VERSION}")
+
 if (NOT CMAKE_BUILD_NUMBER)
     set(CMAKE_BUILD_NUMBER "1")
 endif()
@@ -41,8 +47,8 @@ endif()
 # TODO: Remove
 set(MUSE_APP_TITLE "${MUSE_APP_NAME_HUMAN_READABLE}")
 set(MUSE_APP_NAME "${MUSE_APP_NAME_MACHINE_READABLE_COMPAT}")
-set(MUSE_APP_TITLE_VERSION "${MUSE_APP_TITLE} ${MUSE_APP_VERSION_MAJOR}")
-set(MUSE_APP_NAME_VERSION "${MUSE_APP_NAME} ${MUSE_APP_VERSION_MAJOR}")
+set(MUSE_APP_TITLE_VERSION "${MUSE_APP_TITLE}")
+set(MUSE_APP_NAME_VERSION "${MUSE_APP_NAME}")
 # ---
 
 set(MUSE_APP_UNSTABLE ON)

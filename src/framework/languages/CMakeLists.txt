@@ -33,6 +33,8 @@ target_sources(muse_languages PRIVATE
     internal/languagesconfiguration.cpp
     internal/languagesconfiguration.h
     internal/languagesservice.cpp
+    internal/pautatranslator.cpp
+    internal/pautatranslator.h
     internal/languagesservice.h
 )
 

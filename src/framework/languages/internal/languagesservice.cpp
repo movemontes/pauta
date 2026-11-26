@@ -20,6 +20,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "languagesservice.h"
+#include "pautatranslator.h"
 
 #include <QBuffer>
 #include <QCryptographicHash>
@@ -184,19 +185,20 @@ void LanguagesService::setCurrentLanguage(const QString& languageCode)
         delete t;
     }
     m_translators.clear();
-    m_translators.reserve(lang.files.size());
-
+    // Pauta: one wrapping translator (app name "Pauta" + Pauta-only strings in Portuguese)
+    PautaTranslator* pautaTranslator = new PautaTranslator(lang.code);
     for (const io::path_t& file : lang.files) {
         QTranslator* translator = new QTranslator();
         bool ok = translator->load(file.toQString());
         if (ok) {
-            qApp->installTranslator(translator);
-            m_translators.push_back(translator);
+            pautaTranslator->addTranslator(translator);
         } else {
             LOGE() << "Error loading translator " << file.toQString();
             delete translator;
         }
     }
+    qApp->installTranslator(pautaTranslator);
+    m_translators.push_back(pautaTranslator);
 
     QLocale locale(lang.code);
     QLocale::setDefault(locale);

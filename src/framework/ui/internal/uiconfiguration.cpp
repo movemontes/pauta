@@ -644,6 +644,19 @@ Notification UiConfiguration::musicalTextFontChanged() const
 
 std::string UiConfiguration::defaultFontFamily() const
 {
+    // Pauta: Treco's typeface. Loaded here because this runs before UiModule::onInit.
+    static const QString pautaFamily = "Pauta Archivo";
+    static const bool pautaLoaded = [] {
+        bool ok = true;
+        for (const char* f : { ":/ui/data/PautaArchivo-Regular.ttf", ":/ui/data/PautaArchivo-Bold.ttf" }) {
+            ok = QFontDatabase::addApplicationFont(f) != -1 && ok;
+        }
+        return ok;
+    }();
+    if (pautaLoaded && QFontDatabase::hasFamily(pautaFamily)) {
+        return pautaFamily.toStdString();
+    }
+
 #ifdef Q_OS_WIN
     static const QString defaultWinFamily = "Segoe UI";
 

@@ -115,13 +115,10 @@ int main(int argc, char** argv)
 
 // Can't use MUSE_APP_TITLE until next major release, because this "application name" is used to determine
 // where user settings are stored. Changing it would result in all user settings being lost.
-#ifdef MUSE_APP_UNSTABLE
-    QCoreApplication::setApplicationName("MuseScore4Development");
-#else
-    QCoreApplication::setApplicationName("MuseScore4");
-#endif
-    QCoreApplication::setOrganizationName("MuseScore");
-    QCoreApplication::setOrganizationDomain("musescore.org");
+    // Pauta: own settings and data folders, so it never mixes with an installed MuseScore Studio
+    QCoreApplication::setApplicationName("Pauta");
+    QCoreApplication::setOrganizationName("Pauta");
+    QCoreApplication::setOrganizationDomain("movemontes.github.io");
     QCoreApplication::setApplicationVersion(MUSE_APP_VERSION);
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN) && !defined(Q_OS_WASM)

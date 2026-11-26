@@ -30,6 +30,7 @@
 #include <QJsonDocument>
 
 #include "update/updateerrors.h"
+#include "muse_framework_config.h"
 
 #include "defer.h"
 #include "translation.h"
@@ -167,7 +168,8 @@ Promise<RetVal<ReleaseInfo> > AppUpdateService::checkForUpdate()
                 return;
             }
 
-            Version current(application()->fullVersion());
+            // Pauta: compare with Pauta's own version, not the MuseScore base version
+            Version current(String(PAUTA_VERSION));
             Version update(releaseInfo.val.version);
 
             bool allowUpdateOnPreRelease = configuration()->allowUpdateOnPreRelease();
@@ -254,7 +256,8 @@ RequestHeaders AppUpdateService::prepareHeaders(const UpdateRequestHistory& hist
 {
     RequestHeaders headers = configuration()->updateHeaders();
 
-    if (history.isValid()) {
+    // Pauta: never send install/usage dates to the server.
+    if (false && history.isValid()) {
         std::string iwbString = history.installedWeekBeginning.toString(Qt::ISODate).toStdString();
         QByteArray iwbKey = QByteArray::fromStdString(INSTALLED_WEEK_BEGINNING_KEY.toStdString());
         headers.rawHeaders[iwbKey] = QByteArray::fromStdString(iwbString);
@@ -332,7 +335,7 @@ RetVal<ReleaseInfo> AppUpdateService::parseRelease(const QByteArray& json) const
     result.val.fileName = assetObj.value("name").toString().toStdString();
     result.val.fileUrl = assetObj.value("browser_download_url").toString().toStdString();
     result.val.version = version.toStdString();
-    result.val.notes = release.value("bodyMarkdown").toString().toStdString();
+    result.val.notes = release.value("body").toString().toStdString(); // Pauta: GitHub releases API
 
     return result;
 }
@@ -383,6 +386,10 @@ QJsonObject AppUpdateService::resolveReleaseAsset(const QJsonObject& release) co
 void AppUpdateService::downloadPreviousReleasesNotes(const Version& updateVersion, const PrevReleaseNotesCallback& finished)
 {
     QUrl url = QString::fromStdString(configuration()->previousAppReleasesNotesUrl());
+    if (url.isEmpty()) { // Pauta: no "all releases" feed
+        finished({});
+        return;
+    }
     auto buff = std::make_shared<QBuffer>();
     RetVal<Progress> progress = m_networkManager->get(url, buff);
 
@@ -411,7 +418,7 @@ void AppUpdateService::downloadPreviousReleasesNotes(const Version& updateVersio
             return;
         }
 
-        Version currentVersion = Version(application()->fullVersion());
+        Version currentVersion = Version(String(PAUTA_VERSION));
 
         for (const PrevReleaseNotes& releaseNotes : previousReleasesNotes) {
             Version previousVersion = Version(releaseNotes.version);

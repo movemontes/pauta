@@ -154,6 +154,8 @@ qt_add_resources(muse_ui "muse_ui_resources"
         "/ui"
     FILES
         "data/MusescoreIcon.ttf"
+        "data/PautaArchivo-Regular.ttf"
+        "data/PautaArchivo-Bold.ttf"
 )
 
 if (MUSE_QT_SUPPORT)

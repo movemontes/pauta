@@ -68,6 +68,12 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "about-qt", this, &ApplicationActionController::openAboutQtDialog);
     dispatcher()->reg(this, "about-musicxml", this, &ApplicationActionController::openAboutMusicXMLDialog);
     dispatcher()->reg(this, "online-handbook", this, &ApplicationActionController::openOnlineHandbookPage);
+    // Pauta
+    dispatcher()->reg(this, "pauta-command-palette", [this]() { interactive()->open("musescore://pauta/commandpalette"); });
+    dispatcher()->reg(this, "pauta-support", [this]() { interactive()->open("musescore://welcomedialog"); });
+    dispatcher()->reg(this, "pauta-language-system", [this]() { pautaSetLanguage("system"); });
+    dispatcher()->reg(this, "pauta-language-pt", [this]() { pautaSetLanguage("pt_BR"); });
+    dispatcher()->reg(this, "pauta-language-en", [this]() { pautaSetLanguage("en"); });
     dispatcher()->reg(this, "ask-help", this, &ApplicationActionController::openAskForHelpPage);
     dispatcher()->reg(this, "accessibility-statement", this, &ApplicationActionController::openAccessibilityStatementPage);
     dispatcher()->reg(this, "preference-dialog", this, &ApplicationActionController::openPreferencesDialog);
@@ -396,6 +402,27 @@ void ApplicationActionController::revertToFactorySettings()
                 restart();
             }
         });
+    });
+}
+
+void ApplicationActionController::pautaSetLanguage(const QString& code)
+{
+    if (languagesConfiguration()->currentLanguageCode().val == code) {
+        return;
+    }
+    languagesConfiguration()->setCurrentLanguageCode(code);
+
+    std::string title = muse::trc("appshell", "Language");
+    std::string question = muse::trc("appshell", "Pauta needs to restart to change the language.");
+    int restartBtn = int(IInteractive::Button::Apply);
+    auto promise = interactive()->question(title, question,
+                                           { IInteractive::ButtonData(int(IInteractive::Button::Cancel), muse::trc("appshell", "Later")),
+                                             IInteractive::ButtonData(restartBtn, muse::trc("appshell", "Restart now"), true) },
+                                           restartBtn);
+    promise.onResolve(this, [this](const IInteractive::Result& res) {
+        if (!res.isButton(IInteractive::Button::Cancel)) {
+            restart();
+        }
     });
 }
 

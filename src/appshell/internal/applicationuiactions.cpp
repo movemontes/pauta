@@ -63,7 +63,33 @@ const UiActionList ApplicationUiActions::m_actions = {
     UiAction("about-musescore",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "&About MuseScore Studio…")
+             TranslatableString("action", "&About Pauta…")
+             ),
+    // Pauta
+    UiAction("pauta-support",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Support Pauta with Pix…")
+             ),
+    UiAction("pauta-command-palette",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Command palette…")
+             ),
+    UiAction("pauta-language-system",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Language: Automatic (system)")
+             ),
+    UiAction("pauta-language-pt",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Language: Português (Brasil)")
+             ),
+    UiAction("pauta-language-en",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Language: English")
              ),
     UiAction("about-qt",
              mu::context::UiCtxAny,

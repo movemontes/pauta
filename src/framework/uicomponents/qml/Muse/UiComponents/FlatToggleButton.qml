@@ -70,7 +70,7 @@ FocusScope {
 
         border.width: ui.theme.borderWidth
         border.color: ui.theme.strokeColor
-        radius: 2
+        radius: 0 // Pauta: square corners (Treco)
     }
 
     StyledIconLabel {

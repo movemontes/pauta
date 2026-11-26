@@ -110,7 +110,7 @@ FocusScope {
             anchors.fill: parent
 
             color: ui.theme.popupBackgroundColor
-            radius: 4
+            radius: 0 // Pauta: square corners (Treco)
 
             Item {
                 id: contentBody

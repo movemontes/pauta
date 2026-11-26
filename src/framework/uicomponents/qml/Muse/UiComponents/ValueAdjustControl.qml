@@ -38,7 +38,7 @@ Column {
     width: 22
     height: parent.height
 
-    property real radius: 2
+    property real radius: 0 // Pauta
 
     RoundedRectangle {
         id: increaseButton

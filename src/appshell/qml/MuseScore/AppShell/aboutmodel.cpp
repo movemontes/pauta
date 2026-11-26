@@ -22,6 +22,7 @@
 #include "aboutmodel.h"
 
 #include "translation.h"
+#include "muse_framework_config.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -36,10 +37,8 @@ AboutModel::AboutModel(QObject* parent)
 
 QString AboutModel::museScoreVersion() const
 {
-    QString version = QString::fromStdString(configuration()->museScoreVersion());
-    return application()->unstable()
-           ? muse::qtrc("appshell/about", "Unstable prerelease for %1").arg(version)
-           : version;
+    // Pauta: own version, plus the MuseScore Studio version it is based on
+    return QString(PAUTA_VERSION) + "  (MuseScore Studio " + QString(PAUTA_BASE_VERSION) + ")";
 }
 
 QString AboutModel::museScoreRevision() const

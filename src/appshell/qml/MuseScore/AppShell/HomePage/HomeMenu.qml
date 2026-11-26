@@ -61,21 +61,17 @@ Item {
 
         spacing: 0
 
-        AccountInfoButton {
+        // Pauta: app name in Treco's style instead of the online account button
+        StyledTextLabel {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
             Layout.topMargin: 20
-
-            navigation.name: "AccountInfo"
-            navigation.panel: navPanel
-            navigation.row: 1
-
-            checked: root.currentPageName === "account"
-            iconOnly: root.iconsOnly
-
-            onToggled: {
-                root.selected("account")
-            }
+            Layout.leftMargin: root.iconsOnly ? 0 : 24
+            horizontalAlignment: root.iconsOnly ? Text.AlignHCenter : Text.AlignLeft
+            text: root.iconsOnly ? "P" : "PAUTA"
+            font.family: ui.theme.bodyBoldFont.family
+            font.bold: true
+            font.pixelSize: 30
         }
 
         RadioButtonGroup {
@@ -89,9 +85,7 @@ Item {
 
             model: [
                 { "name": "scores", "title": qsTrc("appshell", "Scores"), "iconCode": IconCode.MUSIC_NOTES },
-                { "name": "extensions", "title": qsTrc("appshell", "Plugins"), "iconCode":  IconCode.PLUGIN },
-                { "name": "musesounds", "title": qsTrc("appshell", "MuseSounds"), "iconCode": IconCode.PLAY },
-                { "name": "learn", "title": qsTrc("appshell", "Learn"), "iconCode":  IconCode.MORTAR_BOARD }
+                { "name": "extensions", "title": qsTrc("appshell", "Plugins"), "iconCode":  IconCode.PLUGIN }
             ]
 
             currentIndex: 0

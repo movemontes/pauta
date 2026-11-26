@@ -26,6 +26,8 @@ qt_add_qml_module(appshell_qml
     SOURCES
         aboutmodel.cpp
         aboutmodel.h
+        commandpalettemodel.cpp
+        commandpalettemodel.h
         appmenumodel.cpp
         appmenumodel.h
         DevTools/Settings/settingslistmodel.cpp
@@ -51,6 +53,7 @@ qt_add_qml_module(appshell_qml
     QML_FILES
         AboutDialog.qml
         AboutMusicXMLDialog.qml
+        CommandPaletteDialog.qml
         AppWindow.qml
         DevTools/CorruptScore/CorruptScoreDevTools.qml
         DevTools/CrashHandler/CrashHandlerDevTools.qml

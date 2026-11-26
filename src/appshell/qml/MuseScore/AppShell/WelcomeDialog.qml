@@ -1,296 +1,123 @@
 /*
  * SPDX-License-Identifier: GPL-3.0-only
- * MuseScore-Studio-CLA-applies
- *
- * MuseScore Studio
- * Music Composition & Notation
- *
- * Copyright (C) 2025 MuseScore Limited and others
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * Pauta: first-run thank-you note with the Pix key (same message as Treco's).
  */
 
 import QtQuick
 
 import Muse.Ui
 import Muse.UiComponents
-import Muse.GraphicalEffects
-
-import MuseScore.AppShell
 
 StyledDialogView {
     id: root
 
-    title: qsTrc("appshell/welcome", "Welcome")
+    title: "Pauta"
 
-    contentHeight: contentColumn.height + footerArea.height
-    contentWidth: 812
+    contentWidth: 520
+    contentHeight: content.implicitHeight + 48
 
-    WelcomeDialogModel {
-        id: model
-
-        Component.onCompleted: {
-            model.init()
-        }
-    }
-
-    QtObject {
-        id: prv
-        readonly property int imageWidth: 572
-        readonly property string titleText: model.currentItem ? model.currentItem.title : ""
-        readonly property string descText: model.currentItem ? model.currentItem.description : ""
-    }
-
-    function openCurrent() {
-        if (!model.currentItem) {
-            return
-        }
-        api.launcher.openUrl(model.currentItem.destinationUrl)
-    }
+    readonly property string pixKey: "e2a1f4a9-ebfe-4c3c-a531-92a0e7433f14"
+    property bool copied: false
 
     Column {
-        id: contentColumn
+        id: content
 
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            topMargin: contentColumn.spacing
+        anchors.fill: parent
+        anchors.margins: 24
+        spacing: 12
+
+        StyledTextLabel {
+            width: parent.width
+            text: qsTrc("appshell/welcome", "HELP ME: I'VE GOT 5 MOUTHS TO FEED")
+            font.family: ui.theme.headerBoldFont.family
+            font.pixelSize: 24
+            font.bold: true
+            color: "#E10000"
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignLeft
         }
 
         StyledTextLabel {
-            id: titleLabel
-
-            height: 80
-            width: prv.imageWidth
-            anchors.horizontalCenter: contentColumn.horizontalCenter
-
-            text: prv.titleText
-            font: ui.theme.headerBoldFont
+            width: parent.width
+            text: qsTrc("appshell/welcome", "and I made this app for free, for you.")
+            font: ui.theme.largeBodyBoldFont
             wrapMode: Text.WordWrap
-
-            maximumLineCount: 2
-        }
-
-        Row {
-            id: imageAndArrowsRow
-
-            height: 322
-            anchors {
-                left: contentColumn.left
-                right: contentColumn.right
-            }
-
-            NavigationPanel {
-                id: arrowButtonsPanel
-                name: "ArrowButtonsPanel"
-                order: 2
-                section: root.navigationSection
-                direction: NavigationPanel.Horizontal
-            }
-
-            Item {
-                id: prevButtonArea
-
-                height: imageAndArrowsRow.height
-                width: (imageAndArrowsRow.width - image.width) / 2
-
-                FlatButton {
-                    id: prevButton
-
-                    height: 48
-                    width: prevButton.height
-                    anchors.centerIn: prevButtonArea
-
-                    contentItem: StyledIconLabel {
-                        iconCode: IconCode.CHEVRON_LEFT
-                        font.pixelSize: 30
-                    }
-
-                    navigation.panel: arrowButtonsPanel
-                    navigation.column: 0
-                    navigation.accessible.description: qsTrc("appshell/welcome", "Previous item")
-
-                    onClicked: {
-                        model.prevItem()
-                    }
-                }
-            }
-
-            Image {
-                id: image
-
-                width: prv.imageWidth
-                height: imageAndArrowsRow.height
-
-                fillMode: Image.PreserveAspectCrop
-                source: model.currentItem ? model.currentItem.imageUrl : ""
-
-                layer.enabled: ui.isEffectsAllowed
-                layer.effect: RoundedCornersEffect {
-                    radius: 8
-                }
-
-                MouseArea {
-                    anchors.fill: image
-                    onClicked: {
-                        root.openCurrent()
-                    }
-                }
-            }
-
-            Item {
-                id: nextButtonArea
-
-                width: (imageAndArrowsRow.width - image.width) / 2
-                height: imageAndArrowsRow.height
-
-                FlatButton {
-                    id: nextButton
-
-                    height: 48
-                    width: nextButton.height
-                    anchors.centerIn: nextButtonArea
-
-                    contentItem: StyledIconLabel {
-                        iconCode: IconCode.CHEVRON_RIGHT
-                        font.pixelSize: 30
-                    }
-
-                    navigation.panel: arrowButtonsPanel
-                    navigation.column: 1
-                    navigation.accessible.description: qsTrc("appshell/welcome", "Next item")
-
-                    onClicked: {
-                        model.nextItem()
-                    }
-                }
-            }
+            horizontalAlignment: Text.AlignLeft
         }
 
         StyledTextLabel {
-            id: descriptionLabel
-
-            height: 84
-            width: prv.imageWidth
-            anchors.horizontalCenter: contentColumn.horizontalCenter
-
-            text: prv.descText
-
-            font: ui.theme.largeBodyFont
+            width: parent.width
+            topPadding: 6
+            text: qsTrc("appshell/welcome", "Hi, I'm Mateus. Pauta has no ads, needs no account and never uploads your scores.")
+                  + "\n\n"
+                  + qsTrc("appshell/welcome", "If it makes your music easier, any amount helps my family a lot. Thank you so much!")
+            font: ui.theme.bodyFont
+            color: "#5C5C5C"
             wrapMode: Text.WordWrap
-            maximumLineCount: 3
+            horizontalAlignment: Text.AlignLeft
         }
 
-        FlatButton {
-            id: contentButton
+        Column {
+            width: parent.width
+            spacing: 4
+            topPadding: 6
 
-            height: 40
-            anchors.horizontalCenter: contentColumn.horizontalCenter
-
-            text: model.currentItem ? model.currentItem.buttonText : ""
-            textFont: ui.theme.tabBoldFont
-            accentButton: true
-
-            navigation.panel: NavigationPanel {
-                name: "ContentButton"
-                order: 0
-                section: root.navigationSection
+            StyledTextLabel {
+                text: qsTrc("appshell/welcome", "Pix (random key, PicPay):")
+                font: ui.theme.bodyBoldFont
             }
-            navigation.accessible.description: prv.titleText + "; " + prv.descText
 
-            onClicked: {
-                root.openCurrent()
+            StyledTextLabel {
+                text: root.pixKey
+                font: ui.theme.bodyFont
+                color: ui.theme.accentColor
             }
         }
 
         Item {
-            id: indicatorArea
+            width: parent.width
+            height: 40
 
-            height: 60
-            width: contentColumn.width
-
-            PageIndicator {
-                anchors.centerIn: indicatorArea
-
-                indicatorSize: 10
-
-                count: model.count
-                currentIndex: model.currentIndex
-            }
-        }
-    }
-
-    Rectangle {
-        id: footerArea
-
-        height: 60
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
-        }
-
-        color: ui.theme.backgroundSecondaryColor
-
-        NavigationPanel {
-            id: footerPanel
-            name: "FooterPanel"
-            order: 1
-            section: root.navigationSection
-            direction: NavigationPanel.Horizontal
-        }
-
-        CheckBox {
-            id: showOnStartup
-
-            anchors {
-                margins: 24
-                left: footerArea.left
-                verticalCenter: footerArea.verticalCenter
+            NavigationPanel {
+                id: buttonsPanel
+                name: "PautaWelcomeButtons"
+                section: root.navigationSection
+                direction: NavigationPanel.Horizontal
+                order: 1
             }
 
-            text: qsTrc("appshell/welcome", "Don’t show welcome dialog on startup")
-            checked: !model.showOnStartup
-
-            navigation.panel: footerPanel
-            navigation.column: 1
-            navigation.accessible.description: showOnStartup.text
-
-            onClicked: {
-                model.showOnStartup = !model.showOnStartup
-            }
-        }
-
-        FlatButton {
-            id: okButton
-
-            width: 154
-            height: 30
-            anchors {
-                margins: 24
-                right: footerArea.right
-                verticalCenter: footerArea.verticalCenter
+            FlatButton {
+                id: laterButton
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: 150
+                height: 36
+                text: qsTrc("appshell/welcome", "Let's go")
+                navigation.panel: buttonsPanel
+                navigation.column: 0
+                onClicked: root.accept()
             }
 
-            text: qsTrc("global", "OK")
+            FlatButton {
+                id: pixButton
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                width: 210
+                height: 36
+                accentButton: true
+                text: root.copied ? qsTrc("appshell/welcome", "Copied!") : qsTrc("appshell/welcome", "Copy Pix key")
+                navigation.panel: buttonsPanel
+                navigation.column: 1
+                onClicked: {
+                    clipHelper.copyText(root.pixKey)
+                    root.copied = true
+                }
+            }
 
-            navigation.panel: footerPanel
-            navigation.column: 0
-            navigation.accessible.description: okButton.text
-
-            onClicked: {
-                root.accept()
+            TextEdit {
+                id: clipHelper
+                visible: false
+                function copyText(t) { text = t; selectAll(); copy(); }
             }
         }
     }

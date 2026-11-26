@@ -63,12 +63,13 @@ elseif(OS_IS_LIN)
 
 elseif(OS_IS_MAC)
 
+    set(EXECUTABLE_NAME Pauta)
     set(MACOSX_BUNDLE_GUI_IDENTIFIER ${MUSE_APP_GUI_IDENTIFIER})
     set(MACOSX_BUNDLE_BUNDLE_NAME ${MUSE_APP_TITLE})
-    set(MACOSX_BUNDLE_LONG_VERSION_STRING ${MUSE_APP_VERSION})
-    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${MUSE_APP_VERSION})
+    set(MACOSX_BUNDLE_LONG_VERSION_STRING ${PAUTA_VERSION})
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${PAUTA_VERSION})
     set(MACOSX_BUNDLE_BUNDLE_VERSION ${CMAKE_BUILD_NUMBER})
-    set(MACOSX_BUNDLE_COPYRIGHT "Copyright © 1999-2026 MuseScore Limited. Published under the GNU General Public License version 3.")
+    set(MACOSX_BUNDLE_COPYRIGHT "Pauta © 2026 movemontes. Based on MuseScore Studio © 1999-2026 MuseScore Limited and others. GNU General Public License version 3.")
 
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_INSTALL_LIBS};@loader_path/../Frameworks")
     if (MUE_COMPILE_MACOS_PRECOMPILED_DEPS_PATH)
@@ -252,8 +253,11 @@ if (MUSE_ENABLE_UNIT_TESTS_CODE_COVERAGE)
 endif()
 
 if (OS_IS_MAC)
-    include(${PROJECT_SOURCE_DIR}/share/icons/SetupIconComposerIcon.cmake)
-    target_setup_iconcomposer_icon(MuseScoreStudio "${PROJECT_SOURCE_DIR}/share/icons/AppIcon/AppIcon.icon")
+    # Pauta: plain .icns icon (no Icon Composer / actool needed, so full Xcode is not required)
+    set(PAUTA_ICNS ${PROJECT_SOURCE_DIR}/share/icons/AppIcon/PautaAppIcon.icns)
+    target_sources(MuseScoreStudio PRIVATE ${PAUTA_ICNS})
+    set_source_files_properties(${PAUTA_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set_target_properties(MuseScoreStudio PROPERTIES MACOSX_BUNDLE_ICON_FILE PautaAppIcon.icns)
 
     set_target_properties(MuseScoreStudio PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/buildscripts/packaging/macOS/Info.plist.in

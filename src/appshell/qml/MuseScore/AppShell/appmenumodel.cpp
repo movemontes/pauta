@@ -204,11 +204,8 @@ MenuItem* AppMenuModel::makeFileMenu()
         makeSeparator(),
         makeMenuItem("file-save"),
         makeMenuItem("file-save-as"),
-        makeMenuItem("file-save-to-cloud"),
         makeMenu(TranslatableString("appshell/menu/file", "Save o&ther"), makeSaveOtherSubItems()),
-        makeMenu(TranslatableString("appshell/menu/file", "Pu&blish online"), makePublishOnlineSubItems()),
         makeSeparator(),
-        makeMenuItem("file-convert-to-score"),
         makeMenuItem("file-export"),
         makeSeparator(),
         makeMenuItem("project-properties"),
@@ -258,6 +255,7 @@ MenuItem* AppMenuModel::makeEditMenu()
         makeMenuItem("notation-select-all"),
         makeMenuItem("notation-select-section"),
         makeMenuItem("find"),
+        makeMenuItem("pauta-command-palette"),
         makeSeparator(),
         makeMenuItem("preference-dialog", MenuItemRole::PreferencesRole)
     };
@@ -457,7 +455,12 @@ MenuItem* AppMenuModel::makeHelpMenu(bool addDiagnosticsSubMenu)
     }
 
     helpItems << makeMenuItem("online-handbook");
-    helpItems << makeMenuItem("ask-help");
+    helpItems << makeSeparator();
+    helpItems << makeMenuItem("pauta-support");
+    // Pauta: language switch goes to the app menu ("Pauta") on macOS
+    helpItems << makeMenuItem("pauta-language-system", MenuItemRole::ApplicationSpecificRole);
+    helpItems << makeMenuItem("pauta-language-pt", MenuItemRole::ApplicationSpecificRole);
+    helpItems << makeMenuItem("pauta-language-en", MenuItemRole::ApplicationSpecificRole);
     helpItems << makeSeparator();
 
     if (addDiagnosticsSubMenu) {
@@ -468,7 +471,6 @@ MenuItem* AppMenuModel::makeHelpMenu(bool addDiagnosticsSubMenu)
     helpItems << makeMenuItem("about-musescore", MenuItemRole::AboutRole);
     helpItems << makeMenuItem("about-qt", MenuItemRole::AboutQtRole);
     helpItems << makeMenuItem("about-musicxml");
-    helpItems << makeMenuItem("accessibility-statement");
     helpItems << makeSeparator();
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)

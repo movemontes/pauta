@@ -82,7 +82,7 @@ FocusScope {
 
         NavigationFocusBorder { navigationCtrl: navCtrl }
 
-        radius: 3
+        radius: 0 // Pauta: square corners (Treco)
         border.color: ui.theme.strokeColor
         border.width: Math.max(ui.theme.borderWidth, 1)
 

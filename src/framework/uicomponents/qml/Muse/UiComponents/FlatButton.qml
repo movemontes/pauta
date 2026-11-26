@@ -70,8 +70,8 @@ FocusScope {
     property bool toolTipShowLocked: false
 
     property font iconFont: ui.theme.iconsFont
-    property color iconColor: ui.theme.fontPrimaryColor
-    property font textFont: ui.theme.bodyFont
+    property color iconColor: accentButton && !transparent ? "#FFFFFF" : ui.theme.fontPrimaryColor // Pauta
+    property font textFont: accentButton ? ui.theme.bodyBoldFont : ui.theme.bodyFont // Pauta
 
     property bool transparent: false
     property bool accentButton: false
@@ -85,7 +85,7 @@ FocusScope {
     property real margins: isNarrow ? 12 : 16
     property real minWidth: isNarrow ? 24 : 132
 
-    property real backgroundRadius: 3
+    property real backgroundRadius: 0 // Pauta: square corners (Treco)
 
     property bool drawFocusBorderInsideRect: false
 
@@ -250,6 +250,7 @@ FocusScope {
                 Layout.alignment: Qt.AlignHCenter
                 text: root.text
                 font: root.textFont
+                color: root.accentButton && !root.transparent ? "#FFFFFF" : ui.theme.fontPrimaryColor // Pauta: white text on blue
                 textFormat: root.textFormat
                 wrapMode: Text.Wrap
                 maximumLineCount: root.maximumLineCount
@@ -278,6 +279,7 @@ FocusScope {
                 Layout.alignment: Qt.AlignVCenter
                 text: root.text
                 font: root.textFont
+                color: root.accentButton && !root.transparent ? "#FFFFFF" : ui.theme.fontPrimaryColor // Pauta: white text on blue
                 textFormat: root.textFormat
                 wrapMode: Text.Wrap
                 maximumLineCount: root.maximumLineCount

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Shortcuts>
+<!-- Pauta -->
+    <SC>
+        <key>pauta-command-palette</key>
+        <seq>Ctrl+Shift+P</seq>
+    </SC>
 <!-- Dev -->
     <SC>
         <key>nav-dev-show-controls</key>

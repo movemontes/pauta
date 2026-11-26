@@ -31,6 +31,7 @@
 #include "async/asyncable.h"
 #include "ui/imainwindow.h"
 #include "languages/ilanguagesservice.h"
+#include "languages/ilanguagesconfiguration.h"
 #include "iinteractive.h"
 #include "iappshellconfiguration.h"
 #include "multiwindows/imultiwindowsprovider.h"
@@ -54,6 +55,7 @@ class ApplicationActionController : public QObject, public muse::Contextable, pu
     muse::GlobalInject<muse::mi::IMultiWindowsProvider> multiwindowsProvider;
     muse::GlobalInject<IAppShellConfiguration> configuration;
     muse::GlobalInject<muse::languages::ILanguagesService> languagesService;
+    muse::GlobalInject<muse::languages::ILanguagesConfiguration> languagesConfiguration;
     muse::ContextInject<muse::ui::IUiActionsRegister> actionsRegister = { this };
     muse::ContextInject<muse::actions::IActionsDispatcher> dispatcher = { this };
     muse::ContextInject<muse::ui::IMainWindow> mainWindow = { this };
@@ -112,6 +114,7 @@ private:
     void doOpenPreferencesDialog();
 
     void revertToFactorySettings();
+    void pautaSetLanguage(const QString& code);
 
     bool hasProjectAndIsFocused() const;
     void doGlobalCopy();

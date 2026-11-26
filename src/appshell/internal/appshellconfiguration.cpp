@@ -71,7 +71,7 @@ static const std::string SESSION_RESOURCE_NAME("SESSION");
 
 void AppShellConfiguration::init()
 {
-    settings()->setDefaultValue(HAS_COMPLETED_FIRST_LAUNCH_SETUP, Val(false));
+    settings()->setDefaultValue(HAS_COMPLETED_FIRST_LAUNCH_SETUP, Val(true)); // Pauta: no setup wizard
 
     settings()->setDefaultValue(WELCOME_DIALOG_SHOW_ON_STARTUP_KEY, Val(true));
     settings()->valueChanged(WELCOME_DIALOG_SHOW_ON_STARTUP_KEY).onReceive(this, [this](const Val&) {
