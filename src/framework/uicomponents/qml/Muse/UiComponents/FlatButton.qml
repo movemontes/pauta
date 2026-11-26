@@ -70,8 +70,10 @@ FocusScope {
     property bool toolTipShowLocked: false
 
     property font iconFont: ui.theme.iconsFont
-    property color iconColor: accentButton && !transparent ? "#FFFFFF" : ui.theme.fontPrimaryColor // Pauta
-    property font textFont: accentButton ? ui.theme.bodyBoldFont : ui.theme.bodyFont // Pauta
+    // Pauta (owner standard): on hover the action turns bold and blue
+    readonly property bool pautaHover: mouseArea.containsMouse && enabled
+    property color iconColor: accentButton && !transparent ? "#FFFFFF" : (pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor) // Pauta
+    property font textFont: (accentButton || pautaHover) ? ui.theme.bodyBoldFont : ui.theme.bodyFont // Pauta
 
     property bool transparent: false
     property bool accentButton: false
@@ -250,7 +252,7 @@ FocusScope {
                 Layout.alignment: Qt.AlignHCenter
                 text: root.text
                 font: root.textFont
-                color: root.accentButton && !root.transparent ? "#FFFFFF" : ui.theme.fontPrimaryColor // Pauta: white text on blue
+                color: root.accentButton && !root.transparent ? "#FFFFFF" : (root.pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor) // Pauta
                 textFormat: root.textFormat
                 wrapMode: Text.Wrap
                 maximumLineCount: root.maximumLineCount
@@ -279,7 +281,7 @@ FocusScope {
                 Layout.alignment: Qt.AlignVCenter
                 text: root.text
                 font: root.textFont
-                color: root.accentButton && !root.transparent ? "#FFFFFF" : ui.theme.fontPrimaryColor // Pauta: white text on blue
+                color: root.accentButton && !root.transparent ? "#FFFFFF" : (root.pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor) // Pauta
                 textFormat: root.textFormat
                 wrapMode: Text.Wrap
                 maximumLineCount: root.maximumLineCount

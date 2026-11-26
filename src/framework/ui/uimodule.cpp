@@ -20,6 +20,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "uimodule.h"
+#include "internal/pautacursor.h"
 
 #include <QFontDatabase>
 #include <qqml.h>
@@ -160,6 +161,8 @@ void UiModule::onInit(const IApplication::RunMode& mode)
     }
 
     m_keyNavigationController->init();
+
+    PautaCursor::install(); // Pauta: own mouse pointer
 }
 
 void UiModule::onAllInited(const IApplication::RunMode& mode)

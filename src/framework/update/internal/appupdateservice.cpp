@@ -23,6 +23,7 @@
 #include "appupdateservice.h"
 
 #include <QBuffer>
+#include <QLocale>
 #include <QJsonParseError>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -339,7 +340,15 @@ RetVal<ReleaseInfo> AppUpdateService::parseRelease(const QByteArray& json) const
     result.val.fileName = assetObj.value("name").toString().toStdString();
     result.val.fileUrl = assetObj.value("browser_download_url").toString().toStdString();
     result.val.version = version.toStdString();
-    result.val.notes = release.value("body").toString().toStdString(); // Pauta: GitHub releases API
+    // Pauta: GitHub releases API; show only the <!-- pt --> or <!-- en --> block (owner standard)
+    QString body = release.value("body").toString();
+    const QString lang = QLocale().name().startsWith(u"pt") ? "pt" : "en";
+    const QString open = "<!-- " + lang + " -->", close = "<!-- /" + lang + " -->";
+    const qsizetype a = body.indexOf(open), b = body.indexOf(close);
+    if (a >= 0 && b > a) {
+        body = body.mid(a + open.size(), b - a - open.size()).trimmed();
+    }
+    result.val.notes = body.toStdString();
 
     return result;
 }

@@ -138,7 +138,8 @@ void ConvertFileToScoreService::init()
     m_config.audio2score.link.allowedSources = LinkSource::YouTube | LinkSource::AudioCom;
 
     //! NOTE: prefetch and cache convert config
-    museScoreComService()->convert()->fetchConfig().onResolve(this, [this](const RetVal<ConvertConfig>& config) {
+    //! Pauta: nothing is contacted at startup (the online "convert to score" is not offered)
+    if (false && museScoreComService()) museScoreComService()->convert()->fetchConfig().onResolve(this, [this](const RetVal<ConvertConfig>& config) {
         if (!config.ret) {
             LOGE() << "Could not prefetch convert config: " << config.ret.toString();
         } else {

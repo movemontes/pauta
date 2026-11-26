@@ -28,6 +28,10 @@
 #include <QDropEvent>
 #include <QFileOpenEvent>
 #include <QWindow>
+#include <QDir>
+#include <QProcess>
+#include <QCoreApplication>
+#include "muse_framework_config.h"
 #include <QMimeData>
 #include <QTimer>
 
@@ -266,7 +270,25 @@ bool ApplicationActionController::quit(bool isAllInstances, const muse::io::path
     }
 
     if (multiwindowsProvider()->windowCount() == 1 && !installerPath.empty()) {
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_MACOS)
+        // Pauta (owner standard, same as Treco): when this app has closed, open the downloaded .dmg,
+        // send the old Pauta to the Trash, put the new one in its place, clear quarantine and reopen.
+        const QString bundle = QDir(QCoreApplication::applicationDirPath() + "/../..").canonicalPath();
+        const QString script = QStringLiteral(
+            "DMG=\"$1\"; OLD=\"$2\"; PID=\"$3\"; VER=\"$4\"\n"
+            "while kill -0 \"$PID\" 2>/dev/null; do sleep 0.3; done\n"
+            "M=$(mktemp -d /tmp/pauta_mount.XXXXXX)\n"
+            "hdiutil attach -nobrowse -readonly -mountpoint \"$M\" \"$DMG\" >/dev/null || { open \"$DMG\"; exit 1; }\n"
+            "NEW=\"$(dirname \"$OLD\")/.Pauta-novo.app\"\n"
+            "[ -e \"$NEW\" ] && mv \"$NEW\" \"$HOME/.Trash/Pauta-novo-$(date +%s).app\"\n"
+            "ditto \"$M/Pauta.app\" \"$NEW\"; R=$?\n"
+            "hdiutil detach -force \"$M\" >/dev/null\n"
+            "[ $R -eq 0 ] || { open \"$DMG\"; exit 1; }\n"
+            "mv \"$OLD\" \"$HOME/.Trash/Pauta $VER ($(date +%H.%M.%S)).app\" && mv \"$NEW\" \"$OLD\" && xattr -dr com.apple.quarantine \"$OLD\"\n"
+            "open \"$OLD\"\n");
+        QProcess::startDetached("/bin/sh", { "-c", script, "pauta-update", installerPath.toQString(), bundle,
+                                             QString::number(QCoreApplication::applicationPid()), QString(PAUTA_VERSION) });
+#elif defined(Q_OS_LINUX)
         interactive()->revealInFileBrowser(installerPath);
 #else
         interactive()->openUrl(QUrl::fromLocalFile(installerPath.toQString()));

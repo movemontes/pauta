@@ -36,6 +36,9 @@
 
 #include "log.h"
 
+#include <execinfo.h>
+#include <csignal>
+
 #ifndef MUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT
 static void crashCallback(int signum)
 {
@@ -52,7 +55,12 @@ static void crashCallback(int signum)
         break;
     }
     LOGE() << "Oops! Application crashed with signal: [" << signum << "] " << signame << "-" << sigdescript;
-    exit(EXIT_FAILURE);
+    // Pauta: print where it happened and let macOS write its crash report
+    void* frames[64];
+    int n = backtrace(frames, 64);
+    backtrace_symbols_fd(frames, n, 2);
+    signal(signum, SIG_DFL);
+    raise(signum);
 }
 
 #endif

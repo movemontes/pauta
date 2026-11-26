@@ -596,6 +596,9 @@ Drumset PercussionPanelModel::museSamplerDefaultDrumset() const
 
     const int instrumentId = resourceMeta.attributeVal(u"museUID").toInt();
 
+    if (!museSampler()) { // Pauta: Muse Sounds are not included
+        return Drumset();
+    }
     const muse::ByteArray drumMapping = museSampler()->drumMapping(instrumentId);
     IF_ASSERT_FAILED(!drumMapping.empty()) {
         return Drumset();

@@ -83,6 +83,8 @@ target_sources(muse_ui PRIVATE
     view/musicalsymbolcodes.h
     view/qmlapi.cpp
     view/qmlapi.h
+    internal/pautacursor.cpp
+    internal/pautacursor.h
     view/qmldataformatter.cpp
     view/qmldataformatter.h
     view/qmllauncher.cpp

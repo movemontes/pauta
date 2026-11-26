@@ -68,6 +68,9 @@ void DrumsetLoader::loadDrumset(INotationPtr notation, const InstrumentTrackId& 
         return;
     }
 
+    if (!museSampler()) { // Pauta: Muse Sounds are not included
+        return;
+    }
     muse::ByteArray drumMapping = museSampler()->drumMapping(instrumentId);
     if (drumMapping.empty()) {
         m_drumsetCache.emplace(instrumentId, std::nullopt);

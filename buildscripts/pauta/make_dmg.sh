@@ -16,6 +16,7 @@ APP=$INSTALL/Pauta.app
 DMG="$OUT/Pauta-mac.dmg" # owner standard: fixed name for the updater and the download link
 
 echo "== build"
+rm -rf "$APP"   # always start from a clean bundle (old runs left a broken qt.conf)
 cd "$BUILD" && ninja -j8 && ninja install >/dev/null
 
 echo "== bundle Qt (macdeployqt)"
@@ -24,11 +25,8 @@ macdeployqt "$APP" -qmldir="$SRC/src" -verbose=1
 find "$APP/Contents" -type d -name "*.dSYM" -exec rm -rf {} +
 # Database drivers Qt adds on its own: Pauta does not use them, and they point to libraries outside the app
 rm -f "$APP/Contents/PlugIns/sqldrivers/"libqsql{mimer,odbc,psql}.dylib
-if [ -d "$APP/Contents/Resources/qml" ]; then
-    rm -rf "$APP/Contents/Resources/qml_mu"
-    mv "$APP/Contents/Resources/qml" "$APP/Contents/Resources/qml_mu"
-    sed -i '' 's:Resources/qml:Resources/qml_mu:g' "$APP/Contents/Resources/qt.conf"
-fi
+# keep Qt's QML folder as macdeployqt made it (Resources/qml, listed in qt.conf)
+grep -q "Resources/qml$" "$APP/Contents/Resources/qt.conf" || { echo "qt.conf inesperado"; cat "$APP/Contents/Resources/qt.conf"; exit 1; }
 
 echo "== ad-hoc signature (no paid Apple account)"
 codesign --force --deep --sign - "$APP"

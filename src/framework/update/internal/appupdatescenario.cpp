@@ -22,6 +22,9 @@
 
 #include "appupdatescenario.h"
 
+#include <QDate>
+#include <QSettings>
+
 #include "updateerrors.h"
 
 #include "types/val.h"
@@ -43,6 +46,16 @@ void AppUpdateScenario::checkForUpdate(bool manual)
 {
     if (m_checkInProgress) {
         return;
+    }
+
+    // Pauta (owner standard): the automatic check runs at most once a day; the menu item always checks
+    if (!manual) {
+        QSettings s;
+        const QString today = QDate::currentDate().toString(Qt::ISODate);
+        if (s.value("pauta/lastAutoUpdateCheck").toString() == today) {
+            return;
+        }
+        s.setValue("pauta/lastAutoUpdateCheck", today);
     }
 
     m_checkInProgress = true;
