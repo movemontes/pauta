@@ -1,6 +1,8 @@
 /*
  * SPDX-License-Identifier: GPL-3.0-only
  * Pauta: first-run tour. The mascot walks to each part of the window and explains it in one sentence.
+ * Each step names a target (objectName of a real item); the mascot stands beside it and points at it.
+ * Steps on the score page open it (the current score, or a blank example that is closed at the end).
  */
 import QtQuick
 import QtQuick.Layouts
@@ -17,43 +19,46 @@ Item {
     z: 100000
 
     property int step: 0
+    property bool scorePageShown: false
+    property real groupX: 0
+    property real groupY: 0
+    property bool pointsRight: true
+    property bool placed: false
+    property int tries: 0
 
-    // where: c = center, br = bottom right (near "New"), l = left rail, r = right tools column
+    // side: "left" = mascot left of the target, pointing right; "right" = mascot right of it, pointing left
     readonly property var steps: [
-        { pose: "oi", where: "c", title: qsTrc("appshell", "Hi! I'm Colcheia."),
+        { pose: "oi", page: "home", target: "", title: qsTrc("appshell", "Hi! I'm Colcheia."),
           text: qsTrc("appshell", "I'll show you around Pauta in a few steps. You can skip at any time.") },
-        { pose: "aponta-direita", where: "br", title: qsTrc("appshell", "Start here"),
+        { pose: "aponta-direita", page: "home", target: "pautaTourNew", side: "left", title: qsTrc("appshell", "Start here"),
           text: qsTrc("appshell", "“New” makes a blank score: pick the instruments and start writing. “Open other…” opens a file you already have.") },
-        { pose: "aponta-esquerda", where: "l", title: qsTrc("appshell", "The side rail"),
+        { pose: "aponta-esquerda", page: "home", target: "pautaTourRail", side: "right", title: qsTrc("appshell", "The side rail"),
           text: qsTrc("appshell", "Your recent scores, extra plugins and the quick guide live here.") },
-        { pose: "pensando", where: "c", title: qsTrc("appshell", "Writing notes"),
-          text: qsTrc("appshell", "With a score open, press N, pick a note length and type the letters C D E F G A B (or click on the staff).") },
-        { pose: "aponta-direita", where: "r", title: qsTrc("appshell", "Tools on the right"),
-          text: qsTrc("appshell", "With a score open, the column on the right has lyrics, chords, slurs, text, tempo, change key and more.") },
-        { pose: "regendo", where: "c", title: qsTrc("appshell", "Listen"),
-          text: qsTrc("appshell", "Press the space bar to play and pause. The piano keys light up while it plays.") },
-        { pose: "comemorando", where: "c", title: qsTrc("appshell", "That's it!"),
+        { pose: "aponta-direita", page: "score", target: "pautaTool_note-input", side: "left", title: qsTrc("appshell", "Writing notes"),
+          text: qsTrc("appshell", "Click “Write” (or press N), pick a note length and type the letters C D E F G A B. C is do, D is re, and so on.") },
+        { pose: "aponta-direita", page: "score", target: "pautaTool_chord-text", side: "left", title: qsTrc("appshell", "Tools on the right"),
+          text: qsTrc("appshell", "This column has lyrics, chords, slurs, text, tempo, change key and more. Select a note first, then click the tool.") },
+        { pose: "aponta-direita", page: "score", target: "pautaTool_play", side: "left", title: qsTrc("appshell", "Listen"),
+          text: qsTrc("appshell", "“Play” (or the space bar) plays and pauses. The piano keys light up while it plays.") },
+        { pose: "comemorando", page: "score", target: "", title: qsTrc("appshell", "That's it!"),
           text: qsTrc("appshell", "Rest the mouse on any button for a moment and I'll tell you what it does.") }
     ]
     readonly property var cur: steps[step]
 
     function start() {
         step = 0
+        scorePageShown = false
         visible = true
-        enterAnim.restart()
         root.forceActiveFocus()
-    }
-
-    function back() {
-        if (step > 0) {
-            step--
-            enterAnim.restart()
-        }
+        enterStep()
     }
 
     function finish() {
         visible = false
         tour.markSeen()
+        if (scorePageShown) {
+            tour.showHomePage()
+        }
     }
 
     function next() {
@@ -62,8 +67,76 @@ Item {
             return
         }
         step++
+        enterStep()
+    }
+
+    function back() {
+        if (step > 0) {
+            step--
+            enterStep()
+        }
+    }
+
+    function enterStep() {
+        placed = false
+        tries = 0
+        if (cur.page === "score" && !scorePageShown) {
+            scorePageShown = true
+            tour.showScorePage()
+        }
+        placeTimer.restart()
+    }
+
+    function findItem(item, name) {
+        if (!item) {
+            return null
+        }
+        if (item.objectName === name && item.visible && item.width > 0) {
+            return item
+        }
+        const kids = item.children
+        for (let i = 0; i < kids.length; ++i) {
+            const found = findItem(kids[i], name)
+            if (found) {
+                return found
+            }
+        }
+        return null
+    }
+
+    function place() {
+        const margin = 16
+        let target = null
+        if (cur.target !== "") {
+            target = findItem(ui.rootItem, cur.target)
+            if (!target && tries < 25) { // the page may still be opening
+                tries++
+                placeTimer.restart()
+                return
+            }
+        }
+
+        pointsRight = cur.side !== "right"
+        const gw = row.implicitWidth
+        const gh = row.implicitHeight
+        let x = (root.width - gw) / 2
+        let y = (root.height - gh) / 2
+
+        if (target) {
+            const r = target.mapToItem(root, 0, 0, target.width, target.height)
+            const cy = r.y + r.height / 2
+            x = cur.side === "right" ? r.x + r.width + 8 : r.x - gw - 8
+            // the pointing hand is about 45% down the mascot
+            y = cy - gh * 0.45
+        }
+
+        groupX = Math.max(margin, Math.min(x, root.width - gw - margin))
+        groupY = Math.max(margin, Math.min(y, root.height - gh - margin))
+        placed = true
         enterAnim.restart()
     }
+
+    Timer { id: placeTimer; interval: 200; onTriggered: root.place() }
 
     PautaTourModel {
         id: tour
@@ -71,12 +144,26 @@ Item {
     }
 
     Component.onCompleted: {
-        if (!tour.seen()) {
+        if (!tour.seen() || tour.debugStep() > 0) {
             startTimer.start()
         }
     }
 
-    Timer { id: startTimer; interval: 1200; onTriggered: root.start() }
+    Timer {
+        id: startTimer
+        interval: 1200
+        onTriggered: {
+            root.start()
+            const n = tour.debugStep()
+            if (n > 1 && n <= root.steps.length) {
+                root.step = n - 1
+                root.enterStep()
+            }
+        }
+    }
+
+    onWidthChanged: if (visible && placed) Qt.callLater(place)
+    onHeightChanged: if (visible && placed) Qt.callLater(place)
 
     // dim the window; clicks do not go through
     Rectangle {
@@ -89,25 +176,11 @@ Item {
     Item {
         id: group
 
+        x: root.groupX
+        y: root.groupY
         width: row.implicitWidth
         height: row.implicitHeight
-
-        x: {
-            switch (root.cur.where) {
-            case "br": return root.width - width - 360
-            case "l": return 96
-            case "r": return root.width - width - 96
-            default: return (root.width - width) / 2
-            }
-        }
-        y: {
-            switch (root.cur.where) {
-            case "br": return root.height - height - 96
-            case "l": return 120
-            case "r": return 160
-            default: return (root.height - height) / 2
-            }
-        }
+        opacity: root.placed ? 1 : 0
 
         transform: Translate { id: shift }
 
@@ -119,12 +192,12 @@ Item {
 
         RowLayout {
             id: row
-            spacing: 14
-            layoutDirection: root.cur.where === "l" ? Qt.RightToLeft : Qt.LeftToRight
+            spacing: 6
+            // pointing right: bubble, then mascot (its hand points at the target on the right)
+            layoutDirection: root.pointsRight ? Qt.LeftToRight : Qt.RightToLeft
 
-            // speech bubble
             Item {
-                Layout.preferredWidth: 320
+                Layout.preferredWidth: 330
                 Layout.preferredHeight: bubble.implicitHeight
                 Layout.alignment: Qt.AlignVCenter
 

@@ -465,6 +465,7 @@ FocusScope {
             spacing: 12
 
             FlatButton {
+                objectName: "pautaTourNew" // Pauta: the tour points here
                 navigation.name: "NewScore"
                 navigation.panel: navBottomPanel
                 navigation.column: 2

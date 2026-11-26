@@ -30,6 +30,26 @@ StyledTabButton {
 
     property alias contextMenuModel: contextMenuButton.menuModel
 
+    // Pauta: a short tip saying what each panel is for
+    readonly property var pautaTips: ({
+        [qsTrc("appshell", "Palettes")]: qsTrc("appshell", "Symbols to add to the score: clefs, key and time signatures, dynamics, articulations and more. Select notes, then click a symbol."),
+        [qsTrc("appshell", "Layout")]: qsTrc("appshell", "The instruments and staves of the score: add, remove, hide or reorder them."),
+        [qsTrc("appshell", "Properties")]: qsTrc("appshell", "Settings for what is selected: color, position, size, style and more."),
+        [qsTrc("appshell", "Selection filter")]: qsTrc("appshell", "Choose which kinds of things a selection picks up."),
+        [qsTrc("notation", "History")]: qsTrc("appshell", "Every change you made, in order. Click one to go back to it."),
+        [qsTrc("appshell", "Mixer")]: qsTrc("appshell", "Volume, pan, mute and solo for each instrument."),
+        [qsTrc("appshell", "Piano keyboard")]: qsTrc("appshell", "A piano to enter notes with the mouse; the keys light up during playback."),
+        [qsTrc("appshell", "Timeline")]: qsTrc("appshell", "An overview of the whole piece, measure by measure.")
+    })
+
+    onHoveredChanged: {
+        if (hovered) {
+            ui.tooltip.show(root, root.text, root.pautaTips[root.text] || "")
+        } else {
+            ui.tooltip.hide(root)
+        }
+    }
+
     property bool isCutOff: false
 
     signal handleContextMenuItemRequested(string itemId)

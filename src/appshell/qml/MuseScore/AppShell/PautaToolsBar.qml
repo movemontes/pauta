@@ -53,6 +53,7 @@ Item {
                     required property int index
 
                     itemData: item
+                    objectName: item ? "pautaTool_" + item.id : "" // Pauta: the tour points at tools
                     width: column.width - 8
                     x: 4
                     height: 58

@@ -317,7 +317,7 @@ MenuItem* AppMenuModel::makeViewMenu()
         makeMenu(TranslatableString("appshell/menu/view", "Interface colors"), {
             makeMenuItem("pauta-theme-blue"), makeMenuItem("pauta-theme-orange"), makeMenuItem("pauta-theme-green"),
             makeMenuItem("pauta-theme-pink"), makeMenuItem("pauta-theme-purple"), makeMenuItem("pauta-theme-custom"),
-            makeSeparator(), makeMenuItem("pauta-theme-night") }, "menu-pauta-colors"),
+            makeSeparator(), makeMenuItem("pauta-theme-light"), makeMenuItem("pauta-theme-graphite"), makeMenuItem("pauta-theme-night") }, "menu-pauta-colors"),
         //makeMenuItem("toggle-scorecmp-tool"), // not implemented
         makeSeparator(),
         makeMenu(TranslatableString("appshell/menu/view", "&Toolbars"), makeToolbarsItems(), "menu-toolbars")

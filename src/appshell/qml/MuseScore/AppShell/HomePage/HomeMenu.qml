@@ -107,7 +107,7 @@ Rectangle {
 
         Rectangle {
             anchors.fill: parent
-            color: item.active ? "#FFFFFF" : (item.hovered ? "#262626" : "transparent")
+            color: item.active ? ui.theme.textFieldColor : (item.hovered ? "#262626" : "transparent")
             Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
             NavigationFocusBorder { navigationCtrl: nav }
@@ -122,7 +122,7 @@ Rectangle {
                 iconCode: item.iconCode
                 font.family: ui.theme.iconsFont.family
                 font.pixelSize: 20
-                color: item.active ? "#0A0A0A" : "#FFFFFF"
+                color: item.active ? ui.theme.fontPrimaryColor : "#EDE8DC"
             }
 
             StyledTextLabel {
@@ -133,7 +133,7 @@ Rectangle {
                 font.weight: Font.DemiBold
                 font.pixelSize: 9
                 font.letterSpacing: 0.2
-                color: item.active ? "#0A0A0A" : (item.hovered ? "#FFFFFF" : "#BBBBBB")
+                color: item.active ? ui.theme.fontPrimaryColor : (item.hovered ? "#EDE8DC" : "#B5B1A8")
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
                 maximumLineCount: 2
@@ -171,7 +171,7 @@ Rectangle {
             StyledTextLabel {
                 anchors.centerIn: parent
                 text: "P"
-                color: "#FFFFFF"
+                color: (0.299 * ui.theme.accentColor.r + 0.587 * ui.theme.accentColor.g + 0.114 * ui.theme.accentColor.b) > 0.55 ? "#16171A" : "#F7F4EE" // Pauta: readable on the accent
                 font.family: ui.theme.titleBoldFont.family
                 font.pixelSize: 26
             }
@@ -186,7 +186,7 @@ Rectangle {
         }
 
         RailItem { name: "scores"; title: qsTrc("appshell", "Scores"); iconCode: IconCode.MUSIC_NOTES; row: 1 }
-        RailItem { name: "extensions"; title: qsTrc("appshell", "Plugins"); iconCode: IconCode.PLUGIN; row: 2 }
+        RailItem { objectName: "pautaTourRail"; name: "extensions"; title: qsTrc("appshell", "Plugins"); iconCode: IconCode.PLUGIN; row: 2 }
         RailItem { action: "pauta-quick-guide"; title: qsTrc("action", "Quick guide"); iconCode: IconCode.QUESTION_MARK; row: 3 }
 
         Item { Layout.fillHeight: true }

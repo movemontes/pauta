@@ -122,6 +122,7 @@ private:
     bool pautaCloseAllTabs();
     void pautaApplyColors(const std::string& name);
     void pautaChooseAccent();
+    void pautaSetAccent(const QColor& chosen);
 public:
     muse::async::Notification pautaMascotChanged() const { return m_pautaMascotChanged; }
 private:

@@ -45,6 +45,44 @@ Item {
     property NavigationPanel navigationPanel: null
     property int navigationRow: 0
 
+    // Pauta: tip with what each palette has
+    readonly property var pautaTips: ({
+        [qsTrc("palette", "Clefs")]: qsTrc("palette", "Clefs set the pitch of the lines: treble, bass, alto and more."),
+        [qsTrc("palette", "Key signatures")]: qsTrc("palette", "Sharps or flats at the start of each line; they set the key."),
+        [qsTrc("palette", "Time signatures")]: qsTrc("palette", "How many beats in each measure, like 4/4 or 3/4."),
+        [qsTrc("palette", "Tempo")]: qsTrc("palette", "Speed marks, like ♩ = 120, Allegro or Andante."),
+        [qsTrc("palette", "Pitch")]: qsTrc("palette", "Octave lines (8va) and other marks that change how high notes sound."),
+        [qsTrc("palette", "Accidentals")]: qsTrc("palette", "Sharp, flat and natural signs for single notes."),
+        [qsTrc("palette", "Dynamics")]: qsTrc("palette", "How loud to play: p, mf, f, crescendo and more."),
+        [qsTrc("palette", "Articulations")]: qsTrc("palette", "How to play each note: staccato, accent, tenuto and more."),
+        [qsTrc("palette", "Text")]: qsTrc("palette", "Words on the score: expression, rehearsal marks, staff text."),
+        [qsTrc("palette", "Keyboard")]: qsTrc("palette", "Piano marks: pedal, fingering and hand marks."),
+        [qsTrc("palette", "Drums")]: qsTrc("palette", "Drum and percussion notes and marks."),
+        [qsTrc("palette", "Repeats & jumps")]: qsTrc("palette", "Repeat signs, voltas, D.C., D.S., Coda and Fine."),
+        [qsTrc("palette", "Barlines")]: qsTrc("palette", "Bar lines: double, final, dashed and repeat bar lines."),
+        [qsTrc("palette", "Layout")]: qsTrc("palette", "Breaks and spacers: start a new line or page where you want."),
+        [qsTrc("palette", "Lines")]: qsTrc("palette", "Slurs, hairpins, brackets and other lines."),
+        [qsTrc("palette", "Ornaments")]: qsTrc("palette", "Trills, turns, mordents and other ornaments."),
+        [qsTrc("palette", "Breaths & pauses")]: qsTrc("palette", "Breath marks, commas and fermatas."),
+        [qsTrc("palette", "Noteheads")]: qsTrc("palette", "Different note head shapes."),
+        [qsTrc("palette", "Arpeggios & glissandos")]: qsTrc("palette", "Arpeggio, glissando and slide marks."),
+        [qsTrc("palette", "Grace notes")]: qsTrc("palette", "Small quick notes before or after a note."),
+        [qsTrc("palette", "Fingerings")]: qsTrc("palette", "Finger numbers for piano, guitar and strings."),
+        [qsTrc("palette", "Tremolos")]: qsTrc("palette", "Fast repeated notes."),
+        [qsTrc("palette", "Brackets")]: qsTrc("palette", "Brackets and braces that group staves."),
+        [qsTrc("palette", "Beam properties")]: qsTrc("palette", "How notes are joined by beams."),
+        [qsTrc("palette", "Guitar")]: qsTrc("palette", "Guitar marks: bends, palm mute, strings and more."),
+        [qsTrc("palette", "Fretboard diagrams")]: qsTrc("palette", "Guitar chord boxes.")
+    })
+
+    onHoveredChanged: {
+        if (hovered) {
+            ui.tooltip.show(root, root.text, (root.pautaTips[root.text] || "") + " " + qsTrc("palette", "Click to open or close."))
+        } else {
+            ui.tooltip.hide(root)
+        }
+    }
+
     function closeContextMenu() {
         if (!menuButton.isMenuOpened) {
             return

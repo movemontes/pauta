@@ -98,10 +98,20 @@ const UiActionList ApplicationUiActions::m_actions = {
              mu::context::CTX_ANY,
              TranslatableString("action", "Accent color: Purple")
              ),
+    UiAction("pauta-theme-light",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Background: Light (cream)")
+             ),
+    UiAction("pauta-theme-graphite",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Background: Soft dark (gray)")
+             ),
     UiAction("pauta-theme-night",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "Night (dark)")
+             TranslatableString("action", "Background: Night (black)")
              ),
     UiAction("pauta-theme-custom",
              mu::context::UiCtxAny,

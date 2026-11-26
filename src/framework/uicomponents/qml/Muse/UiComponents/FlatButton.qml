@@ -75,7 +75,10 @@ FocusScope {
     readonly property bool pautaHover: mouseArea.containsMouse && enabled
     readonly property bool pautaInk: accentButton && !transparent // selected / main button: ink face, accent shadow
     readonly property bool pautaFilledHover: pautaHover && !transparent
-    readonly property color pautaContentColor: (pautaInk || pautaFilledHover) ? "#FFFFFF"
+    // face of a solid button that is filled (main / selected / hovered); text picks dark or light for contrast
+    readonly property color pautaFilledFace: pautaFilledHover ? accentColor : ui.theme.strokeColor
+    function pautaOn(c) { return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 0.55 ? "#16171A" : "#F7F4EE" }
+    readonly property color pautaContentColor: (pautaInk || pautaFilledHover) ? pautaOn(pautaFilledFace)
                                                : (pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor)
     property color iconColor: pautaContentColor
     property font textFont: accentButton ? ui.theme.bodyBoldFont : ui.theme.bodyFont // Pauta
