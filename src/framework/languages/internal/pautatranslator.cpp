@@ -44,6 +44,7 @@ static const QHash<QString, QString>& pautaPortuguese()
         { "Tap tempo", "Bater o tempo" },
         { "Reverb (on/off)", "Reverb (ligar/desligar)" },
         { "Change key…", "Mudar tom…" },
+        { "Free sheet music app", "Programa de partitura grátis" },
         { "Open PDF as editable score (beta)…", "Abrir PDF como partitura editável (beta)…" },
         { "To read sheet music from a PDF, Pauta uses Audiveris", "Para ler partitura de PDF, o Pauta usa o Audiveris" },
         { "Audiveris is a free program that turns printed sheet music (PDF or photo) into an editable score, right on your Mac. Download the version for Apple chips (macosx-arm64.dmg), drag it to Applications, open it once, and then come back here.",

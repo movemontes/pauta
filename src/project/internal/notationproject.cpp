@@ -20,6 +20,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "notationproject.h"
+#include <algorithm>
+#include "engraving/dom/system.h"
+#include "engraving/dom/page.h"
 
 #include <memory>
 
@@ -103,6 +106,43 @@ void NotationProject::setupProject()
     m_engravingProject->setFileInfoProvider(std::make_shared<ProjectFileInfoProvider>(this));
     m_masterNotation = std::shared_ptr<MasterNotation>(new MasterNotation(this, iocContext()));
     m_projectAudioSettings = std::shared_ptr<ProjectAudioSettings>(new ProjectAudioSettings(iocContext()));
+}
+
+
+// Pauta: a system (all staves of one line of music) taller than the page spills over the bottom edge,
+// because the engraver never splits a system across pages. Shrink the staff size just enough to fit.
+static bool pautaFitSystemsToPage(mu::engraving::MasterScore* score)
+{
+    if (!score) {
+        return false;
+    }
+
+    bool changed = false;
+    for (int attempt = 0; attempt < 3; ++attempt) {
+        double worst = 0.0;
+        for (const mu::engraving::Page* page : score->pages()) {
+            const double available = page->height() - page->tm() - page->bm();
+            if (available <= 0.0) {
+                continue;
+            }
+            for (const mu::engraving::System* system : page->systems()) {
+                worst = std::max(worst, system->height() / available);
+            }
+        }
+        if (worst <= 1.0) {
+            break;
+        }
+
+        const double oldSpatium = score->style().styleD(mu::engraving::Sid::spatium);
+        const double newSpatium = std::max(oldSpatium * 0.35, oldSpatium / worst * 0.97);
+        score->style().set(mu::engraving::Sid::spatium, newSpatium);
+        score->spatiumChanged(oldSpatium, newSpatium);
+        score->setLayoutAll();
+        score->doLayout();
+        changed = true;
+        LOGI() << "[Pauta] staff size reduced so the systems fit the page: " << oldSpatium << " -> " << newSpatium;
+    }
+    return changed;
 }
 
 Ret NotationProject::load(const muse::io::path_t& path, const OpenParams& openParams, const std::string& format_)
@@ -242,6 +282,7 @@ Ret NotationProject::doLoad(const muse::io::path_t& path, const OpenParams& open
 
     // Set current if all success
     m_masterNotation->setMasterScore(masterScore);
+    pautaFitSystemsToPage(masterScore); // Pauta
 
     // Load view settings & solo-mute states (needs to be done after notations are created)
     m_masterNotation->notation()->viewState()->read(reader);
@@ -336,6 +377,7 @@ Ret NotationProject::doImport(const muse::io::path_t& path, const OpenParams& op
 
     // Set current if all success
     m_masterNotation->setMasterScore(score);
+    pautaFitSystemsToPage(score); // Pauta
     setPath(path);
     setNeedSave(false);
     score->setMetaTag(u"originalFormat", QString::fromStdString(suffix));
