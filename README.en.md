@@ -57,4 +57,4 @@ How to build: `buildscripts/pauta/COMPILAR.md` (in Portuguese). The app is C++/Q
 
 Pauta is free software **based on [MuseScore Studio](https://github.com/musescore/MuseScore)**, © 1999-2026 MuseScore Limited and others, so it is distributed under the **GNU General Public License version 3** (`LICENSE.txt`).
 Pauta is not affiliated with or endorsed by MuseScore Limited or Muse Group. "MuseScore" is their trademark.
-UI font: Archivo (SIL Open Font License). Sound: MS Basic (MIT license). Finale files: [Denigma](https://github.com/rpatters1/denigma) (MIT license), shipped inside the app.
+UI font: Jersey 10 (SIL Open Font License), pixel look inspired by Aseprite. Sound: MS Basic (MIT license). Finale files: [Denigma](https://github.com/rpatters1/denigma) (MIT license), shipped inside the app.

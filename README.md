@@ -58,4 +58,4 @@ Como compilar: `buildscripts/pauta/COMPILAR.md`. O app é C++/Qt 6, feito a part
 
 O Pauta é um programa livre **baseado no [MuseScore Studio](https://github.com/musescore/MuseScore)**, © 1999-2026 MuseScore Limited e colaboradores, e por isso é distribuído sob a **GNU General Public License versão 3** (`LICENSE.txt`), e não sob a MIT dos outros apps.
 O Pauta não tem ligação com a MuseScore Limited nem com o Muse Group. "MuseScore" é marca deles.
-Fonte da interface: Archivo (SIL Open Font License). Som: MS Basic (licença MIT). Arquivos do Finale: [Denigma](https://github.com/rpatters1/denigma) (licença MIT), que vai dentro do app.
+Fonte da interface: Jersey 10 (SIL Open Font License), visual pixel inspirado no Aseprite. Som: MS Basic (licença MIT). Arquivos do Finale: [Denigma](https://github.com/rpatters1/denigma) (licença MIT), que vai dentro do app.
