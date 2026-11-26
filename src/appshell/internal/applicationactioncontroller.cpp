@@ -266,7 +266,8 @@ bool ApplicationActionController::quit(bool isAllInstances, const muse::io::path
         m_quiting = false;
     };
 
-    if (!projectFilesController()->closeOpenedProject(false)) {
+    // Pauta: close every tab, asking "save?" for each score with changes
+    if (!pautaCloseAllTabs()) {
         return false;
     }
 
@@ -310,7 +311,7 @@ bool ApplicationActionController::quit(bool isAllInstances, const muse::io::path
 
 void ApplicationActionController::restart()
 {
-    if (projectFilesController()->closeOpenedProject(false)) {
+    if (pautaCloseAllTabs()) {
         if (multiwindowsProvider()->windowCount() == 1) {
             application()->restart();
         } else {
@@ -524,6 +525,18 @@ void ApplicationActionController::pautaSetLanguage(const QString& code)
             restart();
         }
     });
+}
+
+bool ApplicationActionController::pautaCloseAllTabs()
+{
+    // closeOpenedProject() closes the current tab and shows the next one, so repeat until none is left
+    size_t guard = globalContext()->openedProjects().size() + 2;
+    while (globalContext()->currentProject() && guard-- > 0) {
+        if (!projectFilesController()->closeOpenedProject(false)) {
+            return false; // the person pressed Cancel
+        }
+    }
+    return true;
 }
 
 bool ApplicationActionController::hasProjectAndIsFocused() const

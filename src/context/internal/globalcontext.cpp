@@ -21,6 +21,8 @@
  */
 #include "globalcontext.h"
 
+#include <algorithm>
+
 #include "notation/imasternotation.h"
 
 using namespace mu::context;
@@ -41,11 +43,22 @@ void GlobalContext::setCurrentProject(const INotationProjectPtr& project)
 
     m_currentProject = project;
 
+    // Pauta: remember every score opened in this window (tabs); announced after the switch is complete
+    bool isNewTab = false;
+    if (project && std::find(m_openedProjects.begin(), m_openedProjects.end(), project) == m_openedProjects.end()) {
+        m_openedProjects.push_back(project);
+        isNewTab = true;
+    }
+
     INotationPtr notation = project ? project->masterNotation()->notation() : nullptr;
     doSetCurrentNotation(notation);
 
     m_currentProjectChanged.notify();
     m_currentNotationChanged.notify();
+
+    if (isNewTab) {
+        m_openedProjectsChanged.notify();
+    }
 }
 
 INotationProjectPtr GlobalContext::currentProject() const
@@ -110,4 +123,23 @@ void GlobalContext::setCurrentPlayer(const muse::audio::IPlayerPtr& player)
 IPlaybackStatePtr GlobalContext::playbackState() const
 {
     return m_playbackState;
+}
+
+std::vector<INotationProjectPtr> GlobalContext::openedProjects() const
+{
+    return m_openedProjects;
+}
+
+void GlobalContext::removeOpenedProject(const INotationProjectPtr& project)
+{
+    auto it = std::find(m_openedProjects.begin(), m_openedProjects.end(), project);
+    if (it != m_openedProjects.end()) {
+        m_openedProjects.erase(it);
+        m_openedProjectsChanged.notify();
+    }
+}
+
+muse::async::Notification GlobalContext::openedProjectsChanged() const
+{
+    return m_openedProjectsChanged;
 }

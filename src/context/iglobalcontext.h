@@ -40,6 +40,11 @@ public:
     virtual project::INotationProjectPtr currentProject() const = 0;
     virtual muse::async::Notification currentProjectChanged() const = 0;
 
+    // Pauta: several scores open in one window, as tabs (in the order they were opened)
+    virtual std::vector<project::INotationProjectPtr> openedProjects() const { return {}; }
+    virtual void removeOpenedProject(const project::INotationProjectPtr&) {}
+    virtual muse::async::Notification openedProjectsChanged() const { return muse::async::Notification(); }
+
     virtual notation::IMasterNotationPtr currentMasterNotation() const = 0;
     virtual muse::async::Notification currentMasterNotationChanged() const = 0;
 

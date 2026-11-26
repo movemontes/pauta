@@ -117,6 +117,7 @@ private:
     void revertToFactorySettings();
     void pautaSetLanguage(const QString& code);
     void pautaImportPdf();
+    bool pautaCloseAllTabs();
     muse::Progress m_pautaPdfProgress;
 
     bool hasProjectAndIsFocused() const;

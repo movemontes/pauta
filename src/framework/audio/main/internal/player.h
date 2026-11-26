@@ -61,6 +61,7 @@ public:
     async::Channel<secs_t> playbackPositionChanged() const override;
 
 private:
+    std::shared_ptr<bool> m_pautaAlive = std::make_shared<bool>(true); // Pauta: lets late replies see the player is gone
 
     TrackSequenceId m_sequenceId = -1;
     PlaybackStatus m_playbackStatus = PlaybackStatus::Stopped;

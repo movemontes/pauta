@@ -21,6 +21,8 @@
  */
 #include "projectactionscontroller.h"
 
+#include <algorithm>
+
 #include <QBuffer>
 #include <QEventLoop>
 #include <QFileInfo>
@@ -252,6 +254,13 @@ Ret ProjectActionsController::openProject(const muse::io::path_t& givenPath, con
     }
 
     //! Step 2. If the project is already open in the current window, then just switch to showing the notation
+    //! Pauta: or in another tab of this window
+    for (const INotationProjectPtr& opened : globalContext()->openedProjects()) {
+        if (opened && opened->path() == actualPath) {
+            globalContext()->setCurrentProject(opened);
+            return doFinishOpenProject();
+        }
+    }
     if (isProjectOpened(actualPath)) {
         return doFinishOpenProject();
     }
@@ -264,17 +273,8 @@ Ret ProjectActionsController::openProject(const muse::io::path_t& givenPath, con
 
     //! Step 4. Check, if a any project is already open in the current window,
     //! then create a new instance
-    if (globalContext()->currentProject()) {
-        QStringList args;
-        args << actualPath.toQString();
-
-        if (!displayNameOverride.isEmpty()) {
-            args << "--score-display-name-override" << displayNameOverride;
-        }
-
-        multiwindowsProvider()->openNewWindow(args);
-        return make_ret(Ret::Code::Ok);
-    }
+    //! Pauta: instead of a new window (a whole new copy of the app, ~430 MB), open the score as a new tab
+    //! in this window. The score that was open stays loaded in its own tab.
 
     //! Step 5. If it's a cloud project, download the latest version
     if (configuration()->isCloudProject(actualPath) && !configuration()->isLegacyCloudProject(actualPath)) {
@@ -653,6 +653,11 @@ Ret ProjectActionsController::openPageIfNeed(Uri pageUri)
 
 bool ProjectActionsController::isProjectOpened(const muse::io::path_t& scorePath) const
 {
+    for (const INotationProjectPtr& opened : globalContext()->openedProjects()) { // Pauta: tabs
+        if (opened && opened->path() == scorePath) {
+            return true;
+        }
+    }
     auto project = globalContext()->currentProject();
     if (!project) {
         return false;
@@ -692,16 +697,7 @@ void ProjectActionsController::newProject()
         m_isProjectProcessing = false;
     };
 
-    if (globalContext()->currentProject()) {
-        if (multiwindowsProvider()->isHasWindowWithoutProject()) {
-            multiwindowsProvider()->activateWindowWithoutProject({ "file-new" });
-            return;
-        }
-        QStringList args;
-        args << "--session-type" << "start-with-new";
-        multiwindowsProvider()->openNewWindow(args);
-        return;
-    }
+    //! Pauta: a new score opens as a new tab in this window
 
     auto promise = interactive()->open(NEW_SCORE_URI);
     promise.onResolve(this, [this](const Val&) {
@@ -755,6 +751,26 @@ bool ProjectActionsController::closeOpenedProject(bool goToHome)
 
     if (result) {
         interactive()->closeAllDialogsSync();
+
+        // Pauta: close only this tab; show the neighbouring score if there is one
+        std::vector<INotationProjectPtr> tabs = globalContext()->openedProjects();
+        auto it = std::find(tabs.begin(), tabs.end(), project);
+        INotationProjectPtr next;
+        if (it != tabs.end()) {
+            if (it + 1 != tabs.end()) {
+                next = *(it + 1);
+            } else if (it != tabs.begin()) {
+                next = *(it - 1);
+            }
+        }
+        globalContext()->removeOpenedProject(project);
+
+        if (next) {
+            globalContext()->setCurrentProject(next);
+            doFinishOpenProject();
+            return true;
+        }
+
         globalContext()->setCurrentProject(nullptr);
 
         if (goToHome) {

@@ -73,6 +73,7 @@ private:
     bool isIndexValid(int index) const;
 
     bool isMasterNotation(const INotationPtr notation) const;
+    project::INotationProjectPtr ownerOf(int index) const;
 
     enum Roles {
         RoleTitle = Qt::UserRole + 1,
@@ -81,6 +82,7 @@ private:
     };
 
     QList<INotationPtr> m_notations;
+    QList<project::INotationProjectPtr> m_owners; // Pauta: which score (tab) each entry belongs to
     std::unique_ptr<muse::async::Asyncable> m_notationChangedReceiver;
 };
 }

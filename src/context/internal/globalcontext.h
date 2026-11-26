@@ -37,6 +37,10 @@ public:
     project::INotationProjectPtr currentProject() const override;
     muse::async::Notification currentProjectChanged() const override;
 
+    std::vector<project::INotationProjectPtr> openedProjects() const override;
+    void removeOpenedProject(const project::INotationProjectPtr& project) override;
+    muse::async::Notification openedProjectsChanged() const override;
+
     notation::IMasterNotationPtr currentMasterNotation() const override;
     muse::async::Notification currentMasterNotationChanged() const override;
 
@@ -52,6 +56,8 @@ private:
 
     project::INotationProjectPtr m_currentProject;
     muse::async::Notification m_currentProjectChanged;
+    std::vector<project::INotationProjectPtr> m_openedProjects;
+    muse::async::Notification m_openedProjectsChanged;
 
     notation::INotationPtr m_currentNotation;
     muse::async::Notification m_currentNotationChanged;

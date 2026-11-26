@@ -48,8 +48,12 @@ void Player::init()
         });
 
         Msg msg = rpc::make_request(Method::GetPlaybackStatus, RpcPacker::pack(m_sequenceId));
-        channel()->send(msg, [this](const Msg& res) {
+        std::weak_ptr<bool> alive = m_pautaAlive; // Pauta: the reply can arrive after this player is gone (fast tab switching)
+        channel()->send(msg, [this, alive](const Msg& res) {
             ONLY_AUDIO_MAIN_THREAD;
+            if (alive.expired()) {
+                return;
+            }
             PlaybackStatus status = PlaybackStatus::Stopped;
             StreamId streamId = 0;
             IF_ASSERT_FAILED(RpcPacker::unpack(res.data, status, streamId)) {
@@ -68,8 +72,12 @@ void Player::init()
         });
 
         Msg msg = rpc::make_request(Method::GetPlaybackPosition, RpcPacker::pack(m_sequenceId));
-        channel()->send(msg, [this](const Msg& res) {
+        std::weak_ptr<bool> alive = m_pautaAlive;
+        channel()->send(msg, [this, alive](const Msg& res) {
             ONLY_AUDIO_MAIN_THREAD;
+            if (alive.expired()) {
+                return;
+            }
             secs_t pos = 0.0;
             StreamId streamId = 0;
             IF_ASSERT_FAILED(RpcPacker::unpack(res.data, pos, streamId)) {

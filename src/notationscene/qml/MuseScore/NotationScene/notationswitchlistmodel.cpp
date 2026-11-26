@@ -22,6 +22,9 @@
 
 #include "notationswitchlistmodel.h"
 
+#include <algorithm>
+#include "project/inotationproject.h"
+
 #include "log.h"
 
 using namespace mu::notation;
@@ -44,6 +47,12 @@ void NotationSwitchListModel::load()
 
     onCurrentNotationChanged();
     context()->currentNotationChanged().onNotify(m_notationChangedReceiver.get(), [this]() {
+        onCurrentNotationChanged();
+    });
+
+    // Pauta: other scores open in this window are shown as tabs too
+    context()->openedProjectsChanged().onNotify(m_notationChangedReceiver.get(), [this]() {
+        loadNotations();
         onCurrentNotationChanged();
     });
 }
@@ -83,57 +92,56 @@ void NotationSwitchListModel::loadNotations()
 
     beginResetModel();
     m_notations.clear();
+    m_owners.clear();
 
-    IMasterNotationPtr masterNotation = currentMasterNotation();
-    if (!masterNotation) {
-        endResetModel();
-        return;
+    project::INotationProjectPtr current = context()->currentProject();
+    std::vector<project::INotationProjectPtr> projects = context()->openedProjects();
+    if (current && std::find(projects.begin(), projects.end(), current) == projects.end()) {
+        projects.push_back(current);
     }
 
-    m_notations << masterNotation->notation();
-    listenNotationOpeningStatus(masterNotation->notation());
+    for (const project::INotationProjectPtr& project : projects) {
+        if (!project || !project->masterNotation()) {
+            continue;
+        }
+        IMasterNotationPtr masterNotation = project->masterNotation();
 
-    for (const IExcerptNotationPtr& excerpt: masterNotation->excerpts()) {
-        if (excerpt->notation()->isOpen()) {
-            m_notations << excerpt->notation();
+        // Pauta: one tab per score; the score being edited also shows its open parts
+        m_notations << masterNotation->notation();
+        m_owners << project;
+
+        if (project != current) {
+            continue;
         }
 
-        listenNotationOpeningStatus(excerpt->notation());
-        listenExcerptNotationTitleChanged(excerpt);
+        listenNotationOpeningStatus(masterNotation->notation());
+
+        for (const IExcerptNotationPtr& excerpt: masterNotation->excerpts()) {
+            if (excerpt->notation()->isOpen()) {
+                m_notations << excerpt->notation();
+                m_owners << project;
+            }
+
+            listenNotationOpeningStatus(excerpt->notation());
+            listenExcerptNotationTitleChanged(excerpt);
+        }
     }
 
     endResetModel();
 
-    if (!m_notations.contains(context()->currentNotation())) {
-        constexpr int MASTER_NOTATION_INDEX = 0;
-        setCurrentNotation(MASTER_NOTATION_INDEX);
+    if (current && context()->currentNotation() && !m_notations.contains(context()->currentNotation())) {
+        int masterIndex = m_notations.indexOf(current->masterNotation()->notation());
+        if (masterIndex >= 0) {
+            context()->setCurrentNotation(m_notations[masterIndex]);
+        }
     }
 }
 
 void NotationSwitchListModel::listenNotationOpeningStatus(INotationPtr notation)
 {
-    INotationWeakPtr weakNotationPtr = notation;
-
-    notation->openChanged().onNotify(this, [this, weakNotationPtr]() {
-        INotationPtr notation = weakNotationPtr.lock();
-        if (!notation) {
-            return;
-        }
-
-        if (notation->isOpen()) {
-            if (m_notations.contains(notation)) {
-                return;
-            }
-
-            beginInsertRows(QModelIndex(), m_notations.size(), m_notations.size());
-            m_notations << notation;
-            endInsertRows();
-        } else {
-            int notationIndex = m_notations.indexOf(notation);
-            beginRemoveRows(QModelIndex(), notationIndex, notationIndex);
-            m_notations.removeAt(notationIndex);
-            endRemoveRows();
-        }
+    notation->openChanged().onNotify(this, [this]() {
+        loadNotations(); // Pauta: rebuild so parts stay next to their score
+        onCurrentNotationChanged();
     }, Asyncable::Mode::SetReplace);
 }
 
@@ -204,11 +212,13 @@ QVariant NotationSwitchListModel::data(const QModelIndex& index, int role) const
     switch (role) {
     case RoleTitle: return QVariant::fromValue(notation->name());
     case RoleNeedSave: {
-        bool needSave = context()->currentProject()->needSave().val && isMasterNotation(notation);
+        project::INotationProjectPtr owner = ownerOf(index.row());
+        bool needSave = owner && owner->needSave().val && isMasterNotation(notation);
         return QVariant::fromValue(needSave);
     }
     case RoleIsCloud: {
-        bool isCloud = context()->currentProject()->isCloudProject() && isMasterNotation(notation);
+        project::INotationProjectPtr owner = ownerOf(index.row());
+        bool isCloud = owner && owner->isCloudProject() && isMasterNotation(notation);
         return QVariant::fromValue(isCloud);
     }
     }
@@ -238,6 +248,12 @@ void NotationSwitchListModel::setCurrentNotation(int index)
         return;
     }
 
+    project::INotationProjectPtr owner = ownerOf(index);
+    if (owner && owner != context()->currentProject()) {
+        context()->setCurrentProject(owner); // Pauta: switch to another score's tab
+        return;
+    }
+
     context()->setCurrentNotation(m_notations[index]);
 }
 
@@ -250,11 +266,15 @@ void NotationSwitchListModel::closeNotation(int index)
     INotationPtr notation = m_notations[index];
 
     if (isMasterNotation(notation)) {
+        project::INotationProjectPtr owner = ownerOf(index);
+        if (owner && owner != context()->currentProject()) {
+            context()->setCurrentProject(owner); // Pauta: close that score's tab (asks "save?" if needed)
+        }
         dispatcher()->dispatch("file-close");
     } else {
         if (notation == currentNotation()) {
             // Set new current notation
-            context()->setCurrentNotation(m_notations[std::max(0, index - 1)]);
+            context()->setCurrentNotation(currentMasterNotation()->notation()); // Pauta: back to this score, not another tab
         }
         currentMasterNotation()->setExcerptIsOpen(notation, false);
     }
@@ -325,5 +345,15 @@ bool NotationSwitchListModel::isIndexValid(int index) const
 
 bool NotationSwitchListModel::isMasterNotation(const INotationPtr notation) const
 {
-    return currentMasterNotation()->notation() == notation;
+    for (const project::INotationProjectPtr& project : m_owners) {
+        if (project && project->masterNotation() && project->masterNotation()->notation() == notation) {
+            return true;
+        }
+    }
+    return currentMasterNotation() && currentMasterNotation()->notation() == notation;
+}
+
+project::INotationProjectPtr NotationSwitchListModel::ownerOf(int index) const
+{
+    return (index >= 0 && index < m_owners.size()) ? m_owners[index] : nullptr;
 }
