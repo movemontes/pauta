@@ -32,6 +32,8 @@ import "internal/ScoresPage"
 FocusScope {
     id: root
 
+    PautaPageEnter { target: root } // Pauta: section slides in
+
     property string subSection: ""
 
     signal subSectionApplied()
@@ -85,7 +87,7 @@ FocusScope {
 
         anchors.fill: parent
 
-        color: ui.theme.backgroundSecondaryColor
+        color: ui.theme.backgroundPrimaryColor // Pauta: cream paper
     }
 
     RowLayout {
@@ -109,13 +111,12 @@ FocusScope {
             accessible.name: qsTrc("project", "Scores")
         }
 
-        StyledTextLabel {
+        PautaPageTitle { // Pauta (Treco look)
             id: pageTitle
             Layout.fillWidth: true
 
             text: qsTrc("project", "Scores")
-            font: ui.theme.titleBoldFont
-            horizontalAlignment: Text.AlignLeft
+            lead: qsTrc("project", "Open a score, start a new one or pick up where you left off.")
         }
 
         SearchField {
@@ -173,7 +174,7 @@ FocusScope {
 
             StyledTabButton {
                 text: qsTrc("project", "New & recent")
-                width: implicitWidth + 32 // Pauta: wider pixel font
+                width: implicitWidth + 32 // Pauta: room for the wider font
 
                 navigation.name: "NewAndRecent"
                 navigation.panel: navTabPanel
@@ -354,10 +355,77 @@ FocusScope {
 
         anchors.bottom: parent.bottom
 
-        height: 100
+        height: 76
         width: parent.width
 
-        color: ui.theme.backgroundSecondaryColor
+        color: ui.theme.textFieldColor // Pauta (Treco look): white bar with an ink line on top
+
+        Rectangle { width: parent.width; height: 2; color: ui.theme.strokeColor }
+
+        // Pauta: dashed area, click to open (files can also be dropped anywhere on the window)
+        Item {
+            id: dropArea
+            anchors.left: parent.left
+            anchors.leftMargin: prv.sideMargin
+            anchors.right: buttonsRow.left
+            anchors.rightMargin: 16
+            anchors.verticalCenter: parent.verticalCenter
+            height: 40
+
+            Canvas {
+                id: dash
+                anchors.fill: parent
+                readonly property color ink: ui.theme.strokeColor
+                onInkChanged: requestPaint()
+                onWidthChanged: requestPaint()
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.reset()
+                    ctx.strokeStyle = ink
+                    ctx.lineWidth = 2
+                    ctx.setLineDash([3, 2])
+                    ctx.strokeRect(1, 1, width - 2, height - 2)
+                }
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 2
+                color: ui.theme.accentColor
+                opacity: dropMouse.containsMouse ? 0.12 : 0
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+            }
+
+            Row {
+                anchors.left: parent.left
+                anchors.leftMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 8
+
+                StyledIconLabel {
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconCode: IconCode.PLUS
+                }
+
+                StyledTextLabel {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTrc("project", "Drop scores here or click").toUpperCase()
+                    font.family: ui.theme.bodyBoldFont.family
+                    font.weight: Font.DemiBold
+                    font.pixelSize: 11
+                    font.letterSpacing: 0.6
+                    opacity: 0.75
+                }
+            }
+
+            MouseArea {
+                id: dropMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: scoresPageModel.openOther()
+            }
+        }
 
         NavigationPanel {
             id: navBottomPanel
@@ -389,6 +457,7 @@ FocusScope {
         }
 
         Row {
+            id: buttonsRow
             anchors.right : parent.right
             anchors.rightMargin: prv.sideMargin
             anchors.verticalCenter: parent.verticalCenter

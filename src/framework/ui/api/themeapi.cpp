@@ -43,7 +43,7 @@ using namespace muse::api;
 
 static const QPen NO_BORDER(Qt::transparent, 0);
 static const QBrush NO_FILL(Qt::transparent);
-static const int DEFAULT_RADIUS = 3;
+static const int DEFAULT_RADIUS = 0; // Pauta: square corners (Treco look)
 
 static const int GROUP_BOX_LABEL_SPACING = 2;
 
@@ -419,6 +419,14 @@ void ThemeApi::setupUiFonts()
         font->setFamily(QString::fromStdString(family));
         font->setWeight(fontConfig.weight);
     }
+
+    // Pauta (Treco look): big titles in wide, heavy Archivo; the biggest ones in capitals
+    for (QFont* font : { &m_headerBoldFont, &m_titleBoldFont }) {
+        font->setFamily("Pauta Titulo");
+        font->setWeight(QFont::Normal);
+    }
+    m_titleBoldFont.setCapitalization(QFont::AllUppercase);
+    m_titleBoldFont.setLetterSpacing(QFont::PercentageSpacing, 99);
 
     m_defaultFont.setFamily(QString::fromStdString(configuration()->defaultFontFamily()));
     m_defaultFont.setPixelSize(configuration()->defaultFontSize());
@@ -932,13 +940,28 @@ void ProxyStyle::drawButtonBackground(QPainter* painter, const QRect& rect, cons
 
             drawRoundedRect(painter, rect, DEFAULT_RADIUS, backgroundColor, QPen(penBorderColor, m_theme->borderWidth()));
         } else if (!flat) {
-            // Pauta: pixel button with outline and relief (Aseprite)
-            drawRoundedRect(painter, rect, DEFAULT_RADIUS, backgroundColor, QPen(m_theme->strokeColor(), 2));
-            const QColor base = accentButton ? m_theme->accentColor() : m_theme->buttonColor();
-            const QColor light = styleState.pressed ? base.darker(145) : base.lighter(160);
-            const QColor dark = styleState.pressed ? base.lighter(160) : base.darker(145);
-            painter->fillRect(QRect(rect.left() + 2, rect.top() + 2, rect.width() - 4, 2), light);
-            painter->fillRect(QRect(rect.left() + 2, rect.bottom() - 4, rect.width() - 4, 3), dark);
+            // Pauta (Treco look): white face, thin ink outline, hard shadow 2 px down-right with no blur.
+            // Hover tints the face with the accent; pressed sinks the face onto the shadow.
+            const int sh = 2;
+            const QRect face = styleState.pressed ? rect.adjusted(sh, sh, 0, 0) : rect.adjusted(0, 0, -sh, -sh);
+            if (!styleState.pressed) {
+                painter->fillRect(rect.adjusted(sh, sh, 0, 0), accentButton ? m_theme->accentColor() : m_theme->strokeColor());
+            }
+            // main button: light accent face (keeps the dark text readable) over an accent shadow
+            QColor faceColor = m_theme->buttonColor();
+            if (accentButton) {
+                QColor a = m_theme->accentColor();
+                faceColor = QColor::fromRgbF(1 - (1 - a.redF()) * 0.3, 1 - (1 - a.greenF()) * 0.3, 1 - (1 - a.blueF()) * 0.3);
+            }
+            if (!accentButton && (styleState.hovered || styleState.pressed)) {
+                QColor tint = m_theme->accentColor();
+                tint.setAlphaF(styleState.pressed ? 0.35 : 0.2);
+                painter->fillRect(face, faceColor);
+                faceColor = tint;
+            }
+            painter->setPen(QPen(m_theme->strokeColor(), 2));
+            painter->setBrush(faceColor);
+            painter->drawRect(QRectF(face).adjusted(1, 1, -1, -1));
         } else {
             drawRoundedRect(painter, rect, DEFAULT_RADIUS, backgroundColor, NO_BORDER);
         }
@@ -980,15 +1003,12 @@ void ProxyStyle::drawCheckboxIndicator(QPainter* painter, const QRect& rect, con
     }
 
     if (!inMenu) {
-        // Pauta: white box, dark outline, sunken inner edge (Aseprite)
+        // Pauta (Treco look): white box, ink outline, square corners
         QColor field = m_theme->textFieldColor();
         if (!styleState.enabled) {
             field.setAlphaF(m_theme->itemOpacityDisabled());
         }
-        drawRoundedRect(painter, rect, borderRadius, field, QPen(m_theme->strokeColor(), 2));
-        const QColor shade = m_theme->textFieldColor().darker(130);
-        painter->fillRect(QRect(rect.left() + 2, rect.top() + 2, rect.width() - 4, 2), shade);
-        painter->fillRect(QRect(rect.left() + 2, rect.top() + 2, 2, rect.height() - 4), shade);
+        drawRoundedRect(painter, rect, 0, field, QPen(m_theme->strokeColor(), 2));
     }
 
     if (styleState.focused) {
@@ -1038,12 +1058,9 @@ void ProxyStyle::drawRadioButtonIndicator(QPainter* painter, const QRect& rect, 
     const QRect outerCircleRect(rect.center() + QPoint(1, 1) - QPoint(outerCircleRadius, outerCircleRadius),
                                 QSize(outerCircleRadius, outerCircleRadius) * 2);
     drawRoundedRect(painter, outerCircleRect, outerCircleRadius, backgroundColor, QPen(borderColor, borderWidth));
-    // Pauta: sunken ring inside
-    drawRoundedRect(painter, outerCircleRect.adjusted(2, 2, -2, -2), outerCircleRadius - 2, NO_FILL,
-                    QPen(m_theme->textFieldColor().darker(130), 2));
 
     if (selected || styleState.pressed) {
-        QColor centerColor = m_theme->fontPrimaryColor(); // Pauta: dark dot like Aseprite
+        QColor centerColor = m_theme->accentColor(); // Pauta: accent dot (Treco look)
         const int innerCircleRadius = 4; // Pauta
         const QRect innerCircleRect(rect.center() + QPoint(1, 1) - QPoint(innerCircleRadius, innerCircleRadius),
                                     QSize(innerCircleRadius, innerCircleRadius) * 2);

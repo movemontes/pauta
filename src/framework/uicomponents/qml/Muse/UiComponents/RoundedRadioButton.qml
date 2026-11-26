@@ -117,18 +117,7 @@ RadioDelegate {
 
             color: ui.theme.textFieldColor
             border.color: Utils.colorWithAlpha(ui.theme.fontPrimaryColor, borderColorOpacity)
-            border.width: 2 // Pauta: pixel look
-
-            // Pauta: sunken look (shadow on the upper part)
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: 2
-                radius: width / 2
-                color: "transparent"
-                border.width: 2
-                border.color: Qt.darker(ui.theme.textFieldColor, 1.3)
-                opacity: 0.8
-            }
+            border.width: 2 // Pauta
         }
 
         Rectangle {
@@ -138,7 +127,7 @@ RadioDelegate {
             height: width
             radius: 4
 
-            color: ui.theme.fontPrimaryColor // Pauta: dark dot, like Aseprite
+            color: ui.theme.accentColor // Pauta: accent dot (Treco look)
             visible: root.checked
         }
     }

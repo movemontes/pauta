@@ -21,6 +21,8 @@
  */
 #include "applicationactioncontroller.h"
 
+#include <QSettings>
+
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDragEnterEvent>
@@ -78,9 +80,18 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "about-musicxml", this, &ApplicationActionController::openAboutMusicXMLDialog);
     dispatcher()->reg(this, "online-handbook", this, &ApplicationActionController::openOnlineHandbookPage);
     // Pauta
-    for (const char* preset : { "aseprite", "night", "mint", "peach", "sky", "grape", "treco" }) {
+    for (const char* preset : { "blue", "orange", "green", "pink", "purple", "night" }) {
         const std::string name(preset);
         dispatcher()->reg(this, "pauta-theme-" + name, [this, name]() { pautaApplyColors(name); });
+    }
+    dispatcher()->reg(this, "pauta-theme-custom", this, &ApplicationActionController::pautaChooseAccent);
+    // Pauta: first start with the Treco look resets colors saved by older versions (pixel look)
+    {
+        QSettings s;
+        if (s.value("pauta/lookVersion", 0).toInt() < 2) {
+            s.setValue("pauta/lookVersion", 2);
+            pautaApplyColors("blue");
+        }
     }
     dispatcher()->reg(this, "pauta-quick-guide", [this]() { interactive()->open("musescore://pauta/guide"); });
     dispatcher()->reg(this, "pauta-import-pdf", this, &ApplicationActionController::pautaImportPdf);
@@ -516,18 +527,22 @@ void ApplicationActionController::pautaImportPdf()
 // Pauta: ready-made interface color palettes (pixel look). The score page stays white.
 void ApplicationActionController::pautaApplyColors(const std::string& name)
 {
+    // Pauta: Treco look (cream paper, near-black ink, one strong accent color)
     struct Palette {
         const char* primary; const char* secondary; const char* button; const char* field;
         const char* accent; const char* font; const char* fontOnAccent; const char* stroke; const char* canvas;
     };
+    static const char* CREAM = "#FDF9EE";
+    static const char* CREAM2 = "#F4F0E3";
+    static const char* INK = "#0A0A0A";
+    static const char* CANVAS = "#E4DECD";
     static const std::map<std::string, Palette> palettes {
-        { "aseprite", { "#D3CBBE", "#7D929E", "#F2ECE2", "#FFFFFF", "#5B7A93", "#1B1A1F", "#FFFFFF", "#1B1A1F", "#5D5163" } },
-        { "night",    { "#3A3946", "#25242C", "#55536A", "#2B2A33", "#E0862C", "#EDE7DB", "#1B1A1F", "#0E0D12", "#16151B" } },
-        { "mint",     { "#D3E6D6", "#6E9C88", "#EEF7EF", "#FFFFFF", "#3E7C62", "#18231E", "#FFFFFF", "#18231E", "#2F4A44" } },
-        { "peach",    { "#F2DCCB", "#C98F78", "#FBF0E7", "#FFFFFF", "#B5523B", "#2A1A16", "#FFFFFF", "#2A1A16", "#5A3A3A" } },
-        { "sky",      { "#D6E4F0", "#6F8FB3", "#EEF4FA", "#FFFFFF", "#3E66A8", "#141C2B", "#FFFFFF", "#141C2B", "#2C3E5C" } },
-        { "grape",    { "#E3D8EE", "#8A72A6", "#F4EEFA", "#FFFFFF", "#6A4A9A", "#1E1428", "#FFFFFF", "#1E1428", "#3E2E52" } },
-        { "treco",    { "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#0000FF", "#000000", "#FFFFFF", "#000000", "#BCC1CC" } },
+        { "blue",   { CREAM, CREAM2, "#FFFFFF", "#FFFFFF", "#0000FF", INK, "#FFFFFF", INK, CANVAS } },
+        { "orange", { CREAM, CREAM2, "#FFFFFF", "#FFFFFF", "#FF4A00", INK, "#FFFFFF", INK, CANVAS } },
+        { "green",  { CREAM, CREAM2, "#FFFFFF", "#FFFFFF", "#00914A", INK, "#FFFFFF", INK, CANVAS } },
+        { "pink",   { CREAM, CREAM2, "#FFFFFF", "#FFFFFF", "#F0187F", INK, "#FFFFFF", INK, CANVAS } },
+        { "purple", { CREAM, CREAM2, "#FFFFFF", "#FFFFFF", "#7426F2", INK, "#FFFFFF", INK, CANVAS } },
+        { "night",  { "#161616", "#0E0E0E", "#222222", "#1C1C1C", "#6F6FFF", "#F4F0E3", "#FFFFFF", "#F4F0E3", "#2A2A2A" } },
     };
     auto it = palettes.find(name);
     if (it == palettes.end()) {
@@ -542,6 +557,8 @@ void ApplicationActionController::pautaApplyColors(const std::string& name)
     set(BUTTON_COLOR, p.button);
     set(TEXT_FIELD_COLOR, p.field);
     set(ACCENT_COLOR, p.accent);
+    set(FOCUS_COLOR, p.accent);
+    set(LINK_COLOR, p.accent);
     set(FONT_PRIMARY_COLOR, p.font);
     set(FONT_SECONDARY_COLOR, p.fontOnAccent);
     set(STROKE_COLOR, p.stroke);
@@ -549,6 +566,19 @@ void ApplicationActionController::pautaApplyColors(const std::string& name)
     // the area around the page
     muse::settings()->setSharedValue(muse::Settings::Key("notation", "ui/canvas/background/lightTheme_score_background_color"),
                                      muse::Val(QColor(p.canvas)));
+}
+
+void ApplicationActionController::pautaChooseAccent()
+{
+    // Pauta: any accent color, keeping the rest of the current colors
+    const QColor current = uiConfiguration()->currentTheme().values.value(muse::ui::ACCENT_COLOR).value<QColor>();
+    interactive()->selectColor(muse::Color::fromQColor(current), muse::trc("appshell", "Choose the accent color"))
+    .onResolve(this, [this](const muse::Color& c) {
+        using namespace muse::ui;
+        uiConfiguration()->setCurrentThemeStyleValue(ACCENT_COLOR, muse::Val(c.toQColor()));
+        uiConfiguration()->setCurrentThemeStyleValue(FOCUS_COLOR, muse::Val(c.toQColor()));
+        uiConfiguration()->setCurrentThemeStyleValue(LINK_COLOR, muse::Val(c.toQColor()));
+    });
 }
 
 void ApplicationActionController::pautaSetLanguage(const QString& code)

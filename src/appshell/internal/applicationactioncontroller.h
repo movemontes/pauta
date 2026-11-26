@@ -121,6 +121,7 @@ private:
     void pautaImportPdf();
     bool pautaCloseAllTabs();
     void pautaApplyColors(const std::string& name);
+    void pautaChooseAccent();
     muse::Progress m_pautaPdfProgress;
 
     bool hasProjectAndIsFocused() const;

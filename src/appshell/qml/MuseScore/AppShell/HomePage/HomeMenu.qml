@@ -28,15 +28,21 @@ import QtQuick.Layouts
 
 import Muse.Ui
 import Muse.UiComponents
-import Muse.Cloud
+import MuseScore.AppShell
 
-Item {
+// Pauta (Treco look): black rail on the left. Logo on top (accent square with the letter), sections standing up
+// (icon + small capital label); the active one is a white block with an accent shadow; settings at the foot.
+Rectangle {
     id: root
 
     property string currentPageName: ""
     property bool iconsOnly: false
 
     signal selected(string name)
+
+    color: "#0A0A0A"
+
+    PautaToolsModel { id: actions }
 
     NavigationSection {
         id: navSec
@@ -56,72 +62,135 @@ Item {
         accessible.name: qsTrc("appshell", "Home menu") + " " + navPanel.directionInfo
     }
 
-    ColumnLayout {
-        anchors.fill: parent
+    component RailItem: Item {
+        id: item
 
-        spacing: 0
+        property string name: ""
+        property string action: ""
+        property string title: ""
+        property int iconCode: IconCode.NONE
+        property int row: 0
+        readonly property bool active: name !== "" && name === root.currentPageName
+        readonly property bool hovered: area.containsMouse
 
-        // Pauta: app name in Treco's style instead of the online account button
-        StyledTextLabel {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 60
-            Layout.topMargin: 20
-            Layout.leftMargin: root.iconsOnly ? 0 : 24
-            horizontalAlignment: root.iconsOnly ? Text.AlignHCenter : Text.AlignLeft
-            text: root.iconsOnly ? "P" : "PAUTA"
-            font.family: ui.theme.bodyBoldFont.family
-            font.bold: true
-            font.pixelSize: 30
-        }
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: 72
+        Layout.preferredHeight: 60
+        width: 72
+        height: 60
 
-        RadioButtonGroup {
-            id: radioButtonList
-
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            orientation: ListView.Vertical
-            spacing: 0
-
-            model: [
-                { "name": "scores", "title": qsTrc("appshell", "Scores"), "iconCode": IconCode.MUSIC_NOTES },
-                { "name": "extensions", "title": qsTrc("appshell", "Plugins"), "iconCode":  IconCode.PLUGIN }
-            ]
-
-            currentIndex: 0
-
-            delegate: PageTabButton {
-                id: radioButtonDelegate
-
-                required title
-                required property int iconCode
-                required property string name
-                required property int index
-
-                width: radioButtonList.width
-
-                navigation.name: title
-                navigation.panel: navPanel
-                navigation.row: 2 + index
-
-                spacing: 30
-                leftPadding: spacing
-
-                ButtonGroup.group: radioButtonList.radioButtonGroup
-                orientation: Qt.Horizontal
-                checked: name === root.currentPageName
-
-                iconOnly: root.iconsOnly
-
-                iconComponent: StyledIconLabel {
-                    iconCode: radioButtonDelegate.iconCode
-                }
-
-                onToggled: {
-                    radioButtonList.currentIndex = index
-                    root.selected(name)
-                }
+        function trigger() {
+            if (item.action !== "") {
+                actions.run(item.action)
+            } else {
+                root.selected(item.name)
             }
         }
+
+        NavigationControl {
+            id: nav
+            name: item.title
+            panel: navPanel
+            row: item.row
+            enabled: item.visible
+            accessible.role: MUAccessible.Button
+            accessible.name: item.title
+            onTriggered: item.trigger()
+        }
+
+        Rectangle { // accent shadow under the active block
+            x: 3; y: 3; width: parent.width; height: parent.height
+            color: ui.theme.accentColor
+            opacity: item.active ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 150 } }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: item.active ? "#FFFFFF" : (item.hovered ? "#262626" : "transparent")
+            Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            NavigationFocusBorder { navigationCtrl: nav }
+        }
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 5
+
+            StyledIconLabel {
+                anchors.horizontalCenter: parent.horizontalCenter
+                iconCode: item.iconCode
+                font.family: ui.theme.iconsFont.family
+                font.pixelSize: 20
+                color: item.active ? "#0A0A0A" : "#FFFFFF"
+            }
+
+            StyledTextLabel {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: item.width - 4
+                text: item.title.toUpperCase()
+                font.family: ui.theme.bodyBoldFont.family
+                font.weight: Font.DemiBold
+                font.pixelSize: 9
+                font.letterSpacing: 0.2
+                color: item.active ? "#0A0A0A" : (item.hovered ? "#FFFFFF" : "#BBBBBB")
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
+                lineHeight: 0.95
+            }
+        }
+
+        MouseArea {
+            id: area
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                nav.requestActiveByInteraction()
+                item.trigger()
+            }
+        }
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.topMargin: 14
+        anchors.bottomMargin: 14
+        spacing: 4
+
+        // logo: accent square with the app letter; opens "About Pauta"
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.bottomMargin: 14
+            width: 44
+            height: 44
+            color: logoArea.containsMouse ? Qt.lighter(ui.theme.accentColor, 1.2) : ui.theme.accentColor
+            Behavior on color { ColorAnimation { duration: 150 } }
+
+            StyledTextLabel {
+                anchors.centerIn: parent
+                text: "P"
+                color: "#FFFFFF"
+                font.family: ui.theme.titleBoldFont.family
+                font.pixelSize: 26
+            }
+
+            MouseArea {
+                id: logoArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: actions.run("about-musescore")
+            }
+        }
+
+        RailItem { name: "scores"; title: qsTrc("appshell", "Scores"); iconCode: IconCode.MUSIC_NOTES; row: 1 }
+        RailItem { name: "extensions"; title: qsTrc("appshell", "Plugins"); iconCode: IconCode.PLUGIN; row: 2 }
+        RailItem { action: "pauta-quick-guide"; title: qsTrc("action", "Quick guide"); iconCode: IconCode.QUESTION_MARK; row: 3 }
+
+        Item { Layout.fillHeight: true }
+
+        RailItem { action: "preference-dialog"; title: qsTrc("appshell", "Preferences"); iconCode: IconCode.SETTINGS_COG; row: 4 }
     }
 }

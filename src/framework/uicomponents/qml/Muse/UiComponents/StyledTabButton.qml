@@ -93,15 +93,14 @@ TabButton {
 
         NavigationFocusBorder { navigationCtrl: navCtrl }
 
-        // Pauta: Aseprite-like tab (raised beige when selected)
+        // Pauta (Treco look): selected tab is a white block; the others sit on the darker paper
         Rectangle {
             anchors.fill: parent
             anchors.topMargin: 2
-            radius: 2
-            color: isCurrent ? ui.theme.backgroundPrimaryColor : Qt.lighter(ui.theme.backgroundSecondaryColor, 1.15)
+            radius: 0 // Pauta: square (Treco look)
+            color: isCurrent ? ui.theme.textFieldColor : ui.theme.backgroundSecondaryColor
             border.width: 2
             border.color: ui.theme.strokeColor
-            Rectangle { x: 2; y: 2; width: parent.width - 4; height: 2; color: Qt.lighter(ui.theme.backgroundPrimaryColor, 1.4); opacity: 0.7; visible: isCurrent }
         }
 
         Rectangle {
@@ -111,7 +110,7 @@ TabButton {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
 
-            height: 2
+            height: 4 // Pauta
 
             visible: isCurrent
             color: ui.theme.accentColor

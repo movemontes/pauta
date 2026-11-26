@@ -97,9 +97,19 @@ FocusScope {
         opacity: root.animationEnabled ? 0.5 : 1.0
         transformOrigin: Item.Center
 
+        // Pauta (Treco look): hard shadow, 3 px, no blur
+        Rectangle {
+            x: contentBackground.x + 3
+            y: contentBackground.y + 3
+            width: contentBackground.width
+            height: contentBackground.height
+            color: ui.theme.strokeColor
+            visible: root.useDropShadow
+        }
+
         StyledRectangularShadow {
             anchors.fill: contentBackground
-            visible: root.useDropShadow
+            visible: false // Pauta: replaced by the hard shadow above
 
             blur: root.padding
             radius: contentBackground.radius
@@ -135,7 +145,7 @@ FocusScope {
 
             color: "transparent"
             radius: contentBackground.radius
-            border.width: 1
+            border.width: 2 // Pauta
             border.color: ui.theme.strokeColor
         }
 

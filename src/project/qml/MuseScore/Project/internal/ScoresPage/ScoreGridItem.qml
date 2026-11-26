@@ -114,14 +114,28 @@ FocusScope {
             height: 224
             width: 172
 
+            // Pauta (Treco look): card with ink outline and a hard shadow; on hover it lifts and the shadow takes the accent
+            Rectangle {
+                x: 5; y: 5
+                width: parent.width
+                height: parent.height
+                color: rootMouseArea.containsMouse ? ui.theme.accentColor : ui.theme.strokeColor
+                Behavior on color { ColorAnimation { duration: 160 } }
+            }
+
             Item {
                 id: thumbnail
-                anchors.fill: parent
+                width: parent.width
+                height: parent.height
 
-                opacity: 0.9
+                readonly property real pautaLift: rootMouseArea.pressed ? 4 : (rootMouseArea.containsMouse ? -2 : 0)
+                x: pautaLift
+                y: pautaLift
+                Behavior on x { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
+                Behavior on y { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
 
-                property int borderWidth: 0
-                readonly property int radius: 3
+                property int borderWidth: 2
+                readonly property int radius: 0
 
                 Loader {
                     id: loader
@@ -166,40 +180,8 @@ FocusScope {
                     border.width: parent.borderWidth
                 }
 
-                states: [
-                    State {
-                        name: "NORMAL"
-                        when: !rootMouseArea.containsMouse && !rootMouseArea.pressed
-
-                        PropertyChanges {
-                            target: thumbnail
-                            borderWidth: ui.theme.borderWidth
-                        }
-                    },
-
-                    State {
-                        name: "HOVERED"
-                        when: rootMouseArea.containsMouse && !rootMouseArea.pressed
-
-                        PropertyChanges {
-                            target: thumbnail
-                            opacity: 1
-                            borderWidth: 1
-                        }
-                    },
-
-                    State {
-                        name: "PRESSED"
-                        when: rootMouseArea.pressed
-
-                        PropertyChanges {
-                            target: thumbnail
-                            opacity: 0.5
-                        }
-                    }
-                ]
-
                 EffectRectangularGlow {
+                    visible: false // Pauta: hard shadow instead
                     anchors.fill: thumbnail
                     z: -1
 
@@ -317,7 +299,7 @@ FocusScope {
                 maximumLineCount: 1
                 width: parent.width
 
-                font: ui.theme.largeBodyFont
+                font: ui.theme.largeBodyBoldFont // Pauta: bold card title (Treco look)
             }
 
             StyledTextLabel {

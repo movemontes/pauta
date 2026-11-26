@@ -68,3 +68,8 @@ void PautaToolsModel::load()
 
     AbstractToolBarModel::load();
 }
+
+void PautaToolsModel::run(const QString& action)
+{
+    dispatcher()->dispatch(action.toStdString());
+}

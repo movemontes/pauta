@@ -79,12 +79,9 @@ DockPage {
 
             objectName: "homeMenu"
 
-            readonly property int maxFixedWidth: 260
-            readonly property int minFixedWidth: 76
-            readonly property bool iconsOnly: root.window
-                                                ? root.window.width < (root.window.minimumWidth + maxFixedWidth - minFixedWidth)
-                                                : false
-            readonly property int currentFixedWidth: iconsOnly ? minFixedWidth : maxFixedWidth
+            // Pauta (Treco look): fixed narrow black rail
+            readonly property bool iconsOnly: true
+            readonly property int currentFixedWidth: 78
 
             width: currentFixedWidth
             minimumWidth: currentFixedWidth
@@ -94,6 +91,7 @@ DockPage {
             closable: false
 
             HomeMenu {
+                anchors.fill: parent
                 currentPageName: root.section
                 iconsOnly: menuPanel.iconsOnly
 

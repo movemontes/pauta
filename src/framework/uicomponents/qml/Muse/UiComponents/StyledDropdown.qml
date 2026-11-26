@@ -146,18 +146,17 @@ Item {
             onTriggered: mainItem.clicked()
         }
 
+        // Pauta (Treco look): hard shadow under the box
+        Rectangle { x: 2; y: 2; width: parent.width; height: parent.height; color: ui.theme.strokeColor }
+
         Rectangle {
             id: backgroundItem
             anchors.fill: parent
             border.width: ui.theme.borderWidth
             border.color: ui.theme.strokeColor
             color: ui.theme.buttonColor
-            radius: 3 // Pauta: pixel button look
+            radius: 0 // Pauta: square (Treco look)
 
-            // Pauta: raised like the buttons (light top edge, shadow at the bottom)
-            Rectangle { x: 2; y: 2; width: parent.width - 4; height: 2; color: Qt.lighter(ui.theme.buttonColor, 1.6) }
-            Rectangle { x: 2; y: parent.height - 5; width: parent.width - 4; height: 3; color: Qt.darker(ui.theme.buttonColor, 1.45) }
-            opacity: 0.7
 
             NavigationFocusBorder { navigationCtrl: navCtrl }
         }

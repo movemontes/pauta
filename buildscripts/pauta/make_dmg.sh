@@ -42,6 +42,17 @@ else
     echo "AVISO: denigma não encontrado; o Pauta não vai abrir arquivos do Finale"
 fi
 
+# Clash Grotesk (ITF Free Font License): may ship inside the app, but not in a public repository.
+# The files live outside Git, in $ROOT/fontes-privadas. Without them Pauta uses Archivo (same look, a bit plainer).
+CLASH=$ROOT/fontes-privadas
+if [ -f "$CLASH/ClashGrotesk-Medium.otf" ] && [ -f "$CLASH/ClashGrotesk-Semibold.otf" ]; then
+    mkdir -p "$APP/Contents/Resources/fonts" "$APP/Contents/Resources/licenses"
+    cp "$CLASH/ClashGrotesk-Medium.otf" "$CLASH/ClashGrotesk-Semibold.otf" "$APP/Contents/Resources/fonts/"
+    [ -f "$CLASH/LICENSE.txt" ] && cp "$CLASH/LICENSE.txt" "$APP/Contents/Resources/licenses/ClashGrotesk-LICENSE.txt"
+else
+    echo "AVISO: Clash Grotesk não encontrada em $CLASH; o Pauta vai usar a Archivo no texto"
+fi
+
 # Qt 6.10 needs macOS 13; say so in the bundle so older Macs get a clear message
 plutil -replace LSMinimumSystemVersion -string 13.0 "$APP/Contents/Info.plist"
 

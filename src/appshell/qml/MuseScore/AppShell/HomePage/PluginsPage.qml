@@ -32,6 +32,8 @@ FocusScope {
 
     property alias color: background.color
 
+    PautaPageEnter { target: root } // Pauta: section slides in
+
     QtObject {
         id: prv
 
@@ -53,7 +55,7 @@ FocusScope {
     Rectangle {
         id: background
         anchors.fill: parent
-        color: ui.theme.backgroundSecondaryColor
+        color: ui.theme.backgroundPrimaryColor // Pauta: cream paper
     }
 
     NavigationPanel {
@@ -81,13 +83,12 @@ FocusScope {
 
             spacing: 12
 
-            StyledTextLabel {
+            PautaPageTitle { // Pauta (Treco look)
                 id: pageTitle
                 Layout.fillWidth: true
 
                 text: qsTrc("appshell", "Plugins")
-                font: ui.theme.titleBoldFont
-                horizontalAlignment: Text.AlignLeft
+                lead: qsTrc("appshell", "Extra tools you can turn on when you need them.")
             }
 
             SearchField {

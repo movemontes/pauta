@@ -215,7 +215,7 @@ DockPage {
     ]
 
     toolBars: [
-        // Pauta: always-visible tool column on the right (Aseprite style)
+        // Pauta: always-visible tool column on the right
         DockToolBar {
             id: pautaToolsBar
 

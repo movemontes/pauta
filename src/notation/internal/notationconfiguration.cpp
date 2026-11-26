@@ -132,7 +132,7 @@ void NotationConfiguration::init()
         });
     }
 
-    settings()->setDefaultValue(LIGHT_SCORE_BACKGROUND_COLOR, Val(QColor("#5D5163"))); // Pauta: dark plum around the page (Aseprite)
+    settings()->setDefaultValue(LIGHT_SCORE_BACKGROUND_COLOR, Val(QColor("#E4DECD"))); // Pauta: darker cream around the page (Treco look)
     settings()->valueChanged(LIGHT_SCORE_BACKGROUND_COLOR).onReceive(nullptr, [this](const Val&) {
         m_backgroundChanged.notify();
     });

@@ -29,6 +29,7 @@
 #include "settings.h"
 #include "themeconverter.h"
 
+#include <QCoreApplication>
 #include <QFontDatabase>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -645,17 +646,23 @@ Notification UiConfiguration::musicalTextFontChanged() const
 
 std::string UiConfiguration::defaultFontFamily() const
 {
-    // Pauta: Treco's typeface. Loaded here because this runs before UiModule::onInit.
-    static const QString pautaFamily = "Pauta Pixel"; // Pauta: thick pixel font (Jersey 10, OFL), Aseprite style
-    static const bool pautaLoaded = [] {
-        bool ok = true;
-        for (const char* f : { ":/ui/data/PautaArchivo-Regular.ttf", ":/ui/data/PautaArchivo-Bold.ttf",
-                               ":/ui/data/PautaPixel-Regular.ttf", ":/ui/data/PautaPixel-Bold.ttf" }) {
-            ok = QFontDatabase::addApplicationFont(f) != -1 && ok;
+    // Pauta: Treco's typefaces. Loaded here because this runs before UiModule::onInit.
+    // Small text: Clash Grotesk (ITF Free Font License: may ship inside the app, but not in a public repository,
+    // so the files are copied into Contents/Resources/fonts when the app is packaged and stay out of Git).
+    // Without them, Archivo at normal width. Big titles: Archivo wide ("Pauta Titulo", see ThemeApi).
+    static const QString pautaFamily = [] {
+        for (const char* f : { ":/ui/data/PautaTitulo-Regular.ttf", ":/ui/data/PautaTexto-Regular.ttf",
+                               ":/ui/data/PautaTexto-Bold.ttf" }) {
+            QFontDatabase::addApplicationFont(f);
         }
-        return ok;
+        const QString dir = QCoreApplication::applicationDirPath() + "/../Resources/fonts/";
+        bool clash = true;
+        for (const char* f : { "ClashGrotesk-Medium.otf", "ClashGrotesk-Semibold.otf" }) {
+            clash = QFontDatabase::addApplicationFont(dir + f) != -1 && clash;
+        }
+        return clash ? QString("Clash Grotesk") : QString("Pauta Texto");
     }();
-    if (pautaLoaded && QFontDatabase::hasFamily(pautaFamily)) {
+    if (QFontDatabase::hasFamily(pautaFamily)) {
         return pautaFamily.toStdString();
     }
 
@@ -672,7 +679,7 @@ std::string UiConfiguration::defaultFontFamily() const
 
 int UiConfiguration::defaultFontSize() const
 {
-    return 20; // Pauta: Jersey 10 pixel font is compact; 20 px reads like ~14 px
+    return 13; // Pauta: Clash Grotesk / Archivo text size
 }
 
 void UiConfiguration::resetFonts()

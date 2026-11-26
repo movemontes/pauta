@@ -84,13 +84,11 @@ FocusScope {
 
             border.width: 2
             border.color: ui.theme.strokeColor
-            color: ui.theme.textFieldColor // Pauta: white box like Aseprite
+            color: (root.checked || root.isIndeterminate) ? ui.theme.accentColor : ui.theme.textFieldColor // Pauta: accent when checked (Treco look)
+            Behavior on color { ColorAnimation { duration: 140 } }
 
-            radius: 2
+            radius: 0 // Pauta: square (Treco look)
 
-            // Pauta: sunken look: shadow on the top and left inner edges
-            Rectangle { x: 2; y: 2; width: parent.width - 4; height: 2; color: Qt.darker(ui.theme.textFieldColor, 1.3) }
-            Rectangle { x: 2; y: 2; width: 2; height: parent.height - 4; color: Qt.darker(ui.theme.textFieldColor, 1.3) }
 
             NavigationFocusBorder { navigationCtrl: navCtrl }
 
@@ -98,7 +96,7 @@ FocusScope {
                 anchors.fill: parent
                 iconCode: root.isIndeterminate ? IconCode.MINUS : IconCode.TICK_RIGHT_ANGLE
                 visible: root.checked || root.isIndeterminate
-                color: ui.theme.fontPrimaryColor
+                color: "#FFFFFF" // Pauta
                 font.bold: true
             }
         }

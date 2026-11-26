@@ -71,40 +71,40 @@ const UiActionList ApplicationUiActions::m_actions = {
              mu::context::CTX_ANY,
              TranslatableString("action", "Support Pauta with Pix…")
              ),
-    UiAction("pauta-theme-aseprite",
+    UiAction("pauta-theme-blue",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Aseprite (classic)")
+             TranslatableString("action", "Accent color: Blue (Treco)")
+             ),
+    UiAction("pauta-theme-orange",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Accent color: Orange")
+             ),
+    UiAction("pauta-theme-green",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Accent color: Green")
+             ),
+    UiAction("pauta-theme-pink",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Accent color: Pink")
+             ),
+    UiAction("pauta-theme-purple",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Accent color: Purple")
              ),
     UiAction("pauta-theme-night",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Night")
+             TranslatableString("action", "Night (dark)")
              ),
-    UiAction("pauta-theme-mint",
+    UiAction("pauta-theme-custom",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Mint")
-             ),
-    UiAction("pauta-theme-peach",
-             mu::context::UiCtxAny,
-             mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Peach")
-             ),
-    UiAction("pauta-theme-sky",
-             mu::context::UiCtxAny,
-             mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Sky")
-             ),
-    UiAction("pauta-theme-grape",
-             mu::context::UiCtxAny,
-             mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Grape")
-             ),
-    UiAction("pauta-theme-treco",
-             mu::context::UiCtxAny,
-             mu::context::CTX_ANY,
-             TranslatableString("action", "Colors: Treco (white and blue)")
+             TranslatableString("action", "Accent color: Other…")
              ),
     UiAction("pauta-quick-guide",
              mu::context::UiCtxAny,

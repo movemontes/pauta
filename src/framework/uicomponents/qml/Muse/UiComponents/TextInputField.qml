@@ -140,9 +140,7 @@ FocusScope {
         border.color: ui.theme.strokeColor
         border.width: Math.max(ui.theme.borderWidth, 1)
 
-        // Pauta: sunken field (shadow on the top and left inner edges, like Aseprite)
-        Rectangle { x: 2; y: 2; width: parent.width - 4; height: 2; color: Qt.darker(ui.theme.textFieldColor, 1.3) }
-        Rectangle { x: 2; y: 2; width: 2; height: parent.height - 4; color: Qt.darker(ui.theme.textFieldColor, 1.3) }
+        // Pauta (Treco look): white field, ink outline
         radius: 0 // Pauta: square corners (Treco)
     }
 

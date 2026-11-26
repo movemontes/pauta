@@ -70,10 +70,15 @@ FocusScope {
     property bool toolTipShowLocked: false
 
     property font iconFont: ui.theme.iconsFont
-    // Pauta (owner standard): on hover the action turns bold and blue
+    // Pauta (Treco look): filled buttons fill with the accent on hover and the text turns white;
+    // borderless (transparent) buttons keep the owner standard: on hover the action turns the accent color.
     readonly property bool pautaHover: mouseArea.containsMouse && enabled
-    property color iconColor: accentButton && !transparent ? "#FFFFFF" : (pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor) // Pauta
-    property font textFont: (accentButton || pautaHover) ? ui.theme.bodyBoldFont : ui.theme.bodyFont // Pauta
+    readonly property bool pautaInk: accentButton && !transparent // selected / main button: ink face, accent shadow
+    readonly property bool pautaFilledHover: pautaHover && !transparent
+    readonly property color pautaContentColor: (pautaInk || pautaFilledHover) ? "#FFFFFF"
+                                               : (pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor)
+    property color iconColor: pautaContentColor
+    property font textFont: accentButton ? ui.theme.bodyBoldFont : ui.theme.bodyFont // Pauta
 
     property bool transparent: false
     property bool accentButton: false
@@ -87,7 +92,7 @@ FocusScope {
     property real margins: isNarrow ? 12 : 16
     property real minWidth: isNarrow ? 24 : 132
 
-    property real backgroundRadius: 3 // Pauta: slightly rounded pixel buttons (Aseprite)
+    property real backgroundRadius: 0 // Pauta: square corners (Treco look)
 
     property bool drawFocusBorderInsideRect: false
 
@@ -178,61 +183,58 @@ FocusScope {
     Component {
         id: defaultBackgroundComponent
 
-        Rectangle {
+        Item {
             id: background
 
-            color: root.normalColor
-            opacity: ui.theme.buttonOpacityNormal
+            // Pauta (Treco look): hard shadow 2 px down-right with no blur. On hover the face fills with the accent
+            // and lifts 1 px over the shadow; pressed, it sinks onto the shadow. Short, interruptible animations.
+            readonly property bool solid: !root.transparent
+            readonly property int shadowSize: 2
+            readonly property real lift: !solid ? 0 : mouseArea.pressed ? shadowSize : (root.pautaHover ? -1 : 0)
 
-            radius: root.backgroundRadius
-            border.width: ui.theme.borderWidth
-            border.color: ui.theme.strokeColor
-
-            // Pauta: pixel "relief" like Aseprite buttons (light edge on top, shadow at the bottom; flips when pressed)
-            readonly property bool pautaBevel: !root.transparent && ui.theme.borderWidth > 0
             Rectangle {
-                visible: background.pautaBevel
-                anchors { left: parent.left; right: parent.right; top: parent.top; margins: ui.theme.borderWidth }
-                height: 2
-                color: mouseArea.pressed ? Qt.darker(ui.theme.buttonColor, 1.45) : Qt.lighter(ui.theme.buttonColor, 1.6)
-                opacity: root.accentButton ? 0.35 : 1.0
+                id: shadow
+                visible: background.solid
+                x: background.shadowSize
+                y: background.shadowSize
+                width: parent.width
+                height: parent.height
+                color: root.pautaInk ? root.accentColor : ui.theme.strokeColor
+                Behavior on color { ColorAnimation { duration: 150 } }
             }
+
             Rectangle {
-                visible: background.pautaBevel
-                anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: ui.theme.borderWidth }
-                height: 3
-                color: mouseArea.pressed ? Qt.lighter(ui.theme.buttonColor, 1.6) : Qt.darker(ui.theme.buttonColor, 1.45)
-                opacity: root.accentButton ? 0.5 : 1.0
+                id: face
+                x: background.lift
+                y: background.lift
+                width: parent.width
+                height: parent.height
+
+                radius: root.backgroundRadius
+                border.width: background.solid ? ui.theme.borderWidth : 0
+                border.color: ui.theme.strokeColor
+                color: {
+                    if (!background.solid) {
+                        if (mouseArea.pressed) {
+                            return Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.22)
+                        }
+                        return root.pautaHover ? Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.12) : "transparent"
+                    }
+                    if (root.pautaInk) {
+                        return root.pautaHover ? root.accentColor : ui.theme.strokeColor
+                    }
+                    return root.pautaHover ? root.accentColor : root.normalColor
+                }
+
+                Behavior on color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
             }
 
             NavigationFocusBorder {
                 navigationCtrl: navCtrl
                 drawOutsideParent: !root.drawFocusBorderInsideRect
             }
-
-            states: [
-                State {
-                    name: "PRESSED"
-                    when: mouseArea.pressed
-
-                    PropertyChanges {
-                        target: background
-                        color: root.hoverHitColor
-                        opacity: ui.theme.buttonOpacityHit
-                    }
-                },
-
-                State {
-                    name: "HOVERED"
-                    when: mouseArea.containsMouse && !mouseArea.pressed
-
-                    PropertyChanges {
-                        target: background
-                        color: root.hoverHitColor
-                        opacity: ui.theme.buttonOpacityHover
-                    }
-                }
-            ]
         }
     }
 
@@ -241,6 +243,9 @@ FocusScope {
 
         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
         anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+        // Pauta: content moves with the button face
+        anchors.verticalCenterOffset: root.transparent ? 0 : (mouseArea.pressed ? 2 : (root.pautaHover ? -1 : 0))
+        anchors.horizontalCenterOffset: anchors.verticalCenterOffset
 
         readonly property real itemImplicitWidth: (item as Item)?.implicitWidth ?? 0
         readonly property real itemImplicitHeight: (item as Item)?.implicitHeight ?? 0
@@ -269,7 +274,7 @@ FocusScope {
                 Layout.alignment: Qt.AlignHCenter
                 text: root.text
                 font: root.textFont
-                color: root.accentButton && !root.transparent ? "#FFFFFF" : (root.pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor) // Pauta
+                color: root.pautaContentColor // Pauta
                 textFormat: root.textFormat
                 wrapMode: Text.Wrap
                 maximumLineCount: root.maximumLineCount
@@ -298,7 +303,7 @@ FocusScope {
                 Layout.alignment: Qt.AlignVCenter
                 text: root.text
                 font: root.textFont
-                color: root.accentButton && !root.transparent ? "#FFFFFF" : (root.pautaHover ? ui.theme.accentColor : ui.theme.fontPrimaryColor) // Pauta
+                color: root.pautaContentColor // Pauta
                 textFormat: root.textFormat
                 wrapMode: Text.Wrap
                 maximumLineCount: root.maximumLineCount

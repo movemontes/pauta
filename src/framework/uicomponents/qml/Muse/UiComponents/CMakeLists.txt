@@ -104,6 +104,8 @@ qt_add_qml_module(muse_uicomponents_qml
         ExpandableBlankSection.qml
         FilePicker.qml
         FlatButton.qml
+        PautaPageTitle.qml
+        PautaPageEnter.qml
         FlatButtonMenuIndicatorTriangle.qml
         FlatRadioButton.qml
         FlatRadioButtonList.qml

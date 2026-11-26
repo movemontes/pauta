@@ -22,6 +22,8 @@ public:
     explicit PautaToolsModel(QObject* parent = nullptr);
 
     Q_INVOKABLE void load() override;
+    // Pauta: run an action by name (used by the home rail)
+    Q_INVOKABLE void run(const QString& action);
 
 private:
     bool m_loaded = false;

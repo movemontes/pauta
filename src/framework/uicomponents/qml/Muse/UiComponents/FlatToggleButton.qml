@@ -38,7 +38,7 @@ FocusScope {
 
     property bool transparent: false
     property color normalColor: transparent ? "transparent" : ui.theme.buttonColor
-    property color hoverHitColor: ui.theme.buttonColor
+    property color hoverHitColor: Qt.tint(ui.theme.buttonColor, Qt.rgba(ui.theme.accentColor.r, ui.theme.accentColor.g, ui.theme.accentColor.b, 0.2)) // Pauta
     property color checkedColor: ui.theme.accentColor
 
     signal toggled()
