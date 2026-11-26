@@ -38,6 +38,51 @@
 
 using namespace muse::ui;
 
+// Pauta: the mascot drawings (SVG) in the chosen accent color.
+// QML: Image { source: "image://pautamascote/<pose>/<accent hex without #>" }
+#include <QQuickImageProvider>
+#include <QSvgRenderer>
+#include <QPainter>
+#include <QFile>
+namespace {
+class PautaMascotProvider : public QQuickImageProvider
+{
+public:
+    PautaMascotProvider()
+        : QQuickImageProvider(QQuickImageProvider::Image) {}
+
+    QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override
+    {
+        const QStringList parts = id.split('/');
+        const QString pose = parts.value(0);
+        const QString color = parts.size() > 1 ? "#" + parts.at(1).left(6) : QString("#0000FF");
+        QFile f(":/resources/mascote/mascote-" + pose + ".svg");
+        if (!f.open(QIODevice::ReadOnly)) {
+            return QImage();
+        }
+        QByteArray svg = f.readAll();
+        svg.replace("#0000FF", color.toUtf8());
+        QSvgRenderer renderer(svg);
+        QSize natural = renderer.defaultSize();
+        QSize target = requestedSize.isValid() && !requestedSize.isEmpty()
+                       ? natural.scaled(requestedSize, Qt::KeepAspectRatio) : natural;
+        if (target.isEmpty()) {
+            target = natural;
+        }
+        QImage img(target, QImage::Format_ARGB32_Premultiplied);
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        p.setRenderHint(QPainter::Antialiasing);
+        renderer.render(&p);
+        if (size) {
+            *size = target;
+        }
+        return img;
+    }
+};
+}
+
+
 UiEngine::UiEngine(const modularity::ContextPtr& iocCtx)
     : Contextable(iocCtx)
 {
@@ -64,6 +109,7 @@ void UiEngine::init()
 {
     m_theme->init();
     m_tooltip->init();
+    m_engine->addImageProvider("pautamascote", new PautaMascotProvider()); // Pauta
     m_engine->rootContext()->setContextProperty("ui", this);
     m_engine->rootContext()->setContextProperty("api", m_api);
 

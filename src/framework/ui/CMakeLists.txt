@@ -162,7 +162,7 @@ qt_add_resources(muse_ui "muse_ui_resources"
 )
 
 if (MUSE_QT_SUPPORT)
-    target_link_libraries(muse_ui PRIVATE Qt::Quick Qt::Widgets)
+    target_link_libraries(muse_ui PRIVATE Qt::Quick Qt::Widgets Qt::Svg) # Pauta: Svg for the mascot
 
     if (OS_IS_LIN)
         target_link_libraries(muse_ui PRIVATE Qt::DBus)

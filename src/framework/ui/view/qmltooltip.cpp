@@ -21,6 +21,8 @@
  */
 #include "qmltooltip.h"
 
+#include <QSettings>
+
 #include <QGuiApplication>
 
 using namespace muse::ui;
@@ -147,4 +149,9 @@ void QmlToolTip::clear()
     m_shortcut = QString();
 
     m_shouldBeClosed = false;
+}
+
+bool QmlToolTip::pautaMascot() const
+{
+    return QSettings().value("pauta/mascotTips", true).toBool();
 }

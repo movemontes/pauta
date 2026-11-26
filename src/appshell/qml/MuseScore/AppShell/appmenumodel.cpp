@@ -467,6 +467,8 @@ MenuItem* AppMenuModel::makeHelpMenu(bool addDiagnosticsSubMenu)
     }
 
     helpItems << makeMenuItem("pauta-quick-guide");
+    helpItems << makeMenuItem("pauta-tour");
+    helpItems << makeMenuItem("pauta-toggle-mascot");
     helpItems << makeMenuItem("online-handbook");
     helpItems << makeSeparator();
     if (QLocale().name().startsWith(u"pt")) { // Pauta: Pix only in Portuguese

@@ -65,7 +65,19 @@ qt_add_resources(appshell appshell_resources
         /
     FILES
         resources/LoadingScreen.svg
-        resources/pauta_pixel_icon.png
+        resources/pauta_icon.png
+        resources/mascote/mascote-aponta-direita.svg
+        resources/mascote/mascote-aponta-esquerda.svg
+        resources/mascote/mascote-bravo.svg
+        resources/mascote/mascote-comemorando.svg
+        resources/mascote/mascote-dormindo.svg
+        resources/mascote/mascote-normal.svg
+        resources/mascote/mascote-oi.svg
+        resources/mascote/mascote-pensando.svg
+        resources/mascote/mascote-regendo.svg
+        resources/mascote/mascote-rosto.svg
+        resources/mascote/mascote-surpreso.svg
+        resources/mascote/mascote-triste.svg
         resources/welcomedialog/ExploreTutorials.png
         resources/welcomedialog/MuseScoreCom.png
         resources/welcomedialog/MuseSounds.png

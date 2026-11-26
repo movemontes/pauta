@@ -72,7 +72,7 @@ void LoadingScreenView::draw(QPainter* painter)
     painter->fillRect(card.adjusted(border, border, -border, -border), beige);
 
     // pixel-art app icon, kept sharp
-    static const QImage icon(":/resources/pauta_pixel_icon.png");
+    static const QImage icon(":/resources/pauta_icon.png");
     painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
     painter->drawImage(QRect(36, 52, 112, 112), icon);
 

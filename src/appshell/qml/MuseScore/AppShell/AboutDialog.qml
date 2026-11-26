@@ -59,7 +59,7 @@ StyledDialogView {
                 id: logo
                 Layout.alignment: Qt.AlignHCenter
 
-                source: "resources/pauta_pixel_icon.png"
+                source: "resources/pauta_icon.png"
                 sourceSize: Qt.size(100, 100)
                 smooth: false // Pauta: keep the pixels sharp
 

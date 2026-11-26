@@ -89,6 +89,8 @@ ApplicationWindow {
         navigationOrder: 100000
     }
 
+    PautaTour { } // Pauta: first-run tour with the mascot
+
     function showMinimizedWithSavePreviousState() {
         bridge.showMinimizedWithSavePreviousState()
     }

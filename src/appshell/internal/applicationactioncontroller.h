@@ -122,6 +122,10 @@ private:
     bool pautaCloseAllTabs();
     void pautaApplyColors(const std::string& name);
     void pautaChooseAccent();
+public:
+    muse::async::Notification pautaMascotChanged() const { return m_pautaMascotChanged; }
+private:
+    muse::async::Notification m_pautaMascotChanged;
     muse::Progress m_pautaPdfProgress;
 
     bool hasProjectAndIsFocused() const;

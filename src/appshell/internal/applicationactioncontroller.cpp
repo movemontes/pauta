@@ -84,6 +84,11 @@ void ApplicationActionController::init()
         const std::string name(preset);
         dispatcher()->reg(this, "pauta-theme-" + name, [this, name]() { pautaApplyColors(name); });
     }
+    dispatcher()->reg(this, "pauta-toggle-mascot", [this]() {
+        QSettings s;
+        s.setValue("pauta/mascotTips", !s.value("pauta/mascotTips", true).toBool());
+        m_pautaMascotChanged.notify();
+    });
     dispatcher()->reg(this, "pauta-theme-custom", this, &ApplicationActionController::pautaChooseAccent);
     // Pauta: first start with the Treco look resets colors saved by older versions (pixel look)
     {

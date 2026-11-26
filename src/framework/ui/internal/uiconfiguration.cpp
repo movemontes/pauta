@@ -66,7 +66,7 @@ static const QString WINDOW_GEOMETRY_KEY("window");
 
 static const int FLICKABLE_MAX_VELOCITY = 4000;
 
-static const int TOOLTIP_DELAY = 500;
+static const int TOOLTIP_DELAY = 700; // Pauta: tips appear after the mouse rests a moment
 
 // read custom colors saved by Qt < 6.9
 // see: https://github.com/qt/qtbase/blob/v6.2.4/src/gui/kernel/qplatformdialoghelper.cpp#L292-L302

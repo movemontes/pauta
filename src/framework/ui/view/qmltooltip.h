@@ -51,6 +51,7 @@ public:
     Q_INVOKABLE void hide(QQuickItem* item, bool force = false);
 
     Q_INVOKABLE void init();
+    Q_INVOKABLE bool pautaMascot() const; // Pauta: show the mascot next to tips
 
 private slots:
     void doShow();

@@ -21,6 +21,8 @@
  */
 #include "applicationuiactions.h"
 
+#include <QSettings>
+
 #include "ui/view/iconcodes.h"
 #include "context/uicontext.h"
 #include "context/shortcutcontext.h"
@@ -105,6 +107,17 @@ const UiActionList ApplicationUiActions::m_actions = {
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
              TranslatableString("action", "Accent color: Other…")
+             ),
+    UiAction("pauta-tour",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Show the tour again")
+             ),
+    UiAction("pauta-toggle-mascot",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Mascot in tips"),
+             Checkable::Yes
              ),
     UiAction("pauta-quick-guide",
              mu::context::UiCtxAny,
@@ -384,6 +397,10 @@ void ApplicationUiActions::init()
         listenOpenedDocksChanged(dockWindowProvider()->window());
     });
 
+    m_controller->pautaMascotChanged().onNotify(this, [this]() {
+        m_actionCheckedChanged.send({ "pauta-toggle-mascot" });
+    });
+
     notationSceneConfiguration()->useNewPercussionPanelChanged().onNotify(this, [this]() {
         m_actionEnabledChanged.send({ TOGGLE_PERCUSSION_PANEL_ACTION_CODE });
     });
@@ -430,6 +447,10 @@ bool ApplicationUiActions::actionChecked(const UiAction& act) const
 {
     if (act.code == FULL_SCREEN_CODE) {
         return mainWindow()->isFullScreen();
+    }
+
+    if (act.code == "pauta-toggle-mascot") {
+        return QSettings().value("pauta/mascotTips", true).toBool();
     }
 
     QMap<ActionCode, DockName> toggleDockActions = ApplicationUiActions::toggleDockActions();
