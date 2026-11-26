@@ -22,6 +22,8 @@ echo "== bundle Qt (macdeployqt)"
 macdeployqt "$APP" -qmldir="$SRC/src" -verbose=1
 
 find "$APP/Contents" -type d -name "*.dSYM" -exec rm -rf {} +
+# Database drivers Qt adds on its own: Pauta does not use them, and they point to libraries outside the app
+rm -f "$APP/Contents/PlugIns/sqldrivers/"libqsql{mimer,odbc,psql}.dylib
 if [ -d "$APP/Contents/Resources/qml" ]; then
     rm -rf "$APP/Contents/Resources/qml_mu"
     mv "$APP/Contents/Resources/qml" "$APP/Contents/Resources/qml_mu"

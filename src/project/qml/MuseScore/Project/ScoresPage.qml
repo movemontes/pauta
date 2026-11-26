@@ -47,7 +47,7 @@ FocusScope {
     function applySubSection() {
         switch (root.subSection) {
         case "newAndRecent": scoresPageModel.tabIndex = 0; break
-        case "myOnlineScores": scoresPageModel.tabIndex = 1; break
+        case "myOnlineScores": scoresPageModel.tabIndex = 0; break // Pauta
         default: return
         }
 
@@ -181,6 +181,8 @@ FocusScope {
 
             StyledTabButton {
                 text: qsTrc("project", "My online scores")
+                visible: false // Pauta: no online account
+                width: visible ? implicitWidth : 0
 
                 navigation.name: "MyOnlineScores"
                 navigation.panel: navTabPanel
