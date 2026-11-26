@@ -32,6 +32,16 @@ rm -f "$APP/Contents/PlugIns/sqldrivers/"libqsql{mimer,odbc,psql}.dylib
 # keep Qt's QML folder as macdeployqt made it (Resources/qml, listed in qt.conf)
 grep -q "Resources/qml$" "$APP/Contents/Resources/qt.conf" || { echo "qt.conf inesperado"; cat "$APP/Contents/Resources/qt.conf"; exit 1; }
 
+# Denigma (MIT): converts Finale files so Pauta can open them. Built from source, see COMPILAR.md
+DENIGMA=$ROOT/downloads/denigma-src/build/build/Release/denigma
+if [ -x "$DENIGMA" ]; then
+    cp "$DENIGMA" "$APP/Contents/MacOS/denigma"
+    mkdir -p "$APP/Contents/Resources/licenses"
+    cp "$ROOT/downloads/denigma-src/LICENSE" "$APP/Contents/Resources/licenses/denigma-LICENSE.txt"
+else
+    echo "AVISO: denigma não encontrado; o Pauta não vai abrir arquivos do Finale"
+fi
+
 # Qt 6.10 needs macOS 13; say so in the bundle so older Macs get a clear message
 plutil -replace LSMinimumSystemVersion -string 13.0 "$APP/Contents/Info.plist"
 

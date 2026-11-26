@@ -155,6 +155,8 @@ private:
     void openBreaksDialog();
     void openTransposeDialog();
     void pautaChangeKey();
+    void pautaToggleFinaleStyle();
+    void pautaChordSymbolsFromNotes();
     void openPartsDialog();
     void openTupletOtherDialog();
     void openStaffTextPropertiesDialog();

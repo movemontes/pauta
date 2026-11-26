@@ -20,6 +20,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "notationactioncontroller.h"
+#include <map>
+#include <set>
+#include "engraving/dom/chord.h"
+#include "engraving/dom/staff.h"
+#include "engraving/dom/segment.h"
+#include "engraving/dom/factory.h"
+#include "engraving/dom/harmony.h"
 
 #include "io/file.h"
 
@@ -316,6 +323,8 @@ void NotationActionController::init()
     registerAction("measures-per-system", &Controller::openBreaksDialog);
     registerAction("transpose", &Controller::openTransposeDialog);
     registerAction("pauta-change-key", &Controller::pautaChangeKey); // Pauta
+    registerAction("pauta-finale-style", &Controller::pautaToggleFinaleStyle); // Pauta
+    registerAction("pauta-chord-from-notes", &Controller::pautaChordSymbolsFromNotes); // Pauta
     registerAction("parts", &Controller::openPartsDialog);
     registerAction("staff-text-properties", &Controller::openStaffTextPropertiesDialog);
     registerAction("system-text-properties", &Controller::openStaffTextPropertiesDialog);
@@ -1829,6 +1838,179 @@ void NotationActionController::openTransposeDialog()
     interactive()->open("musescore://notation/transpose").onResolve(this, [this](const Val&) {
         currentNotationInteraction()->checkAndShowError();
     });
+}
+
+
+// ---------------------------------------------------------------------------------------------
+// Pauta: name the chord made by a set of notes (C, Am7, G7/B, ...). Used by "Chord symbols from
+// selected notes": play or write a chord, select it, and the chord symbol is written above.
+// ---------------------------------------------------------------------------------------------
+namespace {
+struct PautaChordShape {
+    std::vector<int> intervals; // from the root, without the root itself
+    const char* suffix;
+    int optional5th; // 1 = the fifth may be missing
+};
+
+static const std::vector<PautaChordShape>& pautaChordShapes()
+{
+    static const std::vector<PautaChordShape> shapes {
+        { { 4, 7, 11, 2 }, "maj9", 1 },
+        { { 3, 7, 10, 2 }, "m9", 1 },
+        { { 4, 7, 10, 2 }, "9", 1 },
+        { { 4, 7, 11 }, "maj7", 1 },
+        { { 3, 7, 10 }, "m7", 1 },
+        { { 4, 7, 10 }, "7", 1 },
+        { { 3, 6, 10 }, "m7(b5)", 0 },
+        { { 3, 6, 9 }, "dim7", 0 },
+        { { 3, 7, 11 }, "m(maj7)", 1 },
+        { { 4, 7, 9 }, "6", 1 },
+        { { 3, 7, 9 }, "m6", 1 },
+        { { 4, 7, 2 }, "add9", 1 },
+        { { 5, 7, 10 }, "7sus4", 1 },
+        { { 4, 7 }, "", 1 },
+        { { 3, 7 }, "m", 1 },
+        { { 3, 6 }, "dim", 0 },
+        { { 4, 8 }, "+", 0 },
+        { { 5, 7 }, "sus4", 0 },
+        { { 2, 7 }, "sus2", 0 },
+        { { 7 }, "5", 0 },
+    };
+    return shapes;
+}
+
+static const char* pautaNoteName(int pc, bool flats)
+{
+    static const char* sharps[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    static const char* flatNames[] = { "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B" };
+    return flats ? flatNames[pc] : sharps[pc];
+}
+
+static QString pautaNameChord(const std::vector<int>& pitches, bool flats)
+{
+    if (pitches.size() < 2) {
+        return QString();
+    }
+    std::set<int> pcs;
+    for (int p : pitches) {
+        pcs.insert(((p % 12) + 12) % 12);
+    }
+    const int bass = ((*std::min_element(pitches.begin(), pitches.end())) % 12 + 12) % 12;
+
+    int bestScore = -1;
+    QString best;
+    for (int root : pcs) {
+        std::set<int> rel;
+        for (int pc : pcs) {
+            if (pc != root) {
+                rel.insert((pc - root + 12) % 12);
+            }
+        }
+        for (const PautaChordShape& shape : pautaChordShapes()) {
+            std::set<int> need(shape.intervals.begin(), shape.intervals.end());
+            std::set<int> needNo5 = need;
+            if (shape.optional5th) {
+                needNo5.erase(7);
+            }
+            const bool full = rel == need;
+            const bool without5th = !full && shape.optional5th && rel == needNo5;
+            if (!full && !without5th) {
+                continue;
+            }
+            // prefer: root in the bass, nothing left out, then the richer name
+            int score = (root == bass ? 20 : 0) - (without5th ? 15 : 0) + int(need.size());
+            if (score > bestScore) {
+                bestScore = score;
+                best = QString(pautaNoteName(root, flats)) + shape.suffix;
+                if (root != bass) {
+                    best += "/" + QString(pautaNoteName(bass, flats));
+                }
+            }
+            break; // shapes are ordered from richest to simplest
+        }
+    }
+    return best;
+}
+}
+
+void NotationActionController::pautaChordSymbolsFromNotes()
+{
+    INotationPtr notation = currentNotation();
+    if (!notation) {
+        return;
+    }
+    mu::engraving::Score* score = notation->elements()->msScore();
+    const mu::engraving::Selection& sel = score->selection();
+
+    // group the selected notes by the moment they sound
+    std::map<mu::engraving::Segment*, std::vector<int> > chordsBySegment;
+    mu::engraving::track_idx_t topTrack = muse::nidx;
+    for (mu::engraving::Note* note : sel.noteList()) {
+        if (!note || !note->chord() || !note->chord()->segment()) {
+            continue;
+        }
+        chordsBySegment[note->chord()->segment()].push_back(note->ppitch());
+        mu::engraving::track_idx_t t = note->staffIdx() * mu::engraving::VOICES;
+        topTrack = std::min(topTrack, t);
+    }
+
+    if (chordsBySegment.empty()) {
+        interactive()->info(muse::trc("notation", "Select some notes first"),
+                            muse::trc("notation", "Select the notes of the chord (or a whole passage) and try again."));
+        return;
+    }
+
+    const int keyFifths = int(score->staff(topTrack / mu::engraving::VOICES)->key(chordsBySegment.begin()->first->tick()));
+    const bool flats = keyFifths < 0;
+
+    notation->undoStack()->prepareChanges(muse::TranslatableString("undoableAction", "Chord symbols from notes"));
+    int added = 0;
+    for (auto& [segment, pitches] : chordsBySegment) {
+        const QString name = pautaNameChord(pitches, flats);
+        if (name.isEmpty()) {
+            continue;
+        }
+        bool hasHarmony = false;
+        for (mu::engraving::EngravingItem* e : segment->annotations()) {
+            if (e->isHarmony() && e->track() == topTrack) {
+                hasHarmony = true;
+                break;
+            }
+        }
+        if (hasHarmony) {
+            continue;
+        }
+        mu::engraving::Harmony* harmony = mu::engraving::Factory::createHarmony(score->dummy()->segment());
+        harmony->setScore(score);
+        harmony->setParent(segment);
+        harmony->setTrack(topTrack);
+        harmony->setHarmonyType(mu::engraving::HarmonyType::STANDARD);
+        harmony->setHarmony(muse::String::fromQString(name));
+        score->undoAddElement(harmony);
+        ++added;
+    }
+    notation->undoStack()->commitChanges();
+    notation->notationChanged().notify();
+
+    if (added == 0) {
+        interactive()->info(muse::trc("notation", "No chord recognised"),
+                            muse::trc("notation", "Select at least two different notes that sound together."));
+    }
+}
+
+void NotationActionController::pautaToggleFinaleStyle()
+{
+    // Pauta: "input by duration" works like Finale's Speedy Entry (choose the duration, the note is written
+    // at the cursor). Make it the default way of writing, or go back to the usual one.
+    const bool toFinale = configuration()->defaultNoteInputMethod() != NoteInputMethod::BY_DURATION;
+    configuration()->setDefaultNoteInputMethod(toFinale ? NoteInputMethod::BY_DURATION : NoteInputMethod::BY_NOTE_NAME);
+
+    interactive()->info(toFinale ? muse::trc("notation", "Writing like Finale is on")
+                                 : muse::trc("notation", "Writing like Finale is off"),
+                        toFinale ? muse::trc("notation", "Press N to start writing. Move the cursor with the arrows or click a line of the staff, "
+                                                         "then press the duration: 4 eighth, 5 quarter, 6 half, 7 whole. "
+                                                         "Use up and down arrows to change the pitch.")
+                                 : muse::trc("notation", "Back to the usual way: press N, then type the note name (A to G)."));
 }
 
 void NotationActionController::pautaChangeKey()

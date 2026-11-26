@@ -260,6 +260,7 @@ MenuItem* AppMenuModel::makeEditMenu()
         makeMenuItem("notation-select-section"),
         makeMenuItem("find"),
         makeMenuItem("pauta-command-palette"),
+        makeMenuItem("pauta-finale-style"),
         makeSeparator(),
         makeMenuItem("preference-dialog", MenuItemRole::PreferencesRole)
     };
@@ -399,6 +400,7 @@ MenuItem* AppMenuModel::makeToolsMenu()
 
     MenuItemList toolsItems {
         makeMenuItem("pauta-change-key"),
+        makeMenuItem("pauta-chord-from-notes"),
         makeMenuItem("transpose"),
         makeSeparator(),
         makeMenuItem("explode"),
@@ -460,6 +462,7 @@ MenuItem* AppMenuModel::makeHelpMenu(bool addDiagnosticsSubMenu)
         helpItems << makeSeparator();
     }
 
+    helpItems << makeMenuItem("pauta-quick-guide");
     helpItems << makeMenuItem("online-handbook");
     helpItems << makeSeparator();
     if (QLocale().name().startsWith(u"pt")) { // Pauta: Pix only in Portuguese

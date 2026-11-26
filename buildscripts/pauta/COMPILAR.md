@@ -24,3 +24,12 @@ Tudo fica em `/Volumes/Dados/PautaCodigo` (o caminho não pode ter espaços nem 
 
 Ícone: `python3 buildscripts/pauta/make_icon.py`. Fontes: `venv/bin/python buildscripts/pauta/make_fonts.py <Archivo-Variable.ttf>`.
 Versão do Pauta: `PAUTA_VERSION` em `version.cmake` (a `MUSE_APP_VERSION` fica na versão do MuseScore de origem, porque vai dentro dos arquivos de partitura).
+
+## Denigma (abrir arquivos do Finale)
+O Pauta leva dentro dele o `denigma` (licença MIT, https://github.com/rpatters1/denigma), compilado do código-fonte:
+```bash
+cd /Volumes/Dados/PautaCodigo/downloads && git clone --depth 1 --branch v3.1 https://github.com/rpatters1/denigma.git denigma-src
+cd denigma-src && ../../venv/bin/cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
+../../build_seguro.sh build 3 denigma   # poucos processos: compilar com muitos travou o Mac
+```
+O `make_dmg.sh` copia `build/build/Release/denigma` para dentro do app.

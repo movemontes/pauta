@@ -420,6 +420,18 @@ const UiActionList NotationUiActions::s_actions = {
              TranslatableString("action", "S&ave style…"),
              TranslatableString("action", "Save style")
              ),
+    UiAction("pauta-chord-from-notes",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Chord symbols from selected notes"),
+             TranslatableString("action", "Chord symbols from selected notes")
+             ),
+    UiAction("pauta-finale-style",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Write like Finale (Speedy Entry) on/off"),
+             TranslatableString("action", "Write like Finale (Speedy Entry) on/off")
+             ),
     UiAction("pauta-change-key",
              mu::context::UiCtxProjectOpened,
              mu::context::CTX_NOTATION_OPENED,

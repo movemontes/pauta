@@ -22,10 +22,15 @@
 #include "projectactionscontroller.h"
 
 #include <algorithm>
+#include <QCoreApplication>
+#include <QDateTime>
+#include <QDir>
+#include <QProcess>
 
 #include <QBuffer>
 #include <QEventLoop>
 #include <QFileInfo>
+#include <QFile>
 #include <QTemporaryFile>
 #include <QUrl>
 #include <QUrlQuery>
@@ -159,6 +164,42 @@ bool ProjectActionsController::canReceiveAction(const ActionCode& code) const
     return true;
 }
 
+// Pauta: Finale files (.musx, old .mus, .enigmaxml). Converted on this Mac by Denigma
+// (MIT, https://github.com/rpatters1/denigma, shipped inside Pauta.app) into MNX, which Pauta opens.
+static bool pautaIsFinaleFile(const std::string& suffix)
+{
+    return suffix == "musx" || suffix == "mus" || suffix == "enigmaxml";
+}
+
+static muse::io::path_t pautaConvertFinaleFile(const muse::io::path_t& finalePath, QString& error)
+{
+    const QString denigma = QCoreApplication::applicationDirPath() + "/denigma";
+    if (!QFileInfo::exists(denigma)) {
+        error = "denigma not found";
+        return muse::io::path_t();
+    }
+
+    const QString outDir = QDir::tempPath() + "/pauta-finale-" + QString::number(QDateTime::currentMSecsSinceEpoch());
+    QDir().mkpath(outDir);
+    // work on a copy inside a temporary folder (denigma writes next to its input); the original is never touched
+    const QFileInfo src(finalePath.toQString());
+    const QString copy = outDir + "/" + src.fileName();
+    QFile::copy(src.absoluteFilePath(), copy);
+    const QString outFile = outDir + "/" + src.completeBaseName() + ".mnx";
+
+    QProcess proc;
+    proc.setWorkingDirectory(outDir);
+    proc.setProgram(denigma);
+    proc.setArguments({ "export", src.fileName(), "--mnx", "--force" });
+    proc.start();
+    if (!proc.waitForFinished(180000) || !QFileInfo::exists(outFile)) {
+        error = QString::fromUtf8(proc.readAllStandardError() + proc.readAllStandardOutput()).trimmed();
+        proc.kill();
+        return muse::io::path_t();
+    }
+    return muse::io::path_t(outFile);
+}
+
 bool ProjectActionsController::isUrlSupported(const QUrl& url) const
 {
     if (url.isLocalFile()) {
@@ -182,6 +223,10 @@ bool ProjectActionsController::isFileSupported(const muse::io::path_t& path) con
     }
 
     if (readers()->reader(suffix)) {
+        return true;
+    }
+
+    if (pautaIsFinaleFile(suffix)) { // Pauta
         return true;
     }
 
@@ -231,6 +276,20 @@ Ret ProjectActionsController::openProject(const ProjectFile& file)
 
 Ret ProjectActionsController::openProject(const muse::io::path_t& givenPath, const QString& displayNameOverride)
 {
+    // Pauta: open Finale files by converting them first
+    if (pautaIsFinaleFile(io::suffix(givenPath))) {
+        QString error;
+        muse::io::path_t converted = pautaConvertFinaleFile(fileSystem()->absoluteFilePath(givenPath), error);
+        if (converted.empty()) {
+            LOGE() << "[Pauta] Finale conversion failed: " << error;
+            interactive()->warning(muse::trc("project", "Couldn't open this Finale file"),
+                                   muse::trc("project", "Pauta could not convert it. You can also export it from Finale as MusicXML and open that."));
+            return make_ret(Ret::Code::UnknownError);
+        }
+        return openProject(converted, displayNameOverride.isEmpty()
+                           ? QFileInfo(givenPath.toQString()).completeBaseName() : displayNameOverride);
+    }
+
     //! NOTE This method is synchronous,
     //! but inside `multiwindowsProvider` there can be an event loop
     //! to wait for the responses from other instances, accordingly,
@@ -1936,10 +1995,12 @@ void ProjectActionsController::printScore()
 async::Promise<io::path_t> ProjectActionsController::selectScoreOpeningFile() const
 {
     std::string allExt = "*.mscz *.mxl *.musicxml *.xml *.mid *.midi *.kar *.md *.mgu *.sgu *.cap *.capx "
-                         "*.ove *.scw *.bmw *.bww *.gtp *.gp3 *.gp4 *.gp5 *.gpx *.gp *.ptb *.mei *.mnx *.json *.tef *.mscx *.mscs *.mscz~";
+                         "*.ove *.scw *.bmw *.bww *.gtp *.gp3 *.gp4 *.gp5 *.gpx *.gp *.ptb *.mei *.mnx *.json *.tef *.mscx *.mscs *.mscz~ "
+                         "*.musx *.mus *.enigmaxml";
 
     std::vector<std::string> filter { muse::trc("project", "All supported files") + " (" + allExt + ")",
                                       muse::trc("project", "MuseScore files") + " (*.mscz)",
+                                      muse::trc("project", "Finale files") + " (*.musx *.mus)",
                                       muse::trc("project", "MusicXML files") + " (*.mxl *.musicxml *.xml)",
                                       muse::trc("project", "MIDI files") + " (*.mid *.midi *.kar)",
                                       muse::trc("project", "MNX files (experimental)") + " (*.mnx *.json)",

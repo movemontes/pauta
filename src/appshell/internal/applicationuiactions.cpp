@@ -71,6 +71,11 @@ const UiActionList ApplicationUiActions::m_actions = {
              mu::context::CTX_ANY,
              TranslatableString("action", "Support Pauta with Pix…")
              ),
+    UiAction("pauta-quick-guide",
+             mu::context::UiCtxAny,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "Quick guide")
+             ),
     UiAction("pauta-import-pdf",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,

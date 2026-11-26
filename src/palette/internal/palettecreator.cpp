@@ -21,6 +21,7 @@
  */
 
 #include "palettecreator.h"
+#include "engraving/dom/sticking.h"
 
 #include "translation.h"
 
@@ -118,6 +119,7 @@ struct makeElementImplWrapper {
 
 IMPL_WRAPPER(Dynamic, score->dummy()->segment())
 IMPL_WRAPPER(MeasureRepeat, score->dummy()->segment())
+IMPL_WRAPPER(Sticking, score->dummy()->segment())
 IMPL_WRAPPER(Hairpin, score->dummy()->segment())
 IMPL_WRAPPER(SystemText, score->dummy()->segment())
 IMPL_WRAPPER(TempoText, score->dummy()->segment())
@@ -155,6 +157,7 @@ PaletteTreePtr PaletteCreator::newMasterPaletteTree()
     tree->append(newArticulationsPalette());
     tree->append(newTextPalette());
     tree->append(newKeyboardPalette());
+    tree->append(newDrumsPalette()); // Pauta
     tree->append(newRepeatsPalette());
     tree->append(newBarLinePalette());
     tree->append(newLayoutPalette());
@@ -192,6 +195,7 @@ PaletteTreePtr PaletteCreator::newDefaultPaletteTree()
     defaultPalette->append(newArticulationsPalette(true));
     defaultPalette->append(newTextPalette(true));
     defaultPalette->append(newKeyboardPalette());
+    defaultPalette->append(newDrumsPalette()); // Pauta
     defaultPalette->append(newRepeatsPalette(true));
     defaultPalette->append(newBarLinePalette(true));
     defaultPalette->append(newLayoutPalette(true));
@@ -2069,6 +2073,78 @@ PalettePtr PaletteCreator::newHandbellsPalette(bool defaultPalette)
             element->setTechniqueType(info.playTechType);
             sp->appendElement(element, TConv::userName(info.playTechType));
         }
+    }
+
+    return sp;
+}
+
+// Pauta: everything a drummer needs in one place (requested by Finale users)
+PalettePtr PaletteCreator::newDrumsPalette()
+{
+    PalettePtr sp = std::make_shared<Palette>(iocContext(), Palette::Type::Drums);
+    sp->setName(QT_TRANSLATE_NOOP("palette", "Drums"));
+    sp->setMag(1.0);
+    sp->setGridSize(42, 40);
+    sp->setDrawGrid(true);
+
+    // Ghost note = notehead in parentheses
+    sp->appendActionIcon(ActionIconType::PARENTHESES, "add-parentheses");
+
+    // Hi-hat and cymbal techniques, accents
+    static const std::vector<std::pair<SymId, const char*> > artics {
+        { SymId::brassMuteClosed, QT_TRANSLATE_NOOP("palette", "Closed hi-hat") },
+        { SymId::pictHalfOpen2, QT_TRANSLATE_NOOP("palette", "Half-open hi-hat") },
+        { SymId::brassMuteOpen, QT_TRANSLATE_NOOP("palette", "Open hi-hat") },
+        { SymId::articAccentAbove, nullptr },
+        { SymId::articMarcatoAbove, nullptr },
+        { SymId::articStaccatoAbove, nullptr },
+        { SymId::pictChokeCymbal, QT_TRANSLATE_NOOP("palette", "Choke (stop the cymbal)") },
+        { SymId::pictRimShotOnStem, QT_TRANSLATE_NOOP("palette", "Rim shot") },
+        { SymId::articLaissezVibrerAbove, QT_TRANSLATE_NOOP("palette", "Let ring") },
+    };
+    for (const auto& a : artics) {
+        auto artic = Factory::makeArticulation(gpaletteScore->dummy()->chord());
+        artic->setSymId(a.first);
+        if (a.second) {
+            sp->appendElement(artic, muse::TranslatableString("palette", a.second));
+        } else {
+            sp->appendElement(artic, artic->subtypeUserName());
+        }
+    }
+
+    // Flam and drag (grace notes before the note)
+    sp->appendActionIcon(ActionIconType::ACCIACCATURA, "acciaccatura");
+    sp->appendActionIcon(ActionIconType::GRACE16, "grace16");
+
+    // Rolls: buzz roll and single-stroke rolls
+    for (TremoloType t : { TremoloType::BUZZ_ROLL, TremoloType::R16, TremoloType::R32 }) {
+        auto tremolo = Factory::makeTremoloSingleChord(gpaletteScore->dummy()->chord());
+        tremolo->setTremoloType(t);
+        sp->appendElement(tremolo, tremolo->subtypeUserName());
+    }
+
+    // Drum noteheads: x (cymbals, hi-hat), circled x, cross-stick, slash (groove/rhythm), diamond, triangle
+    for (NoteHeadGroup g : { NoteHeadGroup::HEAD_CROSS, NoteHeadGroup::HEAD_XCIRCLE, NoteHeadGroup::HEAD_CIRCLED,
+                             NoteHeadGroup::HEAD_SLASH, NoteHeadGroup::HEAD_DIAMOND, NoteHeadGroup::HEAD_TRIANGLE_UP,
+                             NoteHeadGroup::HEAD_NORMAL }) {
+        auto nh = makeElement<NoteHead>(gpaletteScore);
+        nh->setSym(Note::noteHead(0, g, NoteHeadType::HEAD_QUARTER));
+        sp->appendElement(nh, TConv::userName(g));
+    }
+
+    // Repeat the previous bar(s)
+    for (auto r : { std::make_pair(SymId::repeat1Bar, 1), std::make_pair(SymId::repeat2Bars, 2) }) {
+        std::shared_ptr<MeasureRepeat> rm = makeElement<MeasureRepeat>(gpaletteScore);
+        rm->mutldata()->symId = r.first;
+        rm->setNumMeasures(r.second);
+        sp->appendElement(rm, SymNames::userNameForSymId(r.first));
+    }
+
+    // Sticking (which hand)
+    for (const char* hand : { "R", "L" }) {
+        auto st = makeElement<Sticking>(gpaletteScore);
+        st->setXmlText(muse::String::fromUtf8(hand));
+        sp->appendElement(st, muse::TranslatableString("palette", hand == std::string("R") ? "Sticking: right hand" : "Sticking: left hand"));
     }
 
     return sp;

@@ -88,6 +88,7 @@ void AppShellModule::resolveImports()
         ir->registerQmlUri(Uri("musescore://welcomedialog"), "MuseScore.AppShell", "WelcomeDialog");
         ir->registerQmlUri(Uri("musescore://pauta/commandpalette"), "MuseScore.AppShell", "CommandPaletteDialog");
         ir->registerQmlUri(Uri("musescore://pauta/exportto"), "MuseScore.AppShell", "ExportToProgramDialog");
+        ir->registerQmlUri(Uri("musescore://pauta/guide"), "MuseScore.AppShell", "QuickGuideDialog");
         ir->registerQmlUri(Uri("musescore://firstLaunchSetup"), "MuseScore.AppShell", "FirstLaunchSetupDialog");
     }
 }

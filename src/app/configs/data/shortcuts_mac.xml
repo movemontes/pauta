@@ -123,7 +123,7 @@
 <!-- end Global actions -->
 
   <SC>
-    <key>help</key>
+    <key>pauta-quick-guide</key>
     <seq>F1</seq>
     <autorepeat>0</autorepeat>
     </SC>

@@ -76,6 +76,7 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "about-musicxml", this, &ApplicationActionController::openAboutMusicXMLDialog);
     dispatcher()->reg(this, "online-handbook", this, &ApplicationActionController::openOnlineHandbookPage);
     // Pauta
+    dispatcher()->reg(this, "pauta-quick-guide", [this]() { interactive()->open("musescore://pauta/guide"); });
     dispatcher()->reg(this, "pauta-import-pdf", this, &ApplicationActionController::pautaImportPdf);
     dispatcher()->reg(this, "pauta-export-to-program", [this]() { interactive()->open("musescore://pauta/exportto"); });
     dispatcher()->reg(this, "pauta-command-palette", [this]() { interactive()->open("musescore://pauta/commandpalette"); });

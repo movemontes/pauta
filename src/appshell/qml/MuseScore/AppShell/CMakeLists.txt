@@ -55,6 +55,7 @@ qt_add_qml_module(appshell_qml
         AboutMusicXMLDialog.qml
         CommandPaletteDialog.qml
         ExportToProgramDialog.qml
+        QuickGuideDialog.qml
         AppWindow.qml
         DevTools/CorruptScore/CorruptScoreDevTools.qml
         DevTools/CrashHandler/CrashHandlerDevTools.qml

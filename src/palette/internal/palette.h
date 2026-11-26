@@ -89,6 +89,7 @@ public:
         StringTunings,
         Playback,
         Handbells,
+        Drums, // Pauta
         Custom
     };
     Q_ENUM(Type)
