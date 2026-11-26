@@ -1,25 +1,143 @@
-
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-<title>MuseScore API Docs</title>
 <meta charset="utf-8">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pauta: programa de partitura grátis para Mac</title>
+<meta name="description" content="Escreva, toque e imprima partituras no Mac. Grátis, sem conta, sem anúncio. Nada sai do seu computador.">
+<link rel="alternate" hreflang="pt-BR" href="https://movemontes.github.io/pauta/">
+<link rel="alternate" hreflang="en" href="https://movemontes.github.io/pauta/en/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
-<div class="container">
 
-<h1>MuseScore API Docs</h1>
-<p class="lead">
-Extensions are a way to extend the basic functionality and add new features to the application.
-Here is the documentation on extensions and API
-</p>
-
-<ul>
-  <li><a href="snapshots/4.5/index.html">MuseScore 4.5</a></li>
-  <li><a href="snapshots/4.6/index.html">MuseScore 4.6</a></li>
-</ul>
-
+<div class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><span class="mark">P</span><b>PAUTA</b></a>
+    <nav>
+      <a class="hide-sm" href="#recursos">Recursos</a>
+      <a class="hide-sm" href="#novidades">Novidades</a>
+      <a class="hide-sm" href="#instalar">Instalar</a>
+      <a class="hide-sm" href="https://github.com/movemontes/pauta">GitHub</a>
+      <div class="lang"><span>PT</span><a href="en/" data-lang="en">EN</a></div>
+    </nav>
+  </div>
 </div>
+
+<main>
+  <div class="hero wrap">
+    <span class="tag">APP GRÁTIS PARA MAC</span>
+    <h1>Partitura <em>sem complicação.</em></h1>
+    <p class="lead">Escreva música com o teclado, o mouse ou um teclado MIDI. Ouça, crie as partes de cada instrumento e imprima. Abre arquivos MusicXML, MIDI e do MuseScore.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/movemontes/pauta/releases/latest/download/Pauta-mac.dmg">⬇ Baixar para Mac</a>
+      <span class="meta" id="dl-meta" data-req="macOS 13+ · chip Apple (M1 ou mais novo)">macOS 13+ · chip Apple (M1 ou mais novo)</span>
+    </div>
+    <div class="pills"><span>Nada sai do seu Mac.</span><span>Sem conta.</span><span>Sem anúncio.</span><span>Grátis.</span></div>
+    <img class="shots" src="partitura.png" width="1600" height="475" alt="Partitura feita no Pauta">
+  </div>
+
+  <section id="porque">
+    <div class="wrap">
+      <h2>Por que usar</h2>
+      <div class="grid">
+        <div class="card"><div class="ico">🔒</div><h3>Nada sai do seu Mac</h3><p>Suas partituras ficam no seu computador. Sem nuvem obrigatória.</p></div>
+        <div class="card"><div class="ico">🙅</div><h3>Sem conta e sem login</h3><p>Abriu, escreveu. Sem MuseHub, sem e-mail.</p></div>
+        <div class="card"><div class="ico">🎹</div><h3>Som que já vem junto</h3><p>Toca na hora, sem baixar gigas de sons.</p></div>
+        <div class="card"><div class="ico">⌘</div><h3>Paleta de comandos</h3><p>Cmd+Shift+P e digite o nome de qualquer função.</p></div>
+        <div class="card"><div class="ico">🎼</div><h3>Teclado que acende</h3><p>O piano na tela mostra as notas enquanto a música toca.</p></div>
+        <div class="card"><div class="ico">🔄</div><h3>Se atualiza sozinho</h3><p>Avisa quando sai versão nova. Fala português e inglês.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recursos">
+    <div class="wrap">
+      <h2>O que ele faz</h2>
+      <div class="features">
+        <div class="col"><h3>Escrever</h3><ul>
+          <li>Notas pelo teclado, mouse, piano na tela ou teclado MIDI</li>
+          <li>Letra, cifras e diagramas de acordes</li>
+          <li>Tablatura e bateria</li>
+          <li>Dinâmicas, articulações, repetições</li>
+        </ul></div>
+        <div class="col"><h3>Ouvir</h3><ul>
+          <li>Reprodução com mixer</li>
+          <li>Reverb liga/desliga com um clique</li>
+          <li>Plugins de som VST3</li>
+          <li>Loop de trecho e metrônomo</li>
+        </ul></div>
+        <div class="col"><h3>Organizar</h3><ul>
+          <li>Partes de cada instrumento, ligadas à grade</li>
+          <li>Transposição</li>
+          <li>Desenrolar repetições</li>
+        </ul></div>
+        <div class="col"><h3>Abrir e salvar</h3><ul>
+          <li>MusicXML, MIDI, MuseScore (.mscz), Guitar Pro</li>
+          <li>PDF, PNG, SVG</li>
+          <li>Áudio MP3, WAV, FLAC</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="novidades">
+    <div class="wrap">
+      <h2>Novidades</h2>
+      <div id="releases"></div>
+      <p class="allver"><a href="https://github.com/movemontes/pauta/releases">Todas as versões no GitHub →</a></p>
+    </div>
+  </section>
+
+  <section id="instalar">
+    <div class="wrap">
+      <h2>Como instalar</h2>
+      <ol class="steps">
+        <li><a href="https://github.com/movemontes/pauta/releases/latest/download/Pauta-mac.dmg"><b>Baixe o Pauta</b></a> (arquivo <code>.dmg</code>).</li>
+        <li>Abra o arquivo e arraste o <b>Pauta</b> para a pasta <b>Aplicativos</b>.</li>
+        <li>Abra o Pauta pelos Aplicativos.</li>
+        <li>Na primeira vez, o Mac avisa que não consegue verificar o app, porque ele é gratuito e não passou pela loja da Apple. Abra <b>Ajustes do Sistema → Privacidade e Segurança</b>, role até o fim e clique em <b>Abrir Mesmo Assim</b>. Só precisa fazer isso uma vez.</li>
+        <li>O Mac também pede acesso à pasta <b>Documentos</b>: é lá que o Pauta guarda suas partituras.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="privacidade">
+    <div class="wrap">
+      <h2>Privacidade</h2>
+      <div class="card">
+        <p style="color:var(--ink);font-size:18px">O Pauta não tem conta, não coleta dados e não envia suas partituras para lugar nenhum. Ele só usa a internet uma vez por dia, para ver se saiu uma versão nova.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="apoie">
+    <div class="wrap">
+      <div class="support">
+        <span class="shout">ME AJUDA: TENHO 5 BOCAS PRA ALIMENTAR</span>
+        <h2>Apoie o Pauta</h2>
+        <p>O Pauta é e vai continuar grátis. Se ele te ajudou, qualquer valor ajuda muito. Obrigado de coração! — Mateus</p>
+        <div class="pix">
+          <div><small>PIX · CHAVE ALEATÓRIA (PICPAY)</small><code>e2a1f4a9-ebfe-4c3c-a531-92a0e7433f14</code></div>
+          <button class="btn small" type="button" data-copy="e2a1f4a9-ebfe-4c3c-a531-92a0e7433f14">Copiar chave Pix</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Feito por Mateus · Código aberto (<a href="https://github.com/movemontes/pauta/blob/main/LICENSE.txt">GPL-3.0</a>) · baseado no <a href="https://github.com/musescore/MuseScore">MuseScore Studio</a></span>
+    <a href="https://github.com/movemontes/pauta">GitHub</a>
+    <a href="en/" data-lang="en">English</a>
+  </div>
+</footer>
+
+<script src="site.js"></script>
 </body>
 </html>

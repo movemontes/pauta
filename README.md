@@ -1,28 +1,59 @@
 # Pauta
 
-**Programa de partitura grátis para Mac.** Escreva, toque e imprima partituras: notas pelo teclado, mouse ou teclado MIDI, letra, cifra, tablatura, partes individuais, MusicXML, MIDI, PDF e áudio.
+**Programa de partitura grátis para Mac.**
 
-- Grátis, sem anúncio, sem conta e sem mandar nada seu para a internet.
-- Em português e inglês (segue o idioma do Mac; dá para trocar no menu **Pauta**).
-- Visual do [Treco](https://github.com/movemontes/treco): branco, preto e azul. A partitura continua com a gravura musical normal.
-- Se o Pauta te ajudar, um Pix de qualquer valor ajuda muito: a chave está em **Ajuda › Apoiar o Pauta com Pix**.
+Grátis · Sem conta · Sem anúncio · Nada sai do seu computador
 
-## Novidades em relação ao programa de origem
+[**⬇ Baixar para Mac**](https://github.com/movemontes/pauta/releases/latest/download/Pauta-mac.dmg) · [Site](https://movemontes.github.io/pauta/) · [English](README.en.md)
 
-- Paleta de comandos: **Cmd+Shift+P** e digite o nome de qualquer função.
-- O teclado de piano na tela acende as notas enquanto a música toca.
-- Reverb liga/desliga com um clique (menu **Exibir**).
-- Abre direto, sem assistente, sem MuseHub e sem login.
-- Atualização automática pelos lançamentos deste repositório no GitHub.
+![Partitura feita no Pauta](docs/partitura.png)
+
+## Por que usar
+
+- **Nada sai do seu Mac:** suas partituras ficam no seu computador.
+- **Sem conta e sem login:** abriu, escreveu. Sem MuseHub, sem e-mail.
+- **Som que já vem junto:** toca na hora, sem baixar gigas de sons.
+- **Visual da família [Treco](https://github.com/movemontes/treco):** branco, preto e azul. A partitura continua com a gravura musical normal.
+- **Português e inglês:** segue o idioma do Mac, com troca no menu **Pauta**.
+- **Se atualiza sozinho:** procura versão nova uma vez por dia.
+
+## O que ele faz
+
+| Escrever | Ouvir | Organizar | Abrir e salvar |
+|---|---|---|---|
+| Notas pelo teclado, mouse, piano na tela ou teclado MIDI | Reprodução com mixer | Partes de cada instrumento, ligadas à grade | MusicXML, MIDI, MuseScore (.mscz), Guitar Pro |
+| Letra, cifras, diagramas de acordes | Reverb liga/desliga com um clique | Transposição | PDF, PNG, SVG |
+| Tablatura e bateria | Plugins de som VST3 | Desenrolar repetições | Áudio MP3, WAV, FLAC |
+| Paleta de comandos (**Cmd+Shift+P**) | Piano na tela acende as notas tocando | | |
+
+## Como instalar
+
+1. [Baixe o Pauta](https://github.com/movemontes/pauta/releases/latest/download/Pauta-mac.dmg) (arquivo `.dmg`).
+2. Abra o arquivo e arraste o **Pauta** para a pasta **Aplicativos**.
+3. Abra o Pauta pelos Aplicativos.
+4. Na primeira vez, o Mac avisa que não consegue verificar o app, porque ele é gratuito e não passou pela loja da Apple. Abra **Ajustes do Sistema → Privacidade e Segurança**, role até o fim e clique em **Abrir Mesmo Assim**. Só precisa fazer isso uma vez.
+
+## Requisitos e permissões
+
+- Mac com chip Apple (M1 ou mais novo), macOS 13 ou mais novo.
+- **Pasta Documentos:** o Mac pede acesso na primeira vez; é lá que o Pauta guarda as partituras (`Documentos/Pauta`).
+- Exportar vídeo precisa do ffmpeg instalado no Mac (opcional).
+
+## Privacidade
+
+O Pauta não tem conta, não coleta dados e não envia suas partituras para lugar nenhum. Ele só usa a internet uma vez por dia, para ver se saiu uma versão nova.
+
+## Apoie
+
+O Pauta é e vai continuar grátis. Se ele te ajudou, um Pix de qualquer valor ajuda muito:
+**Pix (chave aleatória, PicPay):** `e2a1f4a9-ebfe-4c3c-a531-92a0e7433f14`. Obrigado de coração! — Mateus
+
+## Para quem programa
+
+Como compilar: `buildscripts/pauta/COMPILAR.md`. O app é C++/Qt 6, feito a partir do MuseScore Studio 4.7.7.
 
 ## Origem e licença
 
-O Pauta é um programa livre **baseado no [MuseScore Studio](https://github.com/musescore/MuseScore)** (versão 4.7.7), © 1999-2026 MuseScore Limited e colaboradores.
-Como o original, é distribuído sob a **GNU General Public License versão 3** (veja `LICENSE.txt`).
-O Pauta não tem ligação com a MuseScore Limited nem com o Muse Group. "MuseScore" é marca deles e não é usada como nome deste app.
-
-A fonte da interface é a Archivo (SIL Open Font License, `src/framework/ui/data/PautaArchivo-OFL.txt`).
-
-## Como compilar (Mac)
-
-Veja `buildscripts/pauta/COMPILAR.md`.
+O Pauta é um programa livre **baseado no [MuseScore Studio](https://github.com/musescore/MuseScore)**, © 1999-2026 MuseScore Limited e colaboradores, e por isso é distribuído sob a **GNU General Public License versão 3** (`LICENSE.txt`), e não sob a MIT dos outros apps.
+O Pauta não tem ligação com a MuseScore Limited nem com o Muse Group. "MuseScore" é marca deles.
+Fonte da interface: Archivo (SIL Open Font License). Som: MS Basic (licença MIT).
