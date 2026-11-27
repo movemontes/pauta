@@ -221,6 +221,24 @@ kbd {
 .bar.new span { left: calc(var(--w) + 10px); }
 .speed-note { font-size: 14px; color: var(--gray); max-width: 860px; margin: 18px 0 0; }
 
+/* Pauta x MuseScore */
+.compare-wrap { max-width: 860px; border: var(--line); box-shadow: 6px 6px 0 var(--ink); background: var(--paper); overflow-x: auto; }
+.compare { width: 100%; border-collapse: collapse; font-size: 16px; }
+.compare th, .compare td { padding: 12px 14px; text-align: left; vertical-align: top; border-top: 2px solid var(--ink); }
+.compare thead th { border-top: 0; background: var(--ink); color: var(--paper); font-stretch: 125%; font-weight: 900; font-size: 15px; }
+.compare thead th.us { background: var(--blue); color: var(--ink); }
+.compare tbody th { font-weight: 800; width: 38%; }
+.compare td.us { background: #fff1ea; font-weight: 700; }
+.compare td { color: var(--ink); }
+.demos { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; margin-top: 34px; }
+.demo { margin: 0; background: var(--paper); border: var(--line); box-shadow: 6px 6px 0 var(--ink); }
+.demo img { width: 100%; border-bottom: var(--line); background: #1b1b1b; }
+.demo figcaption { padding: 12px 14px; font-size: 16px; }
+@media (max-width: 760px) {
+  .compare { font-size: 15px; }
+  .compare th, .compare td { padding: 10px 10px; }
+}
+
 /* Rodapé */
 footer { border-top: var(--line); background: var(--paper); padding: 28px 0 40px; margin-top: 40px; }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; font-size: 15px; color: var(--gray); }

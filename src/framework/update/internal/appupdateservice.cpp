@@ -174,7 +174,9 @@ Promise<RetVal<ReleaseInfo> > AppUpdateService::checkForUpdate()
             }
 
             // Pauta: compare with Pauta's own version, not the MuseScore base version
-            Version current(String(PAUTA_VERSION));
+            // test hook: PAUTA_DEBUG_FAKE_VERSION=1.0.7 makes this copy believe it is that version (to test updating)
+            Version current(qEnvironmentVariableIsSet("PAUTA_DEBUG_FAKE_VERSION")
+                            ? String::fromQString(qEnvironmentVariable("PAUTA_DEBUG_FAKE_VERSION")) : String(PAUTA_VERSION));
             Version update(releaseInfo.val.version);
 
             bool allowUpdateOnPreRelease = configuration()->allowUpdateOnPreRelease();

@@ -143,3 +143,9 @@ bool CommandPaletteModel::trigger(int row)
     dispatcher()->dispatch(m_visible.at(row)->code);
     return true;
 }
+
+// Pauta test hook: PAUTA_DEBUG_PALETTE_TYPE=<text> makes the palette type this text by itself (for site recordings)
+QString mu::appshell::CommandPaletteModel::pautaDebugTypeText() const
+{
+    return qEnvironmentVariable("PAUTA_DEBUG_PALETTE_TYPE");
+}

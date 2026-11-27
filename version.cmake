@@ -37,7 +37,7 @@ set(MUSE_APP_VERSION_LABEL "")
 # Pauta: its own version (shown to the user, used by the updater and the .app bundle).
 # MUSE_APP_VERSION above stays at the MuseScore base version, because it is written
 # into score files and drives file-compatibility checks.
-set(PAUTA_VERSION "1.0.8")
+set(PAUTA_VERSION "1.0.9")
 set(PAUTA_BASE_VERSION "${MUSE_APP_VERSION}")
 
 if (NOT CMAKE_BUILD_NUMBER)

@@ -28,6 +28,19 @@ StyledDialogView {
         searchField.ensureActiveFocus()
     }
 
+    // test hook (see CommandPaletteModel::pautaDebugTypeText): types a text letter by letter
+    property string pautaTypeText: paletteModel.pautaDebugTypeText()
+    property int pautaTyped: 0
+    Timer {
+        interval: 260
+        repeat: true
+        running: root.pautaTypeText.length > 0 && root.pautaTyped < root.pautaTypeText.length
+        onTriggered: {
+            root.pautaTyped++
+            searchField.inputField.text = root.pautaTypeText.substring(0, root.pautaTyped)
+        }
+    }
+
     function runCurrent() {
         if (list.count === 0) {
             return

@@ -38,6 +38,7 @@ public:
 
     Q_INVOKABLE void load();
     Q_INVOKABLE bool trigger(int row);
+    Q_INVOKABLE QString pautaDebugTypeText() const; // test hook: PAUTA_DEBUG_PALETTE_TYPE
 
 signals:
     void filterChanged();

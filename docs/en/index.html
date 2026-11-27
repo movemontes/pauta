@@ -20,6 +20,7 @@
   <div class="wrap">
     <a class="brand" href="./"><img class="mark" src="../favicon.svg" alt=""><b>PAUTA</b></a>
     <nav>
+      <a class="hide-sm" href="#compare">Compare</a>
       <a class="hide-sm" href="#recursos">Features</a>
       <a class="hide-sm" href="#novidades">What’s new</a>
       <a class="hide-sm" href="#instalar">Install</a>
@@ -89,6 +90,35 @@
         </div>
       </div>
       <p class="speed-note">Measured on the same Mac (Mac mini M4), on a score with 20 instruments and 300 measures, comparing Pauta 1.0.8 with the engine of MuseScore Studio 4.7.7, which Pauta is based on. It is the time the program takes to process each edit. Other edits, such as delete, paste and transpose, take the same time in both. In small scores both are already fast.</p>
+    </div>
+  </section>
+
+  <section id="compare">
+    <div class="wrap">
+      <h2>Pauta <span class="num">×</span> MuseScore</h2>
+      <p class="speed-lead">Pauta was born from MuseScore Studio, a great open-source program. It keeps everything MuseScore does and adds what was missing for people who want simplicity.</p>
+      <div class="compare-wrap">
+        <table class="compare">
+          <thead><tr><th></th><th scope="col" class="us">Pauta</th><th scope="col">MuseScore Studio 4.7</th></tr></thead>
+          <tbody>
+          <tr><th scope="row">Editing big scores</th><td class="us">Almost 10× faster (<a href="#speed">see the times</a>)</td><td>Reference time</td></tr>
+          <tr><th scope="row">Updating on Mac</th><td class="us">Downloads, swaps and reopens by itself</td><td>Downloads and opens the installer for you to drag</td></tr>
+          <tr><th scope="row">Export a video of the score</th><td class="us">Ready to use</td><td>Needs FFmpeg installed</td></tr>
+          <tr><th scope="row">Sounds included</th><td class="us">2 sets (MS Basic and GeneralUser GS)</td><td>1 set (MS Basic); better sounds as a separate download</td></tr>
+          <tr><th scope="row">Study mode: repeat, slow down and count in</th><td class="us">One button</td><td>Three separate controls</td></tr>
+          <tr><th scope="row">Lyrics with chords as PDF or text</th><td class="us">Yes</td><td>No</td></tr>
+          <tr><th scope="row">Command palette (⌘⇧P)</th><td class="us">Yes</td><td>No</td></tr>
+          <tr><th scope="row">Price</th><td class="us">Free</td><td>Free</td></tr>
+          <tr><th scope="row">Open source</th><td class="us">Yes (GPL-3.0)</td><td>Yes (GPL-3.0)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="speed-note">Compared with MuseScore Studio 4.7.7, the version Pauta is based on, checked in its source code. The names MuseScore and MuseScore Studio belong to their owners; Pauta is not affiliated with them.</p>
+      <div class="demos">
+        <figure class="demo"><img src="../gifs/estudo.gif" alt="Study mode looping two measures" loading="lazy"><figcaption>Study mode: the chosen passage plays again and again, slower, with a count-in.</figcaption></figure>
+        <figure class="demo"><img src="../gifs/paleta.gif" alt="Command palette filtering the transpose commands" loading="lazy"><figcaption>Command palette: type part of a name and find any function.</figcaption></figure>
+        <figure class="demo"><img src="../gifs/cifra.png" alt="Song lyrics with the chords above the syllables" loading="lazy"><figcaption>Lyrics with chords: ready to print or send in a message.</figcaption></figure>
+      </div>
     </div>
   </section>
 

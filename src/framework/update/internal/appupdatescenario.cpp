@@ -158,6 +158,20 @@ Promise<IInteractive::Result> AppUpdateScenario::showNoUpdateMsg()
 
 Promise<Ret> AppUpdateScenario::showReleaseInfo(const ReleaseInfo& info)
 {
+    // test hook: PAUTA_DEBUG_UPDATE_ACCEPT=1 answers "update" and "close to install" by itself (to test updating
+    // end to end without clicks); the download, the swap of the app and the reopening are the real ones
+    if (qEnvironmentVariableIsSet("PAUTA_DEBUG_UPDATE_ACCEPT")) {
+        LOGI() << "[Pauta test] accepting update " << info.version;
+        RetVal<Val> rv = interactive()->openSync("muse://update/app?mode=download");
+        if (!rv.ret) {
+            LOGE() << "[Pauta test] download failed: " << rv.ret.toString();
+            return processUpdateError(rv.ret.code());
+        }
+        LOGI() << "[Pauta test] downloaded to " << rv.val.toString();
+        dispatcher()->dispatch("quit", ActionData::make_arg2<bool, std::string>(false, rv.val.toString()));
+        return async::make_promise<Ret>([](auto resolve, auto) { return resolve(muse::make_ok()); });
+    }
+
     UriQuery query("muse://update/appreleaseinfo");
     query.addParam("notes", Val(info.notes));
     query.addParam("previousReleasesNotes", Val(releasesNotesToValList(info.previousReleasesNotes)));
