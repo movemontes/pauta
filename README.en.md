@@ -13,7 +13,8 @@ Free · No account · No ads · Nothing leaves your computer
 - **Nothing leaves your Mac:** your scores stay on your computer.
 - **No account, no login:** open it and write. No MuseHub, no e-mail.
 - **Sound included:** plays right away, no gigabytes to download.
-- **[Treco](https://github.com/movemontes/treco) family look:** white, black and blue. The score itself keeps standard music engraving.
+- **[Treco](https://github.com/movemontes/treco) family look:** cream paper, black outlines and an accent color you pick, plus a soft dark gray and a black background. The score itself keeps standard music engraving.
+- **Colcheia, the mascot:** shows you around the first time and explains any button when you rest the mouse on it.
 - **English and Portuguese:** follows your Mac's language, switch it in the **Pauta** menu.
 - **Updates itself:** checks for a new version once a day.
 
@@ -57,4 +58,4 @@ How to build: `buildscripts/pauta/COMPILAR.md` (in Portuguese). The app is C++/Q
 
 Pauta is free software **based on [MuseScore Studio](https://github.com/musescore/MuseScore)**, © 1999-2026 MuseScore Limited and others, so it is distributed under the **GNU General Public License version 3** (`LICENSE.txt`).
 Pauta is not affiliated with or endorsed by MuseScore Limited or Muse Group. "MuseScore" is their trademark.
-UI font: Jersey 10 (SIL Open Font License), pixel look inspired by Aseprite. Sound: MS Basic (MIT license). Finale files: [Denigma](https://github.com/rpatters1/denigma) (MIT license), shipped inside the app.
+UI fonts: Archivo (SIL Open Font License). Sound: MS Basic (MIT license). Finale files: [Denigma](https://github.com/rpatters1/denigma) (MIT license), shipped inside the app.
