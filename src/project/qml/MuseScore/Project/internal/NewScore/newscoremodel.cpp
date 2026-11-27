@@ -23,6 +23,12 @@
 
 #include <QCoreApplication>
 #include <QDir>
+
+#ifdef Q_OS_WIN
+#define PAUTA_RESOURCES_DIR "/../" // Windows: bin/Pauta.exe, data next to bin/
+#else
+#define PAUTA_RESOURCES_DIR "/../Resources/" // Mac: Pauta.app/Contents/Resources
+#endif
 #include "ui/view/musicalsymbolcodes.h"
 #include "log.h"
 
@@ -51,7 +57,7 @@ QString NewScoreModel::preferredScoreCreationMode() const
 QString NewScoreModel::pautaTemplatesDir() const
 {
     // the models that ship inside Pauta.app (Contents/Resources/templates)
-    return QDir(QCoreApplication::applicationDirPath() + "/../Resources/templates").absolutePath();
+    return QDir(QCoreApplication::applicationDirPath() + PAUTA_RESOURCES_DIR "templates").absolutePath();
 }
 
 bool NewScoreModel::pautaCreateFromTemplate(const QString& templatePath, const QString& title)

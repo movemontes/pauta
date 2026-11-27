@@ -31,6 +31,12 @@
 #include <QFileInfo>
 #include <QSettings>
 
+#ifdef Q_OS_WIN
+#define PAUTA_RESOURCES_DIR "/../" // Windows: bin/Pauta.exe, data next to bin/
+#else
+#define PAUTA_RESOURCES_DIR "/../Resources/" // Mac: Pauta.app/Contents/Resources
+#endif
+
 using namespace muse;
 using namespace muse::audio;
 using namespace muse::audio::engine;
@@ -113,7 +119,7 @@ AudioInputParams AudioEngineConfiguration::defaultAudioInputParams() const
     // Pauta: the sound chosen in View > Instrument sound becomes the default (if that file ships with the app)
     const QString chosen = QSettings().value("pauta/soundFont").toString();
     if (!chosen.isEmpty() && chosen != QString::fromStdString(DEFAULT_SOUND_FONT_NAME)
-        && QFileInfo::exists(QCoreApplication::applicationDirPath() + "/../Resources/sound/" + chosen + ".sf2")) {
+        && QFileInfo::exists(QCoreApplication::applicationDirPath() + PAUTA_RESOURCES_DIR "sound/" + chosen + ".sf2")) {
         result.resourceMeta.id = chosen.toStdString();
         result.resourceMeta.attributes[synth::SOUNDFONT_NAME_ATTRIBUTE] = String::fromQString(chosen);
     }

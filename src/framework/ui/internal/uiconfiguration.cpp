@@ -38,6 +38,12 @@
 #include <QSettings>
 
 #ifdef Q_OS_WIN
+#define PAUTA_RESOURCES_DIR "/../" // Windows: bin/Pauta.exe, data next to bin/
+#else
+#define PAUTA_RESOURCES_DIR "/../Resources/" // Mac: Pauta.app/Contents/Resources
+#endif
+
+#ifdef Q_OS_WIN
 #include <QOperatingSystemVersion>
 #endif
 
@@ -655,7 +661,7 @@ std::string UiConfiguration::defaultFontFamily() const
                                ":/ui/data/PautaTexto-Bold.ttf" }) {
             QFontDatabase::addApplicationFont(f);
         }
-        const QString dir = QCoreApplication::applicationDirPath() + "/../Resources/fonts/";
+        const QString dir = QCoreApplication::applicationDirPath() + PAUTA_RESOURCES_DIR "fonts/";
         bool clash = true;
         for (const char* f : { "ClashGrotesk-Medium.otf", "ClashGrotesk-Semibold.otf" }) {
             clash = QFontDatabase::addApplicationFont(dir + f) != -1 && clash;

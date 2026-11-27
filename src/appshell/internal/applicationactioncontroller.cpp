@@ -334,6 +334,21 @@ bool ApplicationActionController::quit(bool isAllInstances, const muse::io::path
             "open \"$OLD\"\n");
         QProcess::startDetached("/bin/sh", { "-c", script, "pauta-update", installerPath.toQString(), bundle,
                                              QString::number(QCoreApplication::applicationPid()), QString(PAUTA_VERSION) });
+#elif defined(Q_OS_WIN)
+        // Pauta: when this app has closed, install the downloaded .msi with a progress bar only
+        // (no questions), then open the new Pauta. If the install fails, the normal installer opens.
+        // PowerShell single-quoted text: a ' inside is written as ''
+        auto psQuote = [](const QString& s) { return "'" + QString(s).replace("'", "''") + "'"; };
+        const QString exe = psQuote(QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
+        const QString msi = psQuote(QDir::toNativeSeparators(installerPath.toQString()));
+        const QString script
+            = "try { Wait-Process -Id " + QString::number(QCoreApplication::applicationPid())
+              + " -Timeout 60 -ErrorAction SilentlyContinue } catch {}; "
+              + "$p = Start-Process msiexec.exe -ArgumentList @('/i', ('\"' + " + msi
+              + " + '\"'), '/passive', '/norestart') -Wait -PassThru; "
+              + "if ($p.ExitCode -eq 0 -or $p.ExitCode -eq 3010) { Start-Process " + exe + " } else { Start-Process " + msi + " }";
+        QProcess::startDetached("powershell.exe", { "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
+                                                    "-Command", script });
 #elif defined(Q_OS_LINUX)
         interactive()->revealInFileBrowser(installerPath);
 #else

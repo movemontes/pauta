@@ -10,6 +10,12 @@
 #include <QStandardPaths>
 #include <QUrl>
 
+#ifdef Q_OS_WIN
+#define PAUTA_RESOURCES_DIR "/../" // Windows: bin/Pauta.exe, data next to bin/
+#else
+#define PAUTA_RESOURCES_DIR "/../Resources/" // Mac: Pauta.app/Contents/Resources
+#endif
+
 #include "actions/actiontypes.h"
 #include "project/inotationproject.h"
 
@@ -50,7 +56,7 @@ void PautaTourModel::showScorePage()
     }
 
     // copy the blank treble clef template to a temporary folder and open it as "Exemplo"
-    const QString src = QCoreApplication::applicationDirPath() + "/../Resources/templates/01-General/01-Treble_Clef";
+    const QString src = QCoreApplication::applicationDirPath() + PAUTA_RESOURCES_DIR "templates/01-General/01-Treble_Clef";
     const QString dst = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/PautaTour";
     QDir(dst).removeRecursively();
     QDir().mkpath(dst);

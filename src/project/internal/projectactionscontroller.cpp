@@ -173,7 +173,12 @@ static bool pautaIsFinaleFile(const std::string& suffix)
 
 static muse::io::path_t pautaConvertFinaleFile(const muse::io::path_t& finalePath, QString& error)
 {
-    const QString denigma = QCoreApplication::applicationDirPath() + "/denigma";
+    const QString denigma = QCoreApplication::applicationDirPath()
+#ifdef Q_OS_WIN
+                            + "/denigma.exe";
+#else
+                            + "/denigma";
+#endif
     if (!QFileInfo::exists(denigma)) {
         error = "denigma not found";
         return muse::io::path_t();

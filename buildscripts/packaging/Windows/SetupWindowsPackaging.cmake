@@ -7,10 +7,10 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME ${MUSE_APP_NAME})
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MuseScore is a full featured WYSIWYG score editor")
-set(CPACK_PACKAGE_VENDOR "MuseScore Limited")
-set(CPACK_PACKAGE_CONTACT "https://musescore.org")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://musescore.org")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Pauta, programa de partitura gratuito")
+set(CPACK_PACKAGE_VENDOR "Pauta")
+set(CPACK_PACKAGE_CONTACT "https://movemontes.github.io/pauta/")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://movemontes.github.io/pauta/")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "${MUSE_APP_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${MUSE_APP_VERSION_MINOR}")
@@ -41,7 +41,7 @@ endif(MUSE_APP_UNSTABLE)
 set(CPACK_PACKAGE_FILE_NAME "${MUSE_APP_NAME}-${MUSE_APP_VERSION}${git_date_string}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${MUSE_APP_NAME_VERSION})
 
-set(MUSESCORE_EXECUTABLE_NAME ${MUSE_APP_NAME}${MUSE_APP_VERSION_MAJOR})
+set(MUSESCORE_EXECUTABLE_NAME ${MUSE_APP_NAME}) # Pauta: bin/Pauta.exe
 set(CPACK_PACKAGE_EXECUTABLES "${MUSESCORE_EXECUTABLE_NAME}" "${MUSE_APP_TITLE_VERSION}") # exe name, label
 set(CPACK_CREATE_DESKTOP_LINKS "${MUSESCORE_EXECUTABLE_NAME}" "${MUSE_APP_TITLE_VERSION}") # exe name, label
 
@@ -49,7 +49,11 @@ set(CPACK_CREATE_DESKTOP_LINKS "${MUSESCORE_EXECUTABLE_NAME}" "${MUSE_APP_TITLE_
 set(CPACK_GENERATOR "WIX")
 
 file(TO_CMAKE_PATH $ENV{PROGRAMFILES} PROGRAMFILES)
-set(CPACK_WIX_ROOT "${PROGRAMFILES}/WiX Toolset v3.11")
+if(DEFINED ENV{WIX}) # Pauta: the WiX that is installed (the CI installs it and sets WIX)
+    file(TO_CMAKE_PATH "$ENV{WIX}" CPACK_WIX_ROOT)
+else()
+    set(CPACK_WIX_ROOT "${PROGRAMFILES}/WiX Toolset v3.11")
+endif()
 
 # Use custom version of WIX.template.in
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/buildscripts/packaging/Windows/Installer" ${CMAKE_MODULE_PATH})
@@ -67,7 +71,7 @@ endif()
 message(STATUS "[SetupWindowsPackaging.cmake] CPACK_WIX_UPGRADE_GUID: ${CPACK_WIX_UPGRADE_GUID}")
 
 set(CPACK_WIX_LICENSE_RTF "${PROJECT_SOURCE_DIR}/buildscripts/packaging/Windows/Installer/LICENSE.rtf")
-set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/share/icons/AppIcon/MS4_AppIcon.ico")
+set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/share/icons/AppIcon/PautaAppIcon.ico")
 set(CPACK_WIX_UI_BANNER "${PROJECT_SOURCE_DIR}/buildscripts/packaging/Windows/Installer/installer_banner_wix.png")
 set(CPACK_WIX_UI_DIALOG "${PROJECT_SOURCE_DIR}/buildscripts/packaging/Windows/Installer/installer_background_wix.png")
 set(CPACK_WIX_PROGRAM_MENU_FOLDER "${MUSE_APP_TITLE_VERSION}")

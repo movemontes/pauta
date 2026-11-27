@@ -1,0 +1,186 @@
+# Pauta for Windows: builds Pauta-windows.msi on a GitHub Windows machine.
+# Runs when someone asks for it (Actions > "Pauta: Windows" > Run workflow), or on a push to the "windows" branch.
+# Nothing is published: the installer is left as an artifact of the run.
+name: 'Pauta: Windows'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [windows]
+
+concurrency:
+  group: pauta-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: 6.10.2
+  # Fixed forever: lets a new Pauta-windows.msi replace the installed Pauta. Never reuse MuseScore's.
+  PAUTA_UPGRADE_GUID: 206DA8E2-AC93-4B1E-BC11-648ED7E6580C
+  DENIGMA_TAG: v3.1
+  FFMPEG_ZIP: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-lgpl-shared-7.1.zip
+  INSTALL_DIR: ${{ github.workspace }}\build.install
+  BUILD_DIR: ${{ github.workspace }}\build.release
+
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 300
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v6
+
+    - name: Restore ccache files
+      id: restore-ccache
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ github.workspace }}/.ccache
+        key: pauta-win-ccache-
+        restore-keys: pauta-win-ccache-
+    - name: Setup ccache
+      shell: bash
+      run: |
+        choco install -y ccache
+        bash ./buildscripts/ci/tools/setup_ccache_config.sh
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2022_64'
+        modules: 'qt5compat qtnetworkauth qtshadertools qtwebsockets qtimageformats'
+        cache: true
+
+    - name: Setup environment (MuseScore's public dependencies, WiX, Ninja)
+      shell: cmd
+      run: |
+        call buildscripts\ci\windows\setup.bat || exit /b 1
+        choco install -y wixtoolset ninja || exit /b 1
+
+    - name: Configure
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VS_DIR=%%i
+        call "%VS_DIR%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
+        xcopy "C:\musescore_dependencies" "%CD%" /E /I /Y >nul
+        set "PATH=C:\Program Files (x86)\Jack;%PATH%"
+        cmake -S . -B "%BUILD_DIR%" -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+          -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
+          -DMUSESCORE_BUILD_CONFIGURATION=app -DMUSE_APP_BUILD_MODE=release ^
+          -DCMAKE_BUILD_NUMBER=${{ github.run_number }} -DMUSESCORE_REVISION=${{ github.sha }} ^
+          -DMUSE_MODULE_VST=ON -DMUSE_MODULE_CLOUD=OFF -DMUSE_MODULE_MUSESAMPLER=OFF ^
+          -DMUSE_MODULE_LEARN=OFF -DMUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT=OFF ^
+          -DMUSE_MODULE_NETWORK_WEBSOCKET=ON -DMUE_RUN_WINDEPLOYQT=ON ^
+          -DMUE_BUILD_MACOS_INTEGRATION=OFF -DMUSE_COMPILE_USE_UNITY=ON ^
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache || exit /b 1
+
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem_matchers/msvc.json"
+
+    - name: Build and install
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VS_DIR=%%i
+        call "%VS_DIR%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
+        cmake --build "%BUILD_DIR%" --target install || exit /b 1
+    - name: Show ccache stats
+      run: ccache -sv
+
+    - name: Denigma (opens Finale files, MIT)
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VS_DIR=%%i
+        call "%VS_DIR%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
+        git clone --depth 1 --branch %DENIGMA_TAG% https://github.com/rpatters1/denigma.git "%RUNNER_TEMP%\denigma" || exit /b 1
+        cmake -S "%RUNNER_TEMP%\denigma" -B "%RUNNER_TEMP%\denigma\build" -GNinja -DCMAKE_BUILD_TYPE=Release || exit /b 1
+        cmake --build "%RUNNER_TEMP%\denigma\build" --target denigma || exit /b 1
+        for /r "%RUNNER_TEMP%\denigma\build" %%f in (denigma.exe) do if exist "%%f" set DENIGMA_EXE=%%f
+        if not defined DENIGMA_EXE ( echo denigma.exe not found & exit /b 1 )
+        copy /Y "%DENIGMA_EXE%" "%INSTALL_DIR%\bin\denigma.exe" || exit /b 1
+        mkdir "%INSTALL_DIR%\licenses" 2>nul
+        copy /Y "%RUNNER_TEMP%\denigma\LICENSE" "%INSTALL_DIR%\licenses\denigma-LICENSE.txt"
+
+    - name: FFmpeg (score video, LGPL)
+      shell: pwsh
+      run: |
+        $zip = "$env:RUNNER_TEMP\ffmpeg.zip"
+        Invoke-WebRequest $env:FFMPEG_ZIP -OutFile $zip
+        Expand-Archive $zip "$env:RUNNER_TEMP\ffmpeg"
+        $root = Get-ChildItem "$env:RUNNER_TEMP\ffmpeg" -Directory | Select-Object -First 1
+        New-Item -ItemType Directory -Force "$env:INSTALL_DIR\bin\ffmpeg", "$env:INSTALL_DIR\licenses" | Out-Null
+        Get-ChildItem "$($root.FullName)\bin" -Filter *.dll | Copy-Item -Destination "$env:INSTALL_DIR\bin\ffmpeg"
+        Copy-Item "$($root.FullName)\LICENSE.txt" "$env:INSTALL_DIR\licenses\ffmpeg-LICENSE.txt"
+        "FFmpeg 7.1 LGPL shared build by BtbN, https://github.com/BtbN/FFmpeg-Builds (source: https://ffmpeg.org)" |
+          Set-Content "$env:INSTALL_DIR\licenses\ffmpeg-SOURCE.txt"
+        Get-ChildItem "$env:INSTALL_DIR\bin\ffmpeg"
+
+    - name: GeneralUser GS (instrument sound)
+      shell: pwsh
+      run: |
+        git clone --depth 1 https://github.com/mrbumpy409/GeneralUser-GS.git "$env:RUNNER_TEMP\gugs"
+        $sf2 = Get-ChildItem "$env:RUNNER_TEMP\gugs" -Recurse -Filter *.sf2 | Select-Object -First 1
+        if (-not $sf2) { echo "::warning::GeneralUser GS .sf2 not found; only MS Basic ships"; exit 0 }
+        New-Item -ItemType Directory -Force "$env:INSTALL_DIR\sound", "$env:INSTALL_DIR\licenses" | Out-Null
+        Copy-Item $sf2.FullName "$env:INSTALL_DIR\sound\GeneralUser GS.sf2"
+        $lic = Get-ChildItem "$env:RUNNER_TEMP\gugs" -Recurse -Include LICENSE*, *license* -File | Select-Object -First 1
+        if ($lic) { Copy-Item $lic.FullName "$env:INSTALL_DIR\licenses\GeneralUser-GS-LICENSE.txt" }
+
+    - name: Clash Grotesk (from a repository secret; never in Git)
+      shell: pwsh
+      env:
+        CLASH_GROTESK_ZIP_B64: ${{ secrets.CLASH_GROTESK_ZIP_B64 }}
+      run: |
+        if (-not $env:CLASH_GROTESK_ZIP_B64) { echo "::warning::secret CLASH_GROTESK_ZIP_B64 not set; Pauta uses Archivo"; exit 0 }
+        $zip = "$env:RUNNER_TEMP\clash.zip"
+        [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($env:CLASH_GROTESK_ZIP_B64))
+        Expand-Archive $zip "$env:RUNNER_TEMP\clash"
+        New-Item -ItemType Directory -Force "$env:INSTALL_DIR\fonts" | Out-Null
+        foreach ($f in 'ClashGrotesk-Medium.otf', 'ClashGrotesk-Semibold.otf') {
+          $src = Get-ChildItem "$env:RUNNER_TEMP\clash" -Recurse -Filter $f | Select-Object -First 1
+          if (-not $src) { echo "::error::$f missing from the secret"; exit 1 }
+          Copy-Item $src.FullName "$env:INSTALL_DIR\fonts\"
+        }
+        $lic = Get-ChildItem "$env:RUNNER_TEMP\clash" -Recurse -Filter LICENSE.txt | Select-Object -First 1
+        if ($lic) { Copy-Item $lic.FullName "$env:INSTALL_DIR\licenses\ClashGrotesk-LICENSE.txt" }
+        Remove-Item -Recurse -Force $zip, "$env:RUNNER_TEMP\clash"
+
+    - name: Package (Pauta-windows.msi)
+      shell: cmd
+      run: |
+        for /f "usebackq tokens=*" %%i in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VS_DIR=%%i
+        call "%VS_DIR%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
+        for /f %%g in ('powershell -NoProfile -Command "[guid]::NewGuid().ToString().ToUpper()"') do set PRODUCT_GUID=%%g
+        cmake "%BUILD_DIR%" -DCPACK_WIX_PRODUCT_GUID=%PRODUCT_GUID% -DCPACK_WIX_UPGRADE_GUID=%PAUTA_UPGRADE_GUID% -DMUE_PACK_INSTALL_DIR=ON || exit /b 1
+        cmake --build "%BUILD_DIR%" --target package || exit /b 1
+        mkdir dist
+        for /r "%BUILD_DIR%" %%f in (*.msi) do copy /Y "%%f" dist\Pauta-windows.msi
+        if not exist dist\Pauta-windows.msi ( echo msi not found & exit /b 1 )
+        powershell -NoProfile -Command "Get-FileHash dist\Pauta-windows.msi -Algorithm SHA256 | Format-List; Get-Item dist\Pauta-windows.msi | Select Length"
+
+    - name: Upload installer
+      uses: actions/upload-artifact@v6
+      with:
+        name: Pauta-windows
+        path: dist\Pauta-windows.msi
+    - name: Upload WiX logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v6
+      with:
+        name: wix-logs
+        path: build.release\_CPack_Packages\**\*.log
+        if-no-files-found: ignore
+
+    - name: Prepare ccache files for saving
+      id: prepare-save-ccache
+      if: always()
+      shell: bash
+      run: |
+        ccache --recompress 10 || true
+        echo "CCACHE_TIMESTAMP=$(date -u +"%F-%T")" | tee -a $GITHUB_OUTPUT
+    - name: Save ccache files
+      if: always()
+      uses: actions/cache/save@v5
+      with:
+        key: pauta-win-ccache-${{ steps.prepare-save-ccache.outputs.CCACHE_TIMESTAMP }}
+        path: ${{ github.workspace }}/.ccache

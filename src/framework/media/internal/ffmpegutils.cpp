@@ -41,6 +41,8 @@ io::paths_t defaultSearchPaths()
 {
     io::paths_t paths;
 #if defined(Q_OS_WIN)
+    // Pauta: a small LGPL FFmpeg ships in the install folder, bin/ffmpeg (see .github/workflows/pauta_windows.yml)
+    paths.push_back(io::path_t(QCoreApplication::applicationDirPath() + "/ffmpeg"));
     QSettings settings(
         "HKEY_LOCAL_MACHINE\\Software\\FFmpeg\\Providers",
         QSettings::NativeFormat
