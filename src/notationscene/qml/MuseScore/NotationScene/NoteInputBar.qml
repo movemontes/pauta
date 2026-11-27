@@ -39,7 +39,7 @@ Item {
     property int maximumHeight: 0
 
     width: gridView.isHorizontal ? childrenRect.width : 76
-    height: !gridView.isHorizontal ? childrenRect.height : 44
+    height: !gridView.isHorizontal ? childrenRect.height : 46 // Pauta: the whole band, so the boxes can sit in the middle
 
     property NavigationPanel navigationPanel: NavigationPanel {
         name: "NoteInputBar"
@@ -249,11 +249,16 @@ Item {
             PropertyChanges {
                 target: gridView
                 width: prv.resolveHorizontalGridViewWidth()
-                height: root.height
+                height: gridView.cellHeight // Pauta: just the boxes, centred in the band (room above and below)
                 sectionWidth: 14
                 sectionHeight: gridView.cellHeight // Pauta: the box edges stay inside the box
                 rows: 1
                 columns: gridView.noLimit
+            }
+
+            AnchorChanges {
+                target: gridView
+                anchors.verticalCenter: root.verticalCenter
             }
 
             AnchorChanges {

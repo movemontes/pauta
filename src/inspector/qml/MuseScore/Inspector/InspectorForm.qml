@@ -96,36 +96,68 @@ Rectangle {
             popupController.repositionPopupIfNeed()
         }
 
-        delegate: Column {
+        // Pauta: each section is a cream card with a black outline and a hard shadow, title in caps
+        delegate: Item {
             id: delegateItem
 
             required property AbstractInspectorModel inspectorSectionModel
             required property int index
 
             width: ListView.view.width
-            spacing: sectionList.spacing
+            height: card.height + 4
 
             property var navigationPanel: _item.navigationPanel
 
-            SeparatorLine {
-                visible: delegateItem.index !== 0
+            Rectangle { // hard shadow
+                x: card.x + 4
+                y: card.y + 4
+                width: card.width
+                height: card.height
+                color: ui.theme.strokeColor
             }
 
-            InspectorSectionDelegate {
-                id: _item
+            Rectangle {
+                id: card
 
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.right: parent.right
-                anchors.rightMargin: 12
+                x: 10
+                width: parent.width - 24
+                height: _item.height + 24
 
-                sectionModel: delegateItem.inspectorSectionModel
-                anchorItem: root
-                navigationPanel.section: root.navigationSection
-                navigationPanel.order: root.navigationOrderStart + delegateItem.index
+                color: ui.theme.textFieldColor
+                border.width: 2
+                border.color: ui.theme.strokeColor
 
-                onEnsureContentVisibleRequested: function(invisibleContentHeight) {
-                    sectionList.ensureContentVisible(invisibleContentHeight)
+                Rectangle { // accent strip on the left of the title
+                    x: 2
+                    y: 12
+                    width: 4
+                    height: 22
+                    color: ui.theme.accentColor
+                }
+
+                InspectorSectionDelegate {
+                    id: _item
+
+                    y: 12
+                    anchors.left: parent.left
+                    anchors.leftMargin: 16
+                    anchors.right: parent.right
+                    anchors.rightMargin: 12
+
+                    titleFont.family: "Pauta Titulo"
+                    titleFont.pixelSize: 15
+                    titleFont.weight: Font.Black
+                    titleFont.capitalization: Font.AllUppercase
+                    titleFont.letterSpacing: 0.5
+
+                    sectionModel: delegateItem.inspectorSectionModel
+                    anchorItem: root
+                    navigationPanel.section: root.navigationSection
+                    navigationPanel.order: root.navigationOrderStart + delegateItem.index
+
+                    onEnsureContentVisibleRequested: function(invisibleContentHeight) {
+                        sectionList.ensureContentVisible(invisibleContentHeight)
+                    }
                 }
             }
         }

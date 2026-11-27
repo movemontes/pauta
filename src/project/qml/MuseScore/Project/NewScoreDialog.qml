@@ -39,7 +39,20 @@ StyledDialogView {
 
     objectName: "NewScoreDialog"
 
+    // Pauta: a ready-made start chosen on the first page (empty = instruments chosen one by one)
+    property string quickTemplate: ""
+
     function onDone() {
+        if (root.quickTemplate !== "") {
+            var quick = scoreInfoPage.result()
+            quick["templatePath"] = root.quickTemplate
+            if (newScoreModel.createScore(quick)) {
+                root.activateParentOnClose = false
+                root.accept()
+            }
+            return
+        }
+
         var result = {}
 
         var instrumentsAndTemplatePageResult = chooseInstrumentsAndTemplatePage.result()
@@ -84,6 +97,21 @@ StyledDialogView {
         anchors.bottom: footer.top
         anchors.bottomMargin: 20
 
+        // Pauta: page 0, ready-made starts with Colcheia
+        PautaQuickStartPage {
+            templatesDir: newScoreModel.pautaTemplatesDir()
+
+            onModelChosen: function(templatePath, name) {
+                root.quickTemplate = templatePath
+                pagesStack.currentIndex = 2
+            }
+
+            onChooseInstruments: {
+                root.quickTemplate = ""
+                pagesStack.currentIndex = 1
+            }
+        }
+
         ChooseInstrumentsAndTemplatesPage {
             id: chooseInstrumentsAndTemplatePage
 
@@ -120,7 +148,7 @@ StyledDialogView {
 
         StyledTextLabel {
             id: descriptionLabel
-            text: pagesStack.currentIndex === 0
+            text: pagesStack.currentIndex === 1
                   ? chooseInstrumentsAndTemplatePage.description
                   : ""
             displayTruncatedTextOnHover: true
@@ -160,7 +188,12 @@ StyledDialogView {
                 visible: pagesStack.currentIndex > 0
 
                 onClicked: {
-                    pagesStack.currentIndex--
+                    // Pauta: from the score info, go back to where the start was chosen
+                    if (pagesStack.currentIndex === 2 && root.quickTemplate !== "") {
+                        pagesStack.currentIndex = 0
+                    } else {
+                        pagesStack.currentIndex--
+                    }
                 }
             }
 
@@ -168,7 +201,7 @@ StyledDialogView {
                 text: qsTrc("global", "Next")
                 buttonRole: ButtonBoxModel.CustomRole
                 buttonId: ButtonBoxModel.CustomButton + 3
-                visible: pagesStack.currentIndex < pagesStack.count - 1
+                visible: pagesStack.currentIndex === 1
                 enabled: chooseInstrumentsAndTemplatePage.hasSelection
 
                 onClicked: {
@@ -181,7 +214,8 @@ StyledDialogView {
                 buttonRole: ButtonBoxModel.AcceptRole
                 buttonId: ButtonBoxModel.Done
                 accentButton: true
-                enabled: chooseInstrumentsAndTemplatePage.hasSelection
+                visible: pagesStack.currentIndex > 0
+                enabled: pagesStack.currentIndex === 2 || chooseInstrumentsAndTemplatePage.hasSelection
 
                 onClicked: {
                     root.onDone()

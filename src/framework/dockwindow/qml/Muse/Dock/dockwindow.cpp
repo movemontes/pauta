@@ -266,6 +266,16 @@ void DockWindow::loadPage(const QString& uri, const QVariantMap& params)
         emit currentPageUriChanged(uri);
         emit pageLoaded();
         notifyAboutDocksOpenStatus();
+
+        // Pauta test hook: PAUTA_DEBUG_SHOW_PANEL=<dock name> brings that tab to the front
+        const QString showPanel = qEnvironmentVariable("PAUTA_DEBUG_SHOW_PANEL");
+        if (!showPanel.isEmpty() && m_currentPage) {
+            if (DockBase* dock = m_currentPage->dockByName(showPanel)) {
+                if (dock->dockWidget()) {
+                    dock->dockWidget()->setAsCurrentTab();
+                }
+            }
+        }
     };
 
     if (isFirstOpening) {

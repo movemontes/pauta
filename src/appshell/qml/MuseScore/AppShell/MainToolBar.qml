@@ -142,7 +142,7 @@ Item {
                         font.weight: Font.Black
                         font.pixelSize: 25
                         font.letterSpacing: 1
-                        color: tab.isChecked ? "#FFFFFF" : "#0A0A0A"
+                        color: tab.isChecked ? "#FFFFFF" : ui.theme.fontPrimaryColor
                         elide: Text.ElideRight
                     }
                 }

@@ -20,6 +20,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "newscoremodel.h"
+
+#include <QCoreApplication>
+#include <QDir>
 #include "ui/view/musicalsymbolcodes.h"
 #include "log.h"
 
@@ -43,6 +46,20 @@ QString NewScoreModel::preferredScoreCreationMode() const
     }
 
     return "";
+}
+
+QString NewScoreModel::pautaTemplatesDir() const
+{
+    // the models that ship inside Pauta.app (Contents/Resources/templates)
+    return QDir(QCoreApplication::applicationDirPath() + "/../Resources/templates").absolutePath();
+}
+
+bool NewScoreModel::pautaCreateFromTemplate(const QString& templatePath, const QString& title)
+{
+    QVariantMap info;
+    info["templatePath"] = templatePath;
+    info["title"] = title;
+    return createScore(info);
 }
 
 bool NewScoreModel::createScore(const QVariant& info)

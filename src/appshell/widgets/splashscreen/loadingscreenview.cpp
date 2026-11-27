@@ -28,6 +28,8 @@
 #include <QPainter>
 #include <QScreen>
 #include <QSvgRenderer>
+#include <QFile>
+#include <QSettings>
 
 #include "translation.h"
 #include "muse_framework_config.h"
@@ -36,7 +38,7 @@ using namespace mu::appshell;
 
 // Pauta: Treco-style loading card (white, thick black border, hard blue shadow). No MuseScore logo or website.
 static const QString imagePath(":/resources/LoadingScreen.svg"); // kept for the renderer member, not drawn
-static constexpr QSize loadingScreenSize(560, 260);
+static constexpr QSize loadingScreenSize(640, 290);
 
 LoadingScreenView::LoadingScreenView(QWidget* parent)
     : QWidget(parent), muse::Contextable(muse::iocCtxForQWidget(this)),
@@ -52,6 +54,19 @@ bool LoadingScreenView::event(QEvent* event)
         QPainter painter(this);
         painter.setLayoutDirection(layoutDirection());
         draw(&painter);
+
+        // Pauta test hook: PAUTA_DEBUG_SPLASH=<file.png> saves the loading card once
+        static bool saved = false;
+        if (!saved && qEnvironmentVariableIsSet("PAUTA_DEBUG_SPLASH")) {
+            saved = true;
+            QImage img(size() * 2, QImage::Format_ARGB32_Premultiplied);
+            img.setDevicePixelRatio(2);
+            img.fill(Qt::transparent);
+            QPainter p2(&img);
+            draw(&p2);
+            p2.end();
+            img.save(qEnvironmentVariable("PAUTA_DEBUG_SPLASH"));
+        }
     }
 
     return QWidget::event(event);
@@ -59,41 +74,50 @@ bool LoadingScreenView::event(QEvent* event)
 
 void LoadingScreenView::draw(QPainter* painter)
 {
+    // Pauta: Treco look. Cream card, black outline, hard black shadow, a stripe of the accent colour,
+    // Colcheia conducting and the name in the wide title font.
     painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 
-    const QColor slate(0x7D, 0x92, 0x9E), black(0x1B, 0x1A, 0x1F), beige(0xD3, 0xCB, 0xBE), gray(0x4F, 0x5F, 0x6E);
-    const QColor blue = gray, white = beige; // used below for text colours
-    const int shadow = 8, border = 3;
+    const QString textFamily = QString::fromStdString(uiConfiguration()->fontFamily()); // also loads Pauta's fonts
+    const QColor ink(0x0A, 0x0A, 0x0A), cream(0xFD, 0xF9, 0xEE);
+    QColor accent(QSettings().value("pauta/accent", "#FF4A00").toString());
+    if (!accent.isValid()) {
+        accent = QColor("#FF4A00");
+    }
+    const int shadow = 10, border = 4;
     const QRect card(0, 0, width() - shadow, height() - shadow);
 
-    // Pauta (pixel look): beige card, black outline, hard slate shadow
-    painter->fillRect(card.translated(shadow, shadow), slate);
-    painter->fillRect(card, black);
-    painter->fillRect(card.adjusted(border, border, -border, -border), beige);
+    painter->fillRect(card.translated(shadow, shadow), ink);
+    painter->fillRect(card, ink);
+    painter->fillRect(card.adjusted(border, border, -border, -border), cream);
+    painter->fillRect(QRect(border, card.height() - border - 18, card.width() - 2 * border, 18), accent);
+    painter->fillRect(QRect(border, card.height() - border - 20, card.width() - 2 * border, 2), ink);
 
-    // pixel-art app icon, kept sharp
-    static const QImage icon(":/resources/pauta_icon.png");
-    painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
-    painter->drawImage(QRect(36, 52, 112, 112), icon);
+    // Colcheia conducting, in the accent colour
+    QFile f(":/resources/mascote/mascote-regendo.svg");
+    if (f.open(QIODevice::ReadOnly)) {
+        QByteArray svg = f.readAll();
+        svg.replace("#0000FF", accent.name(QColor::HexRgb).toUpper().toUtf8());
+        svg.replace("#0000ff", accent.name(QColor::HexRgb).toUtf8());
+        QSvgRenderer mascot(svg);
+        mascot.render(painter, QRectF(26, 28, 230, 205));
+    }
 
-    // name, tagline and version
-    QFont title(QString::fromStdString(uiConfiguration()->fontFamily()));
-    title.setPixelSize(52);
-    title.setBold(true);
+    QFont title("Pauta Titulo");
+    title.setPixelSize(70);
     painter->setFont(title);
-    painter->setPen(black);
-    painter->drawText(QRectF(176, 52, card.width() - 200, 64), Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("PAUTA"));
+    painter->setPen(ink);
+    painter->drawText(QRectF(276, 52, card.width() - 300, 84), Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("PAUTA"));
 
-    QFont body(QString::fromStdString(uiConfiguration()->fontFamily()));
-    body.setPixelSize(15);
+    QFont body(textFamily);
+    body.setPixelSize(17);
     painter->setFont(body);
-    painter->setPen(gray);
-    painter->drawText(QRectF(178, 118, card.width() - 200, 24), Qt::AlignLeft | Qt::AlignVCenter,
+    painter->drawText(QRectF(280, 138, card.width() - 300, 26), Qt::AlignLeft | Qt::AlignVCenter,
                       muse::qtrc("appshell", "Free sheet music app"));
 
     body.setBold(true);
+    body.setPixelSize(15);
     painter->setFont(body);
-    painter->setPen(blue);
-    painter->drawText(QRectF(178, 146, card.width() - 200, 24), Qt::AlignLeft | Qt::AlignVCenter,
+    painter->drawText(QRectF(280, 168, card.width() - 300, 24), Qt::AlignLeft | Qt::AlignVCenter,
                       muse::qtrc("appshell", "Version %1").arg(QString(PAUTA_VERSION)));
 }

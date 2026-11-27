@@ -249,11 +249,26 @@ FocusScope {
         }
     }
 
+    // Pauta: ready-made models, one click away (only on "New and recent", while not searching)
+    PautaTemplateStrip {
+        id: templateStrip
+
+        anchors.top: controlsRow.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: prv.sideMargin
+        anchors.right: parent.right
+        anchors.rightMargin: prv.sideMargin
+
+        visible: tabBar.currentIndex === 0 && searchField.searchText === ""
+        height: visible ? implicitHeight : 0
+    }
+
     Loader {
         id: contentLoader
 
-        anchors.top: controlsRow.bottom
-        anchors.topMargin: 24
+        anchors.top: templateStrip.bottom
+        anchors.topMargin: 12
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: buttonsPanel.top

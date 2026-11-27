@@ -742,7 +742,18 @@ void NotationActionController::init()
         static bool debugActionDone = false;
         if (qEnvironmentVariableIsSet("PAUTA_DEBUG_ACTION") && notation && !debugActionDone) {
             debugActionDone = true;
-            QTimer::singleShot(2000, [this]() { dispatcher()->dispatch(qEnvironmentVariable("PAUTA_DEBUG_ACTION").toStdString()); });
+            QTimer::singleShot(2000, [this]() {
+                // PAUTA_DEBUG_SELECT_FIRST=1 selects the first note before the action
+                auto n = globalContext()->currentNotation();
+                if (n && qEnvironmentVariableIsSet("PAUTA_DEBUG_SELECT_FIRST")) {
+                    mu::engraving::Score* sc = n->elements()->msScore();
+                    mu::engraving::ChordRest* cr = sc->firstMeasure()->first(mu::engraving::SegmentType::ChordRest)->cr(0);
+                    if (cr && cr->isChord()) {
+                        n->interaction()->select({ toChord(cr)->upNote() }, SelectType::SINGLE, 0);
+                    }
+                }
+                dispatcher()->dispatch(qEnvironmentVariable("PAUTA_DEBUG_ACTION").toStdString());
+            });
         }
 
         // Pauta test hook: PAUTA_DEBUG_LAYOUT=1 makes the parts, gives part 1 a line break after measure 2,

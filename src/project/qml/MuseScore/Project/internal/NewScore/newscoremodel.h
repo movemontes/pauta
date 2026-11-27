@@ -46,6 +46,12 @@ class NewScoreModel : public QObject, public muse::Contextable
     muse::ContextInject<notation::IInstrumentsRepository> instrumentsRepository = { this };
 
 public:
+    // Pauta: ready-made starts (New score's first page and the home page)
+    Q_INVOKABLE QString pautaTemplatesDir() const;
+    Q_INVOKABLE bool pautaCreateFromTemplate(const QString& templatePath, const QString& title);
+private:
+
+public:
     explicit NewScoreModel(QObject* parent = nullptr);
 
     Q_INVOKABLE QString preferredScoreCreationMode() const;
