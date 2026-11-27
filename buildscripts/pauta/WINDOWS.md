@@ -2,10 +2,24 @@
 
 Escrito em 27/11/2026, quando a versão do Mac era a 1.0.9 (commit 0ea5fb52).
 
+## Se você está no laptop Windows do dono
+- O dono está nesse laptop e pode testar o Pauta ali mesmo.
+- Os caminhos `/Volumes/Dados/...` deste guia ficam no Mac do dono. No Windows eles não existem.
+- Clone https://github.com/movemontes/pauta (branch `main`) numa pasta sem espaços nem parênteses, por exemplo `C:\pauta\src`. Pergunte ao dono em qual disco.
+- No Windows, os envios vão para `origin main`. A conta do dono no GitHub precisa estar ligada no `gh` (`gh auth login`). Quem faz o login é o dono.
+- O que fica fora do Git e você **não** recebe pelo clone:
+  - as fontes Clash Grotesk: pergunte ao dono, veja o item 2 abaixo;
+  - o som GeneralUser GS: baixe da fonte oficial, com o OK do dono;
+  - o FFmpeg pequeno e o denigma: compile ou baixe no Windows.
+- **Duas formas de compilar** (deixe o dono escolher, vendo o espaço livre e a força do laptop):
+  1. **No próprio laptop:** precisa do Visual Studio 2022 Build Tools (C++), do Qt 6.10.2 msvc2022_64 (via `aqtinstall`), de CMake e Ninja. São uns 15 a 25 GB e a primeira compilação leva horas. Use poucos processos em paralelo para não travar o laptop. Peça o OK antes de cada download.
+  2. **Na nuvem do GitHub** (GitHub Actions), usando o laptop só para testar o instalador. Veja "Onde compilar" abaixo.
+- As regras do disco Dados e do `build_seguro.sh` são do Mac. No Windows, combine com o dono onde guardar os arquivos.
+
 ## O que é o Pauta
 - Programa de partitura grátis, derivado do MuseScore Studio 4.7.7 (GPL-3.0).
-- Código: `/Volumes/Dados/PautaCodigo/src`, branch `pauta`.
-- Repositório público: github.com/movemontes/pauta. Para enviar: `git push github pauta:main`.
+- Código no Mac do dono: `/Volumes/Dados/PautaCodigo/src`, branch `pauta`.
+- Repositório público: github.com/movemontes/pauta. No Mac, o envio é `git push github pauta:main`.
 - Site: pasta `docs/`, publicado em https://movemontes.github.io/pauta/.
 - Versão do Pauta: `PAUTA_VERSION` em `version.cmake`. Não mexa na `MUSE_APP_VERSION`, que vai dentro dos arquivos de partitura.
 - Como compilar no Mac: `buildscripts/pauta/COMPILAR.md` e `buildscripts/pauta/make_dmg.sh`.
@@ -22,8 +36,8 @@ Escrito em 27/11/2026, quando a versão do Mac era a 1.0.9 (commit 0ea5fb52).
 - Nada de ícone na barra de menus.
 - Fontes Clash Grotesk: a licença deixa ir dentro do app, mas não num repositório público. Ficam fora do Git, em `/Volumes/Dados/PautaCodigo/fontes-privadas`.
 
-## O ponto principal: onde compilar
-Este Mac não compila para Windows: o MuseScore no Windows precisa do Visual Studio (MSVC).
+## Onde compilar
+O Mac não compila para Windows: o MuseScore no Windows precisa do Visual Studio (MSVC). Ou se compila num Windows (o laptop), ou na nuvem.
 
 **Caminho recomendado: GitHub Actions**, com uma máquina Windows na nuvem do GitHub.
 - O repositório é público, então os minutos são grátis.
@@ -36,7 +50,7 @@ Este Mac não compila para Windows: o MuseScore no Windows precisa do Visual Stu
 - As mesmas opções de CMake do Mac: `MUSE_MODULE_CLOUD=OFF`, `MUSE_MODULE_MUSESAMPLER=OFF`, `MUSE_MODULE_LEARN=OFF`, `MUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT=OFF`, `MUSE_MODULE_VST=ON`, `MUSE_APP_BUILD_MODE=release`, Qt 6.10.2. Confira em `COMPILAR.md`.
 - Atenção: o push que cria o workflow precisa do OK do dono, e cada execução leva tempo (mais de 1 hora no MuseScore original). Use o Monitor/`gh run watch` em segundo plano, sem ficar consultando a cada pouco.
 
-**Testar:** o dono provavelmente não tem um PC com Windows. Pergunte. Uma alternativa é uma máquina virtual com Windows 11 ARM no Mac (UTM ou Parallels), que roda programas x64. Peça permissão antes de baixar qualquer coisa.
+**Testar:** o dono tem um laptop Windows. Teste lá: abrir, criar partitura pelos modelos, tocar, exportar PDF, vídeo e MusicXML, abrir um arquivo do Finale e a atualização automática. Mostre prints ao dono.
 
 ## O que hoje só funciona no Mac (precisa de versão Windows)
 Caminhos relativos ao executável. No Mac é `Pauta.app/Contents/MacOS/Pauta`; no Windows, `bin/Pauta.exe`, com os dados em `share/` ao lado. O original já usa `../Resources` no Mac e outro lugar no Windows (veja `globalconfiguration.cpp:75`). Siga esse mesmo padrão.
