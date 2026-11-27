@@ -101,7 +101,7 @@ Item {
                 x: 6; y: 6
                 width: parent.width - 18
                 height: parent.height - 18
-                color: area.containsMouse ? "#FFFFFF" : ui.theme.textFieldColor
+                color: area.containsMouse ? Qt.tint(ui.theme.textFieldColor, Qt.rgba(ui.theme.accentColor.r, ui.theme.accentColor.g, ui.theme.accentColor.b, 0.15)) : ui.theme.textFieldColor // Pauta: a hint of the accent on hover, readable in every theme
                 border.width: 2
                 border.color: ui.theme.strokeColor
 
@@ -110,7 +110,7 @@ Item {
                     x: 10; y: 10
                     width: parent.width - 20
                     height: 110
-                    color: "#FFFFFF"
+                    color: cell.isOwn ? ui.theme.backgroundSecondaryColor : "#FFFFFF" // the "+" card follows the theme
                     border.width: 1
                     border.color: "#33000000"
                     clip: true
@@ -142,6 +142,8 @@ Item {
                     text: cell.isOwn ? qsTrc("project", "Choose the instruments myself") : cell.m.name
                     font: ui.theme.largeBodyBoldFont
                     horizontalAlignment: Text.AlignLeft
+                    fontSizeMode: Text.HorizontalFit // long names shrink a little instead of being cut
+                    minimumPixelSize: 11
                     elide: Text.ElideRight
                 }
 

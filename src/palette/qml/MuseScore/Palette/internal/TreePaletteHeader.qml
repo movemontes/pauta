@@ -127,13 +127,19 @@ Item {
         id: textItem
         height: parent.height
         horizontalAlignment: Text.AlignLeft
+        // Pauta: palette names in the wide title font, in caps
+        font.family: "Pauta Titulo"
+        font.pixelSize: 12
+        font.weight: Font.Black
+        font.capitalization: Font.AllUppercase
+        font.letterSpacing: 0
+        elide: Text.ElideRight
         anchors {
             left: paletteExpandArrow.right; leftMargin: 4;
             right: deleteButton.visible ? deleteButton.left : (menuButton.visible ? menuButton.left : parent.right)
         }
 
         text: root.text
-        font: ui.theme.bodyBoldFont
     }
 
     FlatButton {

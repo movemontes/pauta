@@ -272,6 +272,9 @@ public:
 
     bool isSinglePalette() const;
     bool isSingleClickToOpenPalette() const;
+
+    // Pauta test hook: PAUTA_DEBUG_EXPAND_PALETTES="0,4" opens those palettes (by row), to take pictures in the background
+    Q_INVOKABLE QString pautaDebugExpandedPalettes() const { return qEnvironmentVariable("PAUTA_DEBUG_EXPAND_PALETTES"); }
     bool isPaletteDragEnabled() const;
 
 signals:

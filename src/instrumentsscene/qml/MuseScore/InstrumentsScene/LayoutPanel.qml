@@ -148,7 +148,7 @@ Item {
         LegacyTreeView {
             id: layoutPanelTreeView
 
-            readonly property real delegateHeight: 38
+            readonly property real delegateHeight: 44 // Pauta: 38 for the card + room between the cards
 
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -226,13 +226,27 @@ Item {
             itemDelegate: DropArea {
                 id: dropArea
 
+                // Pauta: each row is a card (outline, hard shadow); staves sit a little in from their instrument
+                readonly property bool pautaIsCard: !layoutPanelTreeView.isControl(treeItemDelegateLoader.delegateType)
+
+                Rectangle { // hard shadow
+                    x: treeItemDelegateLoader.x + 3
+                    y: treeItemDelegateLoader.y + 3
+                    width: treeItemDelegateLoader.width
+                    height: treeItemDelegateLoader.height
+                    color: ui.theme.strokeColor
+                    visible: dropArea.pautaIsCard
+                }
+
                 Loader {
                     id: treeItemDelegateLoader
 
                     property int delegateType: model ? model.item.type : LayoutPanelItemType.UNDEFINED
 
-                    height: parent.height
-                    width: parent.width
+                    x: 10 + (styleData.depth > 0 ? 16 : 0)
+                    y: 3
+                    height: parent.height - 6
+                    width: parent.width - x - 14
 
                     sourceComponent: layoutPanelTreeView.isControl(delegateType) ?
                                          controlItemDelegateComponent : treeItemDelegateComponent

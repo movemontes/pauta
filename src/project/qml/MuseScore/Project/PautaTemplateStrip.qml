@@ -65,7 +65,7 @@ Item {
                 id: card
                 width: 146
                 height: 150
-                color: area.containsMouse ? "#FFFFFF" : ui.theme.textFieldColor
+                color: area.containsMouse ? Qt.tint(ui.theme.textFieldColor, Qt.rgba(ui.theme.accentColor.r, ui.theme.accentColor.g, ui.theme.accentColor.b, 0.15)) : ui.theme.textFieldColor // Pauta: a hint of the accent on hover, readable in every theme
                 border.width: 2
                 border.color: ui.theme.strokeColor
 

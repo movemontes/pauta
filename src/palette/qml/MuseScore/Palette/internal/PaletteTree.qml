@@ -58,6 +58,11 @@ StyledListView {
 
     cacheBuffer: 3000
 
+    // Pauta: the palettes are cards with room between them
+    spacing: 8
+    topMargin: 4
+    bottomMargin: 10
+
     NavigationPanel {
         id: keynavTree
         name: "PalettesTree"
@@ -391,8 +396,33 @@ StyledListView {
             required property var model
             required property int index
 
+            // Pauta: a card (cream, black outline, hard shadow, accent strip) with a margin on each side
+            leftInset: 10
+            rightInset: 14
+            leftPadding: 20
+            rightPadding: 20
             topPadding: 0
-            bottomPadding: expanded ? 4 : 0
+            bottomPadding: expanded ? 8 : 0
+
+            Rectangle { // hard shadow
+                z: -1
+                x: control.leftInset + 4
+                y: 4
+                width: control.width - control.leftInset - control.rightInset
+                height: control.height
+                color: ui.theme.strokeColor
+                visible: !control.Drag.active && !control.DelegateModel.isUnresolved
+            }
+
+            Rectangle { // accent strip by the title
+                z: 1
+                x: control.leftInset + 2
+                y: 6
+                width: 4
+                height: 18
+                color: ui.theme.accentColor
+                visible: !control.Drag.active && !control.DelegateModel.isUnresolved
+            }
 
             property int rowIndex: index
             property int navigationRow: (index + 1) * 10000 // to make unique
@@ -427,7 +457,9 @@ StyledListView {
                 }
             }
 
-            readonly property bool expanded: paletteTree.searchOpened || Boolean(model.expanded)
+            readonly property bool pautaDebugExpanded: Boolean(paletteTree.paletteProvider)
+                && paletteTree.paletteProvider.pautaDebugExpandedPalettes().split(",").indexOf(String(index)) >= 0
+            readonly property bool expanded: paletteTree.searchOpened || Boolean(model.expanded) || pautaDebugExpanded
 
             function toggleExpand() {
                 model.expanded = !expanded
@@ -483,6 +515,7 @@ StyledListView {
             background: ListItemBlank {
                 visible: !control.Drag.active
                 isSelected: control.selected
+                normalColor: ui.theme.textFieldColor
 
                 navigation.name: control.model.display
                 navigation.panel: keynavTree
