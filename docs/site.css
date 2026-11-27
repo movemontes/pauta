@@ -2,7 +2,8 @@
 :root {
   --ink: #000;
   --paper: #fff;
-  --blue: #0000ff;
+  --blue: #FF4A00; /* accent: orange (the variable name is kept) */
+  --accent-text: #C23400; /* orange dark enough for text on white */
   --red: #e10000;
   --gray: #555;
   --line: 3px solid var(--ink);
@@ -26,7 +27,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--blue); }
+a { color: var(--accent-text); }
 
 img { max-width: 100%; height: auto; display: block; }
 
@@ -42,16 +43,11 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .top .wrap { display: flex; align-items: center; gap: 16px; height: 64px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
-.brand .mark {
-  width: 34px; height: 34px; border-radius: 8px; background: var(--blue);
-  display: grid; place-items: center; color: var(--paper);
-  font-stretch: 125%; font-weight: 900; font-size: 22px;
-  text-shadow: 2px 2px 0 var(--ink);
-}
+.brand .mark { width: 42px; height: 42px; display: block; }
 .brand b { font-stretch: 125%; font-weight: 900; font-size: 24px; }
 .top nav { margin-left: auto; display: flex; align-items: center; gap: 18px; }
 .top nav a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; }
-.top nav a:hover { color: var(--blue); }
+.top nav a:hover { color: var(--accent-text); }
 .lang { display: flex; border: 2px solid var(--ink); }
 .lang a, .lang span { padding: 3px 9px; font-size: 13px; font-weight: 800; }
 .lang span { background: var(--ink); color: var(--paper); }
@@ -61,7 +57,7 @@ img { max-width: 100%; height: auto; display: block; }
 .btn {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 16px 26px;
-  background: var(--blue); color: var(--paper);
+  background: var(--blue); color: var(--ink);
   border: var(--line);
   box-shadow: 6px 6px 0 var(--ink);
   font-stretch: 125%; font-weight: 900; font-size: 20px;
@@ -77,7 +73,7 @@ img { max-width: 100%; height: auto; display: block; }
 /* Abertura */
 .hero { padding: 64px 0 40px; }
 .tag {
-  display: inline-block; background: var(--blue); color: var(--paper);
+  display: inline-block; background: var(--blue); color: var(--ink);
   padding: 6px 14px; font-stretch: 125%; font-weight: 900; font-size: 15px; letter-spacing: .04em;
 }
 .hero h1 {
@@ -104,7 +100,7 @@ section h2 {
   font-size: clamp(30px, 4.6vw, 48px); line-height: 1.05; letter-spacing: -0.01em;
   margin: 0 0 28px;
 }
-section h2 .num { color: var(--blue); }
+section h2 .num { color: var(--accent-text); }
 
 .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .card {
@@ -125,7 +121,7 @@ section h2 .num { color: var(--blue); }
 .features ul { list-style: none; margin: 0; padding: 0; }
 .features li { padding: 10px 16px; border-top: 2px solid var(--ink); font-size: 16px; }
 .features li:first-child { border-top: 0; }
-.features li b { color: var(--blue); }
+.features li b { color: var(--accent-text); }
 
 /* Roda do Shift */
 .wheel { display: grid; gap: 40px; grid-template-columns: minmax(0, 420px) 1fr; align-items: center; }
@@ -175,7 +171,7 @@ kbd {
 }
 .steps li::before {
   content: counter(s); position: absolute; left: 0; top: 0; bottom: 0; width: 58px;
-  display: grid; place-items: center; background: var(--blue); color: var(--paper);
+  display: grid; place-items: center; background: var(--blue); color: var(--ink);
   border-right: var(--line); font-stretch: 125%; font-weight: 900; font-size: 26px;
 }
 .note { margin-top: 26px; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
@@ -185,10 +181,10 @@ kbd {
 
 /* Apoie */
 .support {
-  background: var(--blue); color: var(--paper); border: var(--line);
+  background: var(--blue); color: var(--ink); border: var(--line);
   box-shadow: 10px 10px 0 var(--ink); padding: 36px;
 }
-.support h2 { color: var(--paper); margin-bottom: 12px; }
+.support h2 { color: var(--ink); margin-bottom: 12px; }
 .support .shout { color: var(--paper); background: var(--red); display: inline-block; padding: 4px 12px; font-stretch: 125%; font-weight: 900; font-size: clamp(18px, 2.6vw, 26px); margin-bottom: 18px; }
 .support p { font-size: 19px; max-width: 760px; margin: 0 0 20px; }
 .pix {

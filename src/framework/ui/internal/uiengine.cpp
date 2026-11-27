@@ -55,7 +55,7 @@ public:
     {
         const QStringList parts = id.split('/');
         const QString pose = parts.value(0);
-        const QString color = parts.size() > 1 ? "#" + parts.at(1).left(6) : QString("#0000FF");
+        const QString color = parts.size() > 1 ? "#" + parts.at(1).left(6) : QString("#FF4A00");
         QFile f(":/resources/mascote/mascote-" + pose + ".svg");
         if (!f.open(QIODevice::ReadOnly)) {
             return QImage();

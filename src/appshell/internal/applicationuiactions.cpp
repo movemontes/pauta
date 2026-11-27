@@ -76,12 +76,12 @@ const UiActionList ApplicationUiActions::m_actions = {
     UiAction("pauta-theme-blue",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "Accent color: Blue (Treco)")
+             TranslatableString("action", "Accent color: Blue")
              ),
     UiAction("pauta-theme-orange",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,
-             TranslatableString("action", "Accent color: Orange")
+             TranslatableString("action", "Accent color: Orange (default)")
              ),
     UiAction("pauta-theme-green",
              mu::context::UiCtxAny,

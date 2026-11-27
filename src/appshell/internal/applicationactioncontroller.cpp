@@ -49,6 +49,9 @@
 #include "translation.h"
 #include "log.h"
 
+
+// Pauta: default accent color (Treco uses blue, Pauta uses orange)
+static const char* PAUTA_DEFAULT_ACCENT = "#FF4A00";
 using namespace mu::appshell;
 using namespace muse;
 using namespace muse::actions;
@@ -96,6 +99,14 @@ void ApplicationActionController::init()
         if (s.value("pauta/lookVersion", 0).toInt() < 2) {
             s.setValue("pauta/lookVersion", 2);
             pautaApplyColors("light");
+        }
+        // Pauta: orange is the default accent since 1.0.1 (blue is Treco's); move the old default along
+        if (s.value("pauta/lookVersion", 0).toInt() < 3) {
+            s.setValue("pauta/lookVersion", 3);
+            const QString saved = s.value("pauta/accent").toString().toUpper();
+            if (saved.isEmpty() || saved == "#0000FF") {
+                pautaSetAccent(QColor(PAUTA_DEFAULT_ACCENT));
+            }
         }
     }
     dispatcher()->reg(this, "pauta-quick-guide", [this]() { interactive()->open("musescore://pauta/guide"); });
@@ -599,7 +610,7 @@ void ApplicationActionController::pautaApplyColors(const std::string& name)
     QSettings().setValue("pauta/base", QString::fromStdString(name));
 
     // keep the chosen accent, adjusted for the new base
-    pautaSetAccent(QColor(QSettings().value("pauta/accent", "#0000FF").toString()));
+    pautaSetAccent(QColor(QSettings().value("pauta/accent", PAUTA_DEFAULT_ACCENT).toString()));
 
     // the area around the page
     muse::settings()->setSharedValue(muse::Settings::Key("notation", "ui/canvas/background/lightTheme_score_background_color"),
@@ -610,7 +621,7 @@ void ApplicationActionController::pautaApplyColors(const std::string& name)
 void ApplicationActionController::pautaChooseAccent()
 {
     // Pauta: any accent color, keeping the base colors
-    const QColor current(QSettings().value("pauta/accent", "#0000FF").toString());
+    const QColor current(QSettings().value("pauta/accent", PAUTA_DEFAULT_ACCENT).toString());
     interactive()->selectColor(muse::Color::fromQColor(current), muse::trc("appshell", "Choose the accent color"))
     .onResolve(this, [this](const muse::Color& c) {
         pautaSetAccent(c.toQColor());

@@ -159,21 +159,22 @@ Rectangle {
         anchors.bottomMargin: 14
         spacing: 4
 
-        // logo: accent square with the app letter; opens "About Pauta"
+        // logo: Colcheia (the mascot) on a cream tile, like the app icon; opens "About Pauta"
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
             Layout.bottomMargin: 14
-            width: 44
-            height: 44
-            color: logoArea.containsMouse ? Qt.lighter(ui.theme.accentColor, 1.2) : ui.theme.accentColor
+            width: 48
+            height: 48
+            radius: 11
+            color: logoArea.containsMouse ? "#FFFFFF" : "#FDF9EE"
+            border.width: 2
+            border.color: "#0A0A0A"
             Behavior on color { ColorAnimation { duration: 150 } }
 
-            StyledTextLabel {
-                anchors.centerIn: parent
-                text: "P"
-                color: (0.299 * ui.theme.accentColor.r + 0.587 * ui.theme.accentColor.g + 0.114 * ui.theme.accentColor.b) > 0.55 ? "#16171A" : "#F7F4EE" // Pauta: readable on the accent
-                font.family: ui.theme.titleBoldFont.family
-                font.pixelSize: 26
+            PautaMascot {
+                anchors.fill: parent
+                anchors.margins: 5
+                pose: "rosto"
             }
 
             MouseArea {
