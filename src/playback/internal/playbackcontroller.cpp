@@ -31,6 +31,8 @@
 #include "engraving/dom/masterscore.h"
 #include <QSettings>
 #include "engraving/playback/playbackmodel.h" // Pauta: voices that play
+#include "engraving/dom/segment.h"
+#include "notation/internal/pautapasteextras.h" // Pauta: Colcheia hints
 #include "engraving/dom/stafftext.h"
 #include "engraving/dom/utils.h"
 #include "engraving/dom/factory.h"
@@ -738,6 +740,24 @@ void PlaybackController::playFromSelection(bool showErrors)
 
 void PlaybackController::play()
 {
+    // Pauta: Colcheia tells about choosing voices (if the score has more than one) or the fuller sound
+    if (auto n = globalContext()->currentNotation()) {
+        bool severalVoices = false;
+        if (mu::engraving::Score* sc = n->elements()->msScore()) {
+            int checked = 0;
+            for (mu::engraving::Segment* s = sc->firstSegment(mu::engraving::SegmentType::ChordRest); s && !severalVoices && checked < 4000;
+                 s = s->next1(mu::engraving::SegmentType::ChordRest), ++checked) {
+                for (mu::engraving::track_idx_t t = 0; t < sc->ntracks(); ++t) {
+                    mu::engraving::EngravingItem* e = s->element(t);
+                    if (e && e->isChord() && t % mu::engraving::VOICES != 0) {
+                        severalVoices = true;
+                        break;
+                    }
+                }
+            }
+        }
+        mu::notation::pautaHint(severalVoices ? "voices" : "sound");
+    }
     IF_ASSERT_FAILED(currentPlayer()) {
         return;
     }

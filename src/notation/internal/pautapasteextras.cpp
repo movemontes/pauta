@@ -50,6 +50,17 @@ void pautaTogglePasteOption(const char* key)
     pautaPasteOptionChanged().send(key);
 }
 
+muse::async::Channel<std::string>& pautaHintRequested()
+{
+    static muse::async::Channel<std::string> ch;
+    return ch;
+}
+
+void pautaHint(const char* key)
+{
+    pautaHintRequested().send(key);
+}
+
 bool pautaFlag(const char* key, bool defaultValue)
 {
     return QSettings().value(QStringLiteral("pauta/") + QString::fromLatin1(key), defaultValue).toBool();

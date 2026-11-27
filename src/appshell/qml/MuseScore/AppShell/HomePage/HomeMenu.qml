@@ -174,7 +174,7 @@ Rectangle {
             PautaMascot {
                 anchors.fill: parent
                 anchors.margins: 5
-                pose: "rosto"
+                pose: "regendo"
             }
 
             MouseArea {

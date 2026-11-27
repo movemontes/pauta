@@ -602,6 +602,11 @@ void NotationActionController::init()
         }
         m_currentNotationNoteInputChanged.notify();
 
+        // Pauta: a part was opened
+        if (notation && notation->elements()->msScore() && !notation->elements()->msScore()->isMaster()) {
+            pautaHint("copyLayout");
+        }
+
         // Pauta test hook (off unless the variable is set): PAUTA_DEBUG_PASTE="first,last,dest" copies measures
         // first..last (1-based) and pastes them at measure dest, through the real copy and paste.
         static bool debugPasteDone = false;
@@ -1088,8 +1093,13 @@ void NotationActionController::padNote(const Pad& pad)
     }
 
     // Pauta: with "a new duration pushes the next notes" on, the rest of the voice moves instead of being overwritten
-    if (!noteInput->isNoteInputMode() && pad <= Pad::NOTE1024 && pautaFlag("rippleDuration", false) && pautaRippleSelected(pad)) {
-        return;
+    if (!noteInput->isNoteInputMode() && pad <= Pad::NOTE1024 && interaction->selection()->element()
+        && mu::engraving::InputState::chordRest(interaction->selection()->element())) {
+        const bool ripple = pautaFlag("rippleDuration", false);
+        pautaHint(ripple ? "rippleOn" : "rippleOff");
+        if (ripple && pautaRippleSelected(pad)) {
+            return;
+        }
     }
 
     noteInput->padNote(pad);
@@ -2580,6 +2590,7 @@ void NotationActionController::pautaBackspace()
     }
     const bool writing = interaction->noteInput() && interaction->noteInput()->isNoteInputMode();
     if (writing && !interaction->isTextEditingStarted() && pautaFlag("backspaceBack", true)) {
+        pautaHint("backspace");
         move(MoveDirection::Left, false);
     }
     if (!interaction->selection()->isNone() || interaction->isTextEditingStarted()) {

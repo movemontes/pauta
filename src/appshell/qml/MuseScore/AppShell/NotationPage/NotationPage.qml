@@ -125,12 +125,14 @@ DockPage {
             resizable: false
             separatorsVisible: false
 
-            alignment: DockToolBarAlignment.Center
+            alignment: DockToolBarAlignment.Left
             contentBottomPadding: 2
+            thickness: 52 // Pauta: the boxes by subject
 
             navigationSection: root.topToolbarKeyNavSec
 
-            NotationToolBar {
+            // Pauta: boxes by subject, full of tools (replaces the four text buttons)
+            PautaDeck {
                 navigationPanel.section: notationToolBar.navigationSection
                 navigationPanel.order: 2
             }
@@ -145,6 +147,7 @@ DockPage {
             separatorsVisible: false
             alignment: DockToolBarAlignment.Right
             resizable: !floating
+            thickness: 52 // Pauta: room for the bigger playback buttons
 
             contentBottomPadding: floating ? 8 : 2
             contentTopPadding: floating ? 8 : 0
@@ -249,7 +252,7 @@ DockPage {
                 root.toolBarRightDropDestination
             ]
 
-            thickness: orientation === Qt.Horizontal ? 40 : 76
+            thickness: orientation === Qt.Horizontal ? 46 : 76
             resizable: !floating
 
             navigationSection: root.noteInputKeyNavSec

@@ -45,7 +45,7 @@ Item {
     // between this toolbar and the undo/redo toolbar.
     width: endSeparator.visible ? endSeparator.x
                                 : tempoLoader.x + tempoLoader.width
-    height: 30
+    height: 40 // Pauta: bigger, bolder playback buttons
 
     ListView {
         id: buttonsListView
@@ -71,7 +71,7 @@ Item {
             required property MenuItem item
             required property int index
 
-            width: 30
+            width: 40
             height: width
 
             icon: Boolean(item) ? item.icon : IconCode.NONE
@@ -80,7 +80,7 @@ Item {
             toolTipDescription: Boolean(item) ? item.description : ""
             toolTipShortcut: Boolean(item) ? item.shortcuts : ""
 
-            iconFont: ui.theme.toolbarIconsFont
+            iconFont: Qt.font({ family: ui.theme.toolbarIconsFont.family, pixelSize: 26 }) // Pauta: bolder
 
             accentButton: (Boolean(item) && item.checked) || menuLoader.isMenuOpened
             transparent: !accentButton

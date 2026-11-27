@@ -23,17 +23,18 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 
 import Muse.Ui
 import Muse.UiComponents
 import MuseScore.AppShell
 
+// Pauta: the page tabs (Home, Score, Publish) are three big flat buttons that share the whole top row.
+// Bold names; the open page is filled with the accent colour and has the hard black shadow of the Treco look.
 Item {
     id: root
 
-    width: radioButtonList.width
-    height: radioButtonList.height
+    implicitWidth: 3 * 180
+    implicitHeight: 52
 
     property alias navigation: navPanel
 
@@ -46,9 +47,9 @@ Item {
     }
 
     function focusOnFirst() {
-        var btn = radioButtonList.itemAtIndex(0) as PageTabButton
-        if (btn) {
-            btn.navigation.requestActive()
+        var tab = tabs.itemAt(0)
+        if (tab) {
+            tab.navigation.requestActive()
         }
     }
 
@@ -67,37 +68,95 @@ Item {
         accessible.name: qsTrc("appshell", "Main toolbar") + " " + navPanel.directionInfo
     }
 
-    RadioButtonGroup {
-        id: radioButtonList
-        spacing: 0
+    Row {
+        id: row
 
-        model: toolBarModel
+        anchors.fill: parent
+        anchors.leftMargin: 8
+        anchors.rightMargin: 11 // room for the shadow
+        anchors.topMargin: 5
+        anchors.bottomMargin: 8
+        spacing: 10
 
-        width: Math.max(1, contentItem.childrenRect.width)
-        height: Math.max(1, contentItem.childrenRect.height)
+        Repeater {
+            id: tabs
 
-        delegate: PageTabButton {
-            required property bool isTitleBold
-            required property bool isChecked
-            required title
-            required property string uri
-            required property int index
+            model: toolBarModel
 
-            ButtonGroup.group: radioButtonList.radioButtonGroup
+            delegate: Item {
+                id: tab
 
-            spacing: 0
-            leftPadding: 12
+                required property string title
+                required property bool isChecked
+                required property string uri
+                required property int index
 
-            normalStateFont: isTitleBold ? ui.theme.largeBodyBoldFont : ui.theme.largeBodyFont
+                property alias navigation: nav
 
-            navigation.name: title
-            navigation.panel: navPanel
-            navigation.order: index
+                // the open page carries the accent colour, with white letters
+                readonly property color fill: tab.isChecked ? ui.theme.accentColor
+                                                            : (area.containsMouse ? Qt.tint(ui.theme.textFieldColor, "#1A000000") : ui.theme.textFieldColor)
+                readonly property bool darkFill: (0.299 * fill.r + 0.587 * fill.g + 0.114 * fill.b) < 0.4
 
-            checked: isChecked
+                width: (row.width - row.spacing * (tabs.count - 1)) / Math.max(1, tabs.count)
+                height: row.height
 
-            onToggled: {
-                root.selected(uri)
+                NavigationControl {
+                    id: nav
+                    name: tab.title
+                    panel: navPanel
+                    order: tab.index
+                    enabled: tab.visible
+
+                    accessible.role: MUAccessible.RadioButton
+                    accessible.name: tab.title
+                    accessible.checked: tab.isChecked
+
+                    onTriggered: root.selected(tab.uri)
+                }
+
+                Rectangle { // hard shadow under the open page
+                    x: 3
+                    y: 3
+                    width: parent.width
+                    height: parent.height
+                    color: ui.theme.strokeColor
+                    visible: tab.isChecked
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: tab.fill
+                    border.width: 2
+                    border.color: ui.theme.strokeColor
+
+                    Behavior on color { ColorAnimation { duration: 150 } }
+
+                    NavigationFocusBorder { navigationCtrl: nav }
+
+                    StyledTextLabel {
+                        anchors.centerIn: parent
+                        width: parent.width - 16
+                        text: tab.title.toUpperCase()
+                        font.family: "Pauta Titulo" // Archivo, wide: big, flat letters
+                        font.weight: Font.Black
+                        font.pixelSize: 25
+                        font.letterSpacing: 1
+                        color: tab.isChecked ? "#FFFFFF" : "#0A0A0A"
+                        elide: Text.ElideRight
+                    }
+                }
+
+                MouseArea {
+                    id: area
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        nav.requestActiveByInteraction()
+                        root.selected(tab.uri)
+                    }
+                }
             }
         }
     }

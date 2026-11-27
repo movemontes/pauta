@@ -69,11 +69,13 @@ DockWindow {
 
             floatable: false
             closable: false
+            thickness: 52 // Pauta: big page tabs on their own row
 
             navigationSection: topToolbarKeyNavSec
 
             MainToolBar {
                 id: toolBar
+                width: mainToolBar.width // Pauta: from one edge of the window to the other
                 navigation.section: mainToolBar.navigationSection
                 navigation.order: 1
 

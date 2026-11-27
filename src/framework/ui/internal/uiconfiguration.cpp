@@ -744,15 +744,16 @@ double UiConfiguration::logicalDpi() const
 ValNt<QByteArray> UiConfiguration::pageState(const QString& pageName) const
 {
     ValNt<QByteArray> result;
-    result.val = m_uiArrangement.state(pageName);
-    result.notification = m_uiArrangement.stateChanged(pageName);
+    // Pauta: "v2/" since the page tabs got their own row (an older saved arrangement would put them back)
+    result.val = m_uiArrangement.state("v2/" + pageName);
+    result.notification = m_uiArrangement.stateChanged("v2/" + pageName);
 
     return result;
 }
 
 void UiConfiguration::setPageState(const QString& pageName, const QByteArray& state)
 {
-    m_uiArrangement.setState(pageName, state);
+    m_uiArrangement.setState("v2/" + pageName, state);
 }
 
 QByteArray UiConfiguration::windowGeometry() const

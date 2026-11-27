@@ -90,6 +90,7 @@ ApplicationWindow {
     }
 
     PautaTour { } // Pauta: first-run tour with the mascot
+    PautaHint { } // Pauta: Colcheia tells about on/off options the first times
 
     function showMinimizedWithSavePreviousState() {
         bridge.showMinimizedWithSavePreviousState()

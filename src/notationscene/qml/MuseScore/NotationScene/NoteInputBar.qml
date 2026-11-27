@@ -39,7 +39,7 @@ Item {
     property int maximumHeight: 0
 
     width: gridView.isHorizontal ? childrenRect.width : 76
-    height: !gridView.isHorizontal ? childrenRect.height : 40
+    height: !gridView.isHorizontal ? childrenRect.height : 44
 
     property NavigationPanel navigationPanel: NavigationPanel {
         name: "NoteInputBar"
@@ -88,11 +88,12 @@ Item {
 
         sectionRole: "section"
 
-        rowSpacing: 4
-        columnSpacing: 4
+        rowSpacing: isHorizontal ? 0 : 4
+        columnSpacing: isHorizontal ? 0 : 4 // Pauta: the cells of a box touch, so each group reads as one box
 
-        cellWidth: 32
-        cellHeight: cellWidth
+        // Pauta: each group of buttons is a box (cream, black outline), with room between the boxes
+        cellWidth: 34
+        cellHeight: isHorizontal ? 38 : cellWidth
 
         sectionWidth: isHorizontal ? 1 : width
         sectionHeight: isHorizontal ? height : 1
@@ -101,23 +102,45 @@ Item {
 
         model: noteInputModel
 
-        sectionDelegate: SeparatorLine {
+        sectionDelegate: Item {
             required property int itemIndex
 
-            orientation: gridView.isHorizontal ? Qt.Vertical : Qt.Horizontal
-            visible: itemIndex !== 0
+            width: gridView.isHorizontal ? 14 : gridView.width
+            height: gridView.isHorizontal ? gridView.cellHeight : 1
+
+            // closes the box before, opens the next one
+            Rectangle { visible: gridView.isHorizontal && itemIndex !== 0; x: 0; width: 2; height: parent.height; color: ui.theme.strokeColor }
+            Rectangle { visible: gridView.isHorizontal; x: parent.width - 2; width: 2; height: parent.height; color: ui.theme.strokeColor }
+            SeparatorLine { visible: !gridView.isHorizontal && itemIndex !== 0; orientation: Qt.Horizontal }
         }
 
-        itemDelegate: FlatButton {
-            id: btn
+        itemDelegate: Item {
+            id: cell
 
             required property var itemModel
+
+            width: gridView.cellWidth
+            height: gridView.cellHeight
+
+            Rectangle { // box background with its top and bottom edges
+                anchors.fill: parent
+                visible: gridView.isHorizontal
+                color: ui.theme.textFieldColor
+                Rectangle { width: parent.width; height: 2; color: ui.theme.strokeColor }
+                Rectangle { y: parent.height - 2; width: parent.width; height: 2; color: ui.theme.strokeColor }
+            }
+
+        FlatButton {
+            id: btn
+
+            readonly property var itemModel: cell.itemModel
+            anchors.centerIn: parent
 
             readonly property MenuItem item: Boolean(itemModel) ? itemModel.item : null
             readonly property bool hasMenu: Boolean(item) && item.subitems.length !== 0
 
-            width: gridView.cellWidth
-            height: gridView.cellWidth
+            width: 30
+            height: 30
 
             enabled: noteInputModel.isInputAllowed
 
@@ -176,6 +199,16 @@ Item {
                 }
             }
         }
+        }
+    }
+
+    Rectangle { // closes the last box
+        visible: gridView.isHorizontal
+        x: gridView.x + gridView.width - 2
+        y: gridView.y
+        width: 2
+        height: gridView.cellHeight
+        color: ui.theme.strokeColor
     }
 
     FlatButton {
@@ -217,8 +250,8 @@ Item {
                 target: gridView
                 width: prv.resolveHorizontalGridViewWidth()
                 height: root.height
-                sectionWidth: 1
-                sectionHeight: root.height
+                sectionWidth: 14
+                sectionHeight: gridView.cellHeight // Pauta: the box edges stay inside the box
                 rows: 1
                 columns: gridView.noLimit
             }

@@ -28,6 +28,10 @@ qt_add_qml_module(appshell_qml
         aboutmodel.h
         commandpalettemodel.cpp
         commandpalettemodel.h
+        pautadeckmodel.cpp
+        pautadeckmodel.h
+        pautahintmodel.cpp
+        pautahintmodel.h
         pautamidichannelsmodel.cpp
         pautamidichannelsmodel.h
         pautatoolsmodel.cpp
@@ -62,6 +66,8 @@ qt_add_qml_module(appshell_qml
         CommandPaletteDialog.qml
         ExportToProgramDialog.qml
         PautaMidiChannelsDialog.qml
+        PautaHint.qml
+        PautaDeck.qml
         QuickGuideDialog.qml
         PautaToolsBar.qml
         PautaTour.qml

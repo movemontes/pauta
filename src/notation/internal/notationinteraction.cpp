@@ -2314,6 +2314,17 @@ bool NotationInteraction::applyPaletteElement(mu::engraving::EngravingItem* elem
         return false;
     }
 
+    // Pauta: Colcheia tells about the repeat options
+    if (element->isVolta()) {
+        pautaHint("playOnRepeat");
+    } else if (element->isBarLine()) {
+        const auto t = mu::engraving::toBarLine(element)->barLineType();
+        if (t == mu::engraving::BarLineType::START_REPEAT || t == mu::engraving::BarLineType::END_REPEAT
+            || t == mu::engraving::BarLineType::END_START_REPEAT) {
+            pautaHint("repeatSize");
+        }
+    }
+
     mu::engraving::Score* score = this->score();
     if (!score) {
         return false;
@@ -5235,6 +5246,9 @@ void NotationInteraction::copySelection()
         }
         // Pauta: whole measures also take their time/key signatures, repeats and tempo along
         const QByteArray extras = pautaCapturePasteExtras(score());
+        if (selection()->isRange()) {
+            pautaHint("capture");
+        }
         if (!extras.isEmpty()) {
             mimeData->setData(PAUTA_PASTE_EXTRAS_MIME, extras);
         }
@@ -5398,6 +5412,7 @@ void NotationInteraction::pasteSelection(const Fraction& scale)
         succeeded = score()->cmdPaste(&ma, nullptr, scale);
         if (succeeded && useExtras) {
             extras.applyAfter(score(), destTick, dstStaff);
+            pautaHint("paste");
         }
         m_editData.element = nullptr;
     }

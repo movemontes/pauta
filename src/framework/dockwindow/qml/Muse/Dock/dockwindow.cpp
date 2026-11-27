@@ -378,15 +378,23 @@ void DockWindow::loadTopLevelToolBars(const DockPageView* page)
 {
     TRACEFUNC;
 
-    QList<DockToolBarView*> allToolBars = m_toolBars.list();
-    allToolBars << page->mainToolBars();
-
+    // Pauta: the window's own toolbar (the page tabs) gets the whole top row; the page's toolbars go on the row below
     DockToolBarView* prevToolBar = nullptr;
-
-    for (DockToolBarView* toolBar : allToolBars) {
+    for (DockToolBarView* toolBar : m_toolBars.list()) {
         auto location = prevToolBar ? Location::Right : Location::Top;
         addDock(toolBar, location, prevToolBar);
         prevToolBar = toolBar;
+    }
+
+    DockToolBarView* tabsRow = prevToolBar;
+    DockToolBarView* prevPageToolBar = nullptr;
+    for (DockToolBarView* toolBar : page->mainToolBars()) {
+        if (prevPageToolBar) {
+            addDock(toolBar, Location::Right, prevPageToolBar);
+        } else {
+            addDock(toolBar, tabsRow ? Location::Bottom : Location::Top, tabsRow);
+        }
+        prevPageToolBar = toolBar;
     }
 }
 

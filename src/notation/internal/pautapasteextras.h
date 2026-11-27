@@ -31,6 +31,10 @@ bool pautaPasteOption(const char* key);
 void pautaTogglePasteOption(const char* key);
 muse::async::Channel<std::string>& pautaPasteOptionChanged();
 
+// Pauta: ask Colcheia to tell about an option (shown the first 3 times per key, see PautaHint.qml)
+muse::async::Channel<std::string>& pautaHintRequested();
+void pautaHint(const char* key);
+
 // other Pauta on/off options (stored under "pauta/<key>"); changes are announced on pautaPasteOptionChanged()
 bool pautaFlag(const char* key, bool defaultValue);
 void pautaToggleFlag(const char* key, bool defaultValue);
