@@ -49,6 +49,10 @@ class PlaybackToolBarModel : public muse::uicomponents::AbstractMenuModel
     Q_PROPERTY(QVariant tempo READ tempo NOTIFY tempoChanged)
     Q_PROPERTY(qreal tempoMultiplier READ tempoMultiplier WRITE setTempoMultiplier NOTIFY tempoChanged)
 
+    // Pauta: study mode (repeat a passage, slower, count-in) in one card
+    Q_PROPERTY(bool studyLoopOn READ studyLoopOn NOTIFY studyStateChanged)
+    Q_PROPERTY(bool studyCountInOn READ studyCountInOn NOTIFY studyStateChanged)
+
     QML_ELEMENT
 
     muse::GlobalInject<notation::INotationConfiguration> notationConfiguration;
@@ -75,6 +79,16 @@ public:
 
     Q_INVOKABLE void load() override;
 
+    bool studyLoopOn() const;
+    bool studyCountInOn() const;
+    Q_INVOKABLE bool hasRangeSelection() const;
+    Q_INVOKABLE void toggleStudyLoop();
+    Q_INVOKABLE void toggleStudyCountIn();
+    // repeat the selected measures from the start; returns false when nothing is selected
+    Q_INVOKABLE bool studySelection();
+    Q_INVOKABLE bool pautaDebugOpenStudy() const;
+    Q_INVOKABLE bool pautaDebugRunStudy() const;
+
 public slots:
     void setIsToolbarFloating(bool floating);
     void setPlayPosition(qreal position);
@@ -89,6 +103,7 @@ signals:
     void maxPlayTimeChanged();
     void playPositionChanged();
     void tempoChanged();
+    void studyStateChanged();
 
 private:
     void setupConnections();

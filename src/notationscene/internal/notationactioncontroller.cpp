@@ -30,6 +30,7 @@
 #include "engraving/dom/masterscore.h"
 #include "engraving/editing/editsystemlocks.h"
 #include "notation/internal/pautapasteextras.h" // Pauta
+#include "notation/internal/pautachordsheet.h" // Pauta
 #include <map>
 #include <set>
 #include "engraving/dom/chord.h"
@@ -55,6 +56,7 @@
 #include <QGuiApplication>
 #include <QTimer>
 #include <QFile>
+#include <QRegularExpression>
 
 using namespace mu;
 using namespace muse;
@@ -356,6 +358,7 @@ void NotationActionController::init()
     registerAction("pauta-paste-with-repeats", [] { pautaTogglePasteOption(pautaPasteOptionKey("pauta-paste-with-repeats")); }); // Pauta
     registerAction("pauta-paste-with-tempo", [] { pautaTogglePasteOption(pautaPasteOptionKey("pauta-paste-with-tempo")); }); // Pauta
     registerAction("pauta-chord-from-notes", &Controller::pautaChordSymbolsFromNotes); // Pauta
+    registerAction("pauta-export-chord-sheet", [this]() { pautaExportChordSheet(); }); // Pauta
     registerAction("parts", &Controller::openPartsDialog);
     registerAction("staff-text-properties", &Controller::openStaffTextPropertiesDialog);
     registerAction("system-text-properties", &Controller::openStaffTextPropertiesDialog);
@@ -753,6 +756,38 @@ void NotationActionController::init()
                     }
                 }
                 dispatcher()->dispatch(qEnvironmentVariable("PAUTA_DEBUG_ACTION").toStdString());
+            });
+        }
+
+        // Pauta test hook: PAUTA_DEBUG_CHORD_SHEET=<file.pdf|file.txt> saves the chord sheet after the score opens
+        static bool debugSheetDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_CHORD_SHEET") && notation && !debugSheetDone) {
+            debugSheetDone = true;
+            QTimer::singleShot(2500, [this]() {
+                for (const QString& f : qEnvironmentVariable("PAUTA_DEBUG_CHORD_SHEET").split(u',')) {
+                    pautaExportChordSheet(f);
+                }
+            });
+        }
+
+        // Pauta test hook: PAUTA_DEBUG_SELECT_RANGE=1 selects measures 1 and 2 after the score opens
+        static bool debugRangeDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_SELECT_RANGE") && notation && !debugRangeDone) {
+            debugRangeDone = true;
+            QTimer::singleShot(2000, [this]() {
+                auto n = globalContext()->currentNotation();
+                if (!n) {
+                    return;
+                }
+                mu::engraving::Score* sc = n->elements()->msScore();
+                mu::engraving::Measure* m1 = sc->firstMeasure();
+                if (!m1) {
+                    return;
+                }
+                n->interaction()->select({ m1 }, SelectType::RANGE, 0);
+                if (mu::engraving::Measure* m2 = m1->nextMeasure()) {
+                    n->interaction()->select({ m2 }, SelectType::RANGE, 0);
+                }
             });
         }
 
@@ -2427,6 +2462,49 @@ void NotationActionController::pautaCaptureSelection(bool save, const QString& f
     }
     if (!image.save(file, "PNG")) {
         interactive()->error(muse::trc("notation", "Could not save the picture"), file.toStdString());
+    }
+}
+
+//! Pauta: lyrics with the chord symbols above them (a "chord sheet"), saved as text or PDF
+void NotationActionController::pautaExportChordSheet(const QString& forcedPath)
+{
+    auto master = currentMasterNotation();
+    if (!master) {
+        return;
+    }
+    const PautaChordSheet sheet = pautaMakeChordSheet(master->masterScore());
+    if (sheet.empty()) {
+        interactive()->info(muse::trc("notation", "Nothing to save yet"),
+                            muse::trc("notation", "This score has no lyrics and no chord symbols. Add them and try again."));
+        return;
+    }
+
+    QString base = sheet.title.isEmpty() ? QStringLiteral("cifra") : sheet.title;
+    base.replace(QRegularExpression(QStringLiteral("[/\\\\:*?\"<>|]")), QStringLiteral("-"));
+    const muse::io::path_t path = !forcedPath.isEmpty() ? muse::io::path_t(forcedPath)
+                                  : interactive()->selectSavingFileSync(muse::trc("notation", "Save lyrics with chords"),
+                                                                        muse::io::path_t(base + QStringLiteral(".pdf")),
+                                                                        { "PDF (*.pdf)", muse::trc("notation", "Text") + " (*.txt)" });
+    if (path.empty()) {
+        return;
+    }
+    QString file = path.toQString();
+    const bool asText = file.endsWith(".txt", Qt::CaseInsensitive);
+    if (!asText && !file.endsWith(".pdf", Qt::CaseInsensitive)) {
+        file += ".pdf";
+    }
+
+    bool ok = false;
+    if (asText) {
+        QFile f(file);
+        if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            ok = f.write(sheet.toText().toUtf8()) >= 0;
+        }
+    } else {
+        ok = pautaWriteChordSheetPdf(sheet, file);
+    }
+    if (!ok) {
+        interactive()->error(muse::trc("notation", "Could not save the file"), file.toStdString());
     }
 }
 

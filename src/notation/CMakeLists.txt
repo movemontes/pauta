@@ -71,6 +71,8 @@ target_sources(notation PRIVATE
     internal/notationinteraction.h
     internal/pautapasteextras.cpp
     internal/pautapasteextras.h
+    internal/pautachordsheet.cpp
+    internal/pautachordsheet.h
     internal/notationmidiinput.cpp
     internal/notationmidiinput.h
     internal/notationnoteinput.cpp

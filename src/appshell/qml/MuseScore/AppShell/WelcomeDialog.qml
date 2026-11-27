@@ -60,6 +60,38 @@ StyledDialogView {
             horizontalAlignment: Text.AlignLeft
         }
 
+        Row { // Pauta: signature, like Treco's
+            spacing: 10
+            topPadding: 2
+
+            Image {
+                width: 28
+                height: 28
+                anchors.verticalCenter: parent.verticalCenter
+                source: "resources/mateus.png"
+                sourceSize: Qt.size(64, 64)
+                smooth: true
+                mipmap: true
+            }
+
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 0
+
+                StyledTextLabel {
+                    text: "Mateus"
+                    font: ui.theme.bodyBoldFont
+                    horizontalAlignment: Text.AlignLeft
+                }
+                StyledTextLabel {
+                    text: qsTrc("appshell/welcome", "All for the honor and glory of the Lord!")
+                    font.italic: true
+                    color: "#2F6FD6"
+                    horizontalAlignment: Text.AlignLeft
+                }
+            }
+        }
+
         Column {
             width: parent.width
             spacing: 4

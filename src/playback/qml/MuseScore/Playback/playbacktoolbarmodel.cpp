@@ -75,6 +75,67 @@ void PlaybackToolBarModel::setupConnections()
     playbackController()->currentTempoChanged().onNotify(this, [this]() {
         emit tempoChanged();
     });
+
+    playbackController()->actionCheckedChanged().onReceive(this, [this](const ActionCode& code) {
+        if (code == "loop" || code == "countin") {
+            emit studyStateChanged();
+        }
+    });
+}
+
+bool PlaybackToolBarModel::studyLoopOn() const
+{
+    return playbackController()->actionChecked("loop");
+}
+
+bool PlaybackToolBarModel::studyCountInOn() const
+{
+    return notationConfiguration()->isCountInEnabled();
+}
+
+bool PlaybackToolBarModel::hasRangeSelection() const
+{
+    INotationPtr notation = globalContext()->currentNotation();
+    return notation && notation->interaction()->selection()->isRange();
+}
+
+void PlaybackToolBarModel::toggleStudyLoop()
+{
+    dispatcher()->dispatch("loop");
+}
+
+void PlaybackToolBarModel::toggleStudyCountIn()
+{
+    dispatcher()->dispatch("countin");
+}
+
+bool PlaybackToolBarModel::studySelection()
+{
+    if (!hasRangeSelection()) {
+        return false;
+    }
+
+    if (playbackController()->isPlaying()) {
+        dispatcher()->dispatch("stop");
+    }
+
+    // turning the repeat on with measures selected makes those measures the passage
+    if (studyLoopOn()) {
+        dispatcher()->dispatch("loop");
+    }
+    dispatcher()->dispatch("loop");
+    dispatcher()->dispatch("play");
+    return true;
+}
+
+bool PlaybackToolBarModel::pautaDebugRunStudy() const
+{
+    return qEnvironmentVariableIsSet("PAUTA_DEBUG_RUN_STUDY");
+}
+
+bool PlaybackToolBarModel::pautaDebugOpenStudy() const
+{
+    return qEnvironmentVariableIsSet("PAUTA_DEBUG_OPEN_STUDY");
 }
 
 void PlaybackToolBarModel::updateActions()

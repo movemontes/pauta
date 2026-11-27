@@ -66,6 +66,7 @@ void PautaDeckModel::load()
         { "SHARE", {
               { "pauta-capture-copy", IconCode::Code::CAMERA },
               { "pauta-export-to-program", IconCode::Code::SHARE_FILE },
+              { "pauta-export-chord-sheet", IconCode::Code::CHORD_SYMBOL },
               { "file-export", IconCode::Code::VIDEO },
               { "print", IconCode::Code::PRINT },
           } },

@@ -211,6 +211,7 @@ MenuItem* AppMenuModel::makeFileMenu()
         makeSeparator(),
         makeMenuItem("file-export"),
         makeMenuItem("pauta-export-to-program"),
+        makeMenuItem("pauta-export-chord-sheet"),
         makeSeparator(),
         makeMenuItem("project-properties"),
         makeMenuItem("parts", TranslatableString("action", "Parts…")),

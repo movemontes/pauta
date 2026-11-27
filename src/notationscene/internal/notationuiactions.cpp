@@ -497,6 +497,12 @@ const UiActionList NotationUiActions::s_actions = {
              TranslatableString("action", "Save selection as picture…"),
              TranslatableString("action", "Save the selected measures as a PNG picture")
              ),
+    UiAction("pauta-export-chord-sheet",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Save lyrics with chords…"),
+             TranslatableString("action", "Save the lyrics with the chords on top, as text or PDF")
+             ),
     UiAction("pauta-copy-layout-to-parts",
              mu::context::UiCtxProjectOpened,
              mu::context::CTX_NOTATION_OPENED,

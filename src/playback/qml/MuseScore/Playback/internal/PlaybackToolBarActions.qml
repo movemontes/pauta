@@ -36,7 +36,7 @@ Item {
     property PlaybackToolBarModel playbackModel: null
 
     property NavigationPanel navPanel: null
-    readonly property int navigationOrderEnd: tempoLoader.navigationOrderEnd
+    readonly property int navigationOrderEnd: studyButton.navigation.order
 
     property bool floating: false
 
@@ -44,7 +44,7 @@ Item {
     // which means that it will be exactly at the position of the KDDockWidgets separator
     // between this toolbar and the undo/redo toolbar.
     width: endSeparator.visible ? endSeparator.x
-                                : tempoLoader.x + tempoLoader.width
+                                : studyButton.x + studyButton.width
     height: 40 // Pauta: bigger, bolder playback buttons
 
     ListView {
@@ -249,9 +249,64 @@ Item {
         }
     }
 
+    // Pauta: study mode (repeat a passage, slower, count-in)
+    FlatButton {
+        id: studyButton
+
+        anchors.left: tempoLoader.right
+        anchors.leftMargin: 6
+        anchors.verticalCenter: parent.verticalCenter
+
+        height: 32
+        orientation: Qt.Horizontal
+        minWidth: 0
+        icon: IconCode.LOOP
+        text: qsTrc("playback", "Study")
+
+        accentButton: studyPopup.isOpened
+        transparent: !accentButton
+
+        toolTipTitle: qsTrc("playback", "Study mode")
+        toolTipDescription: qsTrc("playback", "Repeat a passage, slower, with a count before starting")
+
+        navigation.panel: root.navPanel
+        navigation.order: tempoLoader.navigationOrderEnd + 1
+
+        onClicked: {
+            studyPopup.toggleOpened()
+        }
+
+        PautaStudyPopup {
+            id: studyPopup
+            playbackModel: root.playbackModel
+        }
+
+        Component.onCompleted: {
+            if (root.playbackModel && root.playbackModel.pautaDebugOpenStudy()) {
+                openTimer.start()
+            }
+        }
+
+        Timer {
+            id: openTimer
+            interval: 6000
+            // test hook only: open like a click does, and only on the toolbar that is on screen
+            onTriggered: {
+                if (studyButton.visible && studyButton.Window.window && studyButton.Window.window.visible) {
+                    if (root.playbackModel.pautaDebugRunStudy()) {
+                        root.playbackModel.tempoMultiplier = 0.75
+                        root.playbackModel.toggleStudyCountIn()
+                        root.playbackModel.studySelection()
+                    }
+                    studyPopup.toggleOpened()
+                }
+            }
+        }
+    }
+
     SeparatorLine {
         id: endSeparator
-        anchors.left: tempoLoader.right
+        anchors.left: studyButton.right
         anchors.leftMargin: 6
         anchors.topMargin: 2
         anchors.bottomMargin: 2

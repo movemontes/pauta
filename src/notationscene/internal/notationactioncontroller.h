@@ -164,6 +164,7 @@ private:
     void pautaCopyLayoutToParts(bool ask = true);
     void pautaToggleRepeatWings();
     void pautaChordSymbolsFromNotes();
+    void pautaExportChordSheet(const QString& forcedPath = QString());
     void openPartsDialog();
     void openTupletOtherDialog();
     void openStaffTextPropertiesDialog();
