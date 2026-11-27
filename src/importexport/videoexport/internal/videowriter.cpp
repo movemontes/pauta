@@ -440,7 +440,7 @@ void VideoWriter::doGenerate(muse::media::IVideoEncoderPtr encoder, INotationPtr
     }
 
     // Add "Made with MuseScore"
-    if (!generateTrailingFrames(encoder, actualConfig)) {
+    if (!generateTrailingFrames(encoder, frame, actualConfig)) {
         return;
     }
 
@@ -465,7 +465,7 @@ bool VideoWriter::generateLeadingFrames(muse::media::IVideoEncoderPtr encoder, I
         return pixelSize * 72.0 / engraving::DPI;
     };
 
-    Font titleFont(Font::FontFamily(u"Muse Sans"), Font::Type::Text);
+    Font titleFont(Font::FontFamily(u"Pauta Titulo"), Font::Type::Text); // Pauta: our typeface
     titleFont.setPointSizeF(scaledFontPointSize(128.0));
     titleFont.setWeight(Font::Weight::Medium);
 
@@ -528,24 +528,17 @@ bool VideoWriter::generateLeadingFrames(muse::media::IVideoEncoderPtr encoder, I
     return true;
 }
 
-bool VideoWriter::generateTrailingFrames(muse::media::IVideoEncoderPtr encoder, const Config& config)
+bool VideoWriter::generateTrailingFrames(muse::media::IVideoEncoderPtr encoder, const QImage& frame, const Config& config)
 {
     int trailingFrameCount = static_cast<int>(config.trailingSec * config.fps);
     if (trailingFrameCount <= 0) {
         return true;
     }
 
-    static const muse::io::path_t RESOURCE_PATH = ":/videoexport/internal/resources/video_made_with.mp4";
-
-    muse::io::File resource(RESOURCE_PATH);
-    if (!resource.open(muse::io::File::ReadOnly)) {
-        return true;
+    // Pauta: the end holds the last page for a moment (MuseScore appends its own branded clip here)
+    for (int i = 0; i < trailingFrameCount; ++i) {
+        encoder->encodeImage(frame);
     }
-
-    muse::ByteArray videoData = resource.readAll();
-    resource.close();
-
-    encoder->encodeVideo(videoData, trailingFrameCount);
 
     return true;
 }
@@ -574,7 +567,7 @@ bool VideoWriter::generateScoreFrames(muse::media::IVideoEncoderPtr encoder, INo
         return nullptr;
     };
 
-    const Color CURSOR_COLOR = Color(2, 109, 203, 127);
+    const Color CURSOR_COLOR = Color(255, 74, 0, 127); // Pauta orange
 
     PlaybackCursor cursor(iocContext());
     cursor.setNotation(notation);

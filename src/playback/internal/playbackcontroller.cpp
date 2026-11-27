@@ -29,6 +29,7 @@
 #include "playbacktypes.h"
 
 #include "engraving/dom/masterscore.h"
+#include "engraving/playback/playbackmodel.h" // Pauta: voices that play
 #include "engraving/dom/stafftext.h"
 #include "engraving/dom/utils.h"
 #include "engraving/dom/factory.h"
@@ -139,6 +140,17 @@ void PlaybackController::init()
         updateAuxMuteStates();
         notifyActionCheckedChanged("pauta-toggle-reverb");
     });
+    // Pauta: choose which voices play (all by default; not saved, so a new session plays everything)
+    for (int v = 0; v < 4; ++v) {
+        const std::string code = "pauta-play-voice-" + std::to_string(v + 1);
+        dispatcher()->reg(this, code, [this, v, code]() {
+            mu::engraving::PlaybackModel::setPautaMutedVoices(mu::engraving::PlaybackModel::pautaMutedVoices() ^ (1 << v));
+            if (auto master = globalContext()->currentMasterNotation()) {
+                master->playback()->reload();
+            }
+            notifyActionCheckedChanged(code);
+        });
+    }
 
     m_onlineSoundsController->regActions();
 
@@ -1592,7 +1604,11 @@ bool PlaybackController::actionChecked(const ActionCode& actionCode) const
         { METRONOME_CODE, notationConfiguration()->isMetronomeEnabled() },
         { COUNT_IN_CODE, notationConfiguration()->isCountInEnabled() },
         { TOGGLE_HEAR_PLAYBACK_WHEN_EDITING_CODE, configuration()->playNotesWhenEditing() },
-        { "pauta-toggle-reverb", globalContext()->currentProject() ? !audioSettings()->auxSoloMuteState(REVERB_CHANNEL_IDX).mute : true }
+        { "pauta-toggle-reverb", globalContext()->currentProject() ? !audioSettings()->auxSoloMuteState(REVERB_CHANNEL_IDX).mute : true },
+        { "pauta-play-voice-1", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 1) },
+        { "pauta-play-voice-2", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 2) },
+        { "pauta-play-voice-3", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 4) },
+        { "pauta-play-voice-4", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 8) },
     };
 
     return isChecked[actionCode];

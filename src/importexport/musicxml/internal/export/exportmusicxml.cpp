@@ -51,6 +51,8 @@
 #include "engraving/types/typesconv.h"
 #include "engraving/types/symnames.h"
 
+#include "engraving/dom/keylist.h" // Pauta
+#include <memory>
 #include "engraving/dom/accidental.h"
 #include "engraving/dom/arpeggio.h"
 #include "engraving/dom/articulation.h"
@@ -361,7 +363,7 @@ public:
     void tempoText(TempoText const* const text, staff_idx_t staff);
     void swingSound(StaffTextBase const* const text, const bool offset = false);
     void tempoSound(TempoText const* const text);
-    void harmony(Harmony const* const, FretDiagram const* const fd, const Fraction& offset = Fraction(0, 1));
+    void harmony(Harmony const* const, FretDiagram const* const fd, const Fraction& offset = Fraction(0, 1), staff_idx_t staff = 0);
     Score* score() const { return m_score; }
     void setMxl(bool v) { m_isMxl = v; }
     double getTenthsFromInches(double) const;
@@ -641,12 +643,29 @@ static std::shared_ptr<mu::engraving::IEngravingConfiguration> engravingConfigur
 //   color2xml
 //---------------------------------------------------------
 
+//---------------------------------------------------------
+//   musicXmlColor (Pauta)
+//    MusicXML colors are #RRGGBB or #AARRGGBB (alpha first);
+//    Color::toString() puts the alpha last (#RRGGBBAA)
+//---------------------------------------------------------
+
+static std::string musicXmlColor(const Color& c)
+{
+    char buf[16];
+    if (c.alpha() == 255) {
+        snprintf(buf, sizeof(buf), "#%02X%02X%02X", c.red(), c.green(), c.blue());
+    } else {
+        snprintf(buf, sizeof(buf), "#%02X%02X%02X%02X", c.alpha(), c.red(), c.green(), c.blue());
+    }
+    return buf;
+}
+
 static String color2xml(const EngravingItem* el)
 {
     if (el->color() != engravingConfiguration()->defaultColor()) {
-        return String(u" color=\"%1\"").arg(String::fromStdString(el->color().toString()));
+        return String(u" color=\"%1\"").arg(String::fromStdString(musicXmlColor(el->color())));
     } else if (el->isSLine() && ((SLine*)el)->lineColor() != engravingConfiguration()->defaultColor()) {
-        return String(u" color=\"%1\"").arg(String::fromStdString(((SLine*)el)->lineColor().toString()));
+        return String(u" color=\"%1\"").arg(String::fromStdString(musicXmlColor(((SLine*)el)->lineColor())));
     } else {
         return String();
     }
@@ -655,7 +674,7 @@ static String color2xml(const EngravingItem* el)
 static void addColorAttr(const EngravingItem* el, XmlWriter::Attributes& attrs)
 {
     if (el->color() != engravingConfiguration()->defaultColor()) {
-        attrs.emplace_back(std::make_pair("color", String::fromStdString(el->color().toString())));
+        attrs.emplace_back(std::make_pair("color", String::fromStdString(musicXmlColor(el->color()))));
     }
 }
 
@@ -861,12 +880,8 @@ void SlurHandler::doSlurs(const ChordRest* chordRest, Notations& notations, XmlW
             if (sp->generated() || !sp->isSlur()) {
                 continue;
             }
-            if (sp->isHammerOnPullOff() && !sp->spannerSegments().empty()) {
-                const HammerOnPullOffSegment* hopoSeg = toHammerOnPullOffSegment(sp->spannerSegments().front());
-                if (!hopoSeg->hopoText().empty()) {
-                    tagName = hopoSeg->hopoText().front()->isHammerOn() ? u"hammer-on" : u"pull-off";
-                }
-            }
+            // Pauta: a hammer-on/pull-off is exported as a <slur> plus <technical><hammer-on/pull-off>,
+            // like other notation programs do (a bare <hammer-on> directly in <notations> is not valid MusicXML)
             if (chordRest == sp->startElement() || chordRest == sp->endElement()) {
                 const Slur* s = toSlur(sp);
                 const ChordRest* firstChordRest = findFirstChordRest(s);
@@ -886,6 +901,26 @@ void SlurHandler::doSlurs(const ChordRest* chordRest, Notations& notations, XmlW
             }
         }
     }
+}
+
+//---------------------------------------------------------
+//   writeHammerOnPullOff (Pauta)
+//---------------------------------------------------------
+
+static void writeHammerOnPullOff(const Slur* s, bool start, int number, XmlWriter& xml)
+{
+    if (!s->isHammerOnPullOff() || s->spannerSegments().empty()) {
+        return;
+    }
+    const HammerOnPullOffSegment* hopoSeg = toHammerOnPullOffSegment(s->spannerSegments().front());
+    if (hopoSeg->hopoText().empty()) {
+        return;
+    }
+    const bool hammer = hopoSeg->hopoText().front()->isHammerOn();
+    xml.startElement("technical");
+    xml.tag(hammer ? "hammer-on" : "pull-off", { { "type", start ? "start" : "stop" }, { "number", number } },
+            start ? String(hammer ? u"H" : u"P") : String());
+    xml.endElement();
 }
 
 //---------------------------------------------------------
@@ -910,6 +945,7 @@ void SlurHandler::doSlurStart(const Slur* s, Notations& notations, String tagNam
         notations.tag(xml, s);
         tagName += String(u" number=\"%1\"").arg(i + 1);
         xml.tagRaw(tagName);
+        writeHammerOnPullOff(s, true, i + 1, xml);
     } else {
         // find free slot to store it
         i = findSlur(0);
@@ -919,6 +955,7 @@ void SlurHandler::doSlurStart(const Slur* s, Notations& notations, String tagNam
             notations.tag(xml, s);
             tagName += String(u" number=\"%1\"").arg(i + 1);
             xml.tagRaw(tagName);
+            writeHammerOnPullOff(s, true, i + 1, xml);
         } else {
             LOGD("no free slur slot");
         }
@@ -949,6 +986,7 @@ void SlurHandler::doSlurStop(const Slur* s, Notations& notations, String tagName
             tagName += String(u" type=\"stop\" number=\"%1\"").arg(i + 1);
             tagName += slurTieBezier(s, false);
             xml.tagRaw(tagName);
+            writeHammerOnPullOff(s, false, i + 1, xml);
         } else {
             LOGD("no free slur slot");
         }
@@ -960,6 +998,7 @@ void SlurHandler::doSlurStop(const Slur* s, Notations& notations, String tagName
         tagName += String(u" type=\"stop\" number=\"%1\"").arg(i + 1);
         tagName += slurTieBezier(s, false);
         xml.tagRaw(tagName);
+        writeHammerOnPullOff(s, false, i + 1, xml);
     }
 }
 
@@ -1787,6 +1826,17 @@ static Volta* findVolta(const Measure* const m, bool left, const track_idx_t tra
             return (Volta*)el;
         }
     }
+    // Pauta: voltas belong to the whole system; MusicXML wants the <ending> in every part,
+    // otherwise other programs show the 1st/2nd endings only on the first instrument
+    for (auto i : spanners) {
+        Spanner* el = i.value;
+        if (!el->isVolta() || !el->systemFlag()) {
+            continue;
+        }
+        if ((left && el->tick() == stick) || (!left && el->tick2() == etick)) {
+            return (Volta*)el;
+        }
+    }
     return nullptr;
 }
 
@@ -1794,7 +1844,7 @@ static Volta* findVolta(const Measure* const m, bool left, const track_idx_t tra
 //   ending
 //---------------------------------------------------------
 
-static void ending(XmlWriter& xml, Volta* v, bool left)
+static void ending(XmlWriter& xml, Volta* v, bool left, bool shownOnThisPart = true)
 {
     String number;
     String type;
@@ -1823,7 +1873,8 @@ static void ending(XmlWriter& xml, Volta* v, bool left)
     String voltaXml = String(u"ending number=\"%1\" type=\"%2\"").arg(number, type);
     voltaXml += ExportMusicXml::positioningAttributes(v, left);
     if (left) {
-        if (!v->visible()) {
+        // Pauta: a volta from another part (see findVolta) is written but not shown here
+        if (!v->visible() || !shownOnThisPart) {
             voltaXml += u" print-object=\"no\"";
         }
         voltaXml += color2xml(v);
@@ -1850,7 +1901,7 @@ void ExportMusicXml::barlineLeft(const Measure* const m, const track_idx_t track
         m_xml.tag("bar-style", String(u"heavy-light"));
     }
     if (volta) {
-        ending(m_xml, volta, true);
+        ending(m_xml, volta, true, track2staff(volta->track()) == track2staff(track));
     }
     if (rs) {
         XmlWriter::Attributes attrs = { { "direction", "forward" } };
@@ -2122,7 +2173,7 @@ void ExportMusicXml::barlineRight(const Measure* const m, const track_idx_t stra
     writeBarlineFermata(m->endBarLine(), m_xml, strack, etrack);
 
     if (volta) {
-        ending(m_xml, volta, false);
+        ending(m_xml, volta, false, track2staff(volta->track()) == track2staff(strack));
     }
 
     if (bst == BarLineType::END_REPEAT || bst == BarLineType::END_START_REPEAT) {
@@ -4967,6 +5018,8 @@ static void wordsMetronome(XmlWriter& xml, const MStyle& s, TextBase const* cons
             } else {
                 xml.tag("per-minute", metroRight);
             }
+        } else {
+            xml.tag("per-minute", String()); // Pauta: required by MusicXML even when the mark shows no number
         }
 
         xml.endElement();
@@ -5081,6 +5134,11 @@ void ExportMusicXml::playText(PlayTechAnnotation const* const annot, staff_idx_t
     directionTag(m_xml, m_attr, annot);
     wordsMetronome(m_xml, m_score->style(), annot, offset);
 
+    // Pauta: MusicXML wants <staff> before <sound>
+    if (staff) {
+        m_xml.tag("staff", static_cast<int>(staff));
+    }
+
     const PlayingTechniqueType type = annot->techniqueType();
     if (type == PlayingTechniqueType::Pizzicato) {
         m_xml.tag("sound", { { "pizzicato", "yes" } });
@@ -5101,7 +5159,7 @@ void ExportMusicXml::playText(PlayTechAnnotation const* const annot, staff_idx_t
     }
     m_currPlayTechnique = type;
 
-    directionETag(m_xml, staff);
+    directionETag(m_xml, 0);
 }
 
 //---------------------------------------------------------
@@ -5263,11 +5321,15 @@ void ExportMusicXml::systemText(StaffTextBase const* const text, staff_idx_t sta
     directionTag(m_xml, m_attr, text);
     wordsMetronome(m_xml, m_score->style(), text, offset);
 
+    // Pauta: MusicXML wants <staff> before <sound>
+    if (staff) {
+        m_xml.tag("staff", static_cast<int>(staff));
+    }
     if (text->swing()) {
         swingSound(text);
     }
 
-    directionETag(m_xml, staff);
+    directionETag(m_xml, 0);
 }
 
 //---------------------------------------------------------
@@ -6698,7 +6760,7 @@ static void annotations(ExportMusicXml* exp, track_idx_t strack, track_idx_t etr
  * Helper method to export harmonies and chord diagrams for a single segment.
  */
 
-static void segmentHarmonies(ExportMusicXml* exp, track_idx_t track, Segment* seg, Fraction offset)
+static void segmentHarmonies(ExportMusicXml* exp, track_idx_t track, Segment* seg, Fraction offset, staff_idx_t staff)
 {
     const std::vector<EngravingItem*> diagrams = seg->findAnnotations(ElementType::FRET_DIAGRAM, track, track);
     std::vector<EngravingItem*> harmonies = seg->findAnnotations(ElementType::HARMONY, track, track);
@@ -6707,10 +6769,10 @@ static void segmentHarmonies(ExportMusicXml* exp, track_idx_t track, Segment* se
         const FretDiagram* diagram = toFretDiagram(d);
         const Harmony* harmony = diagram->harmony();
         if (harmony) {
-            exp->harmony(harmony, diagram, offset);
+            exp->harmony(harmony, diagram, offset, staff);
         } else if (!harmonies.empty()) {
             const EngravingItem* defaultHarmony = harmonies.back();
-            exp->harmony(toHarmony(defaultHarmony), diagram, offset);
+            exp->harmony(toHarmony(defaultHarmony), diagram, offset, staff);
             harmonies.pop_back();
         } else {
             // Found a fret diagram with no harmony, ignore
@@ -6719,7 +6781,7 @@ static void segmentHarmonies(ExportMusicXml* exp, track_idx_t track, Segment* se
     }
 
     for (const EngravingItem* h : harmonies) {
-        exp->harmony(toHarmony(h), 0, offset);
+        exp->harmony(toHarmony(h), 0, offset, staff);
     }
 }
 
@@ -6744,10 +6806,10 @@ static void segmentHarmonies(ExportMusicXml* exp, track_idx_t track, Segment* se
  * we simply have to pick a random one to export.
  */
 
-static void harmonies(ExportMusicXml* exp, track_idx_t track, Segment* seg)
+static void harmonies(ExportMusicXml* exp, track_idx_t track, Segment* seg, staff_idx_t staff)
 {
     Fraction offset = { 0, 1 };
-    segmentHarmonies(exp, track, seg, offset);
+    segmentHarmonies(exp, track, seg, offset, staff);
 
     // Edge case: find remaining `harmony` elements.
     // Suppose you have one single whole note in the measure but several chord symbols.
@@ -6768,7 +6830,7 @@ static void harmonies(ExportMusicXml* exp, track_idx_t track, Segment* seg)
             break;
         }
         offset = (seg1->tick() - seg->tick());
-        segmentHarmonies(exp, track, seg1, offset);
+        segmentHarmonies(exp, track, seg1, offset, staff);
     }
 }
 
@@ -7143,6 +7205,33 @@ void ExportMusicXml::keysigTimesig(const Measure* m, const Part* p)
                     timesigs[st] = toTimeSig(el);
                 }
             }
+        }
+    }
+
+    // Pauta: a key change that has no key signature symbol at the start of this measure (for example right
+    // after a backward repeat, where the symbol is laid out elsewhere) must still be exported
+    std::vector<std::unique_ptr<KeySig> > madeKeySigs;
+    if (!m->tick().isZero()) {
+        for (staff_idx_t st = 0; st < p->nstaves(); ++st) {
+            if (muse::contains(keysigs, st)) {
+                continue;
+            }
+            Staff* staff = p->staff(st);
+            const KeyList* kl = staff->keyList();
+            const int t = m->tick().ticks();
+            if (!kl || kl->find(t) == kl->end()) {
+                continue;
+            }
+            const KeySigEvent now = staff->keySigEvent(m->tick());
+            const KeySigEvent before = staff->keySigEvent(m->tick() - Fraction::fromTicks(1));
+            if (now == before) {
+                continue;
+            }
+            auto ks = std::unique_ptr<KeySig>(Factory::createKeySig(m_score->dummy()->segment()));
+            ks->setKeySigEvent(now);
+            ks->setParent(nullptr);
+            keysigs[st] = ks.get();
+            madeKeySigs.push_back(std::move(ks));
         }
     }
 
@@ -7890,7 +7979,7 @@ static void partList(XmlWriter& xml, Score* score, MusicXmlInstrumentMap& instrM
             shortInstrumentAttributes.push_back({ "print-object", "no" });
         }
         if (longInstrumentColor != engravingConfiguration()->defaultColor()) {
-            longInstrumentAttributes.push_back({ "color", String::fromStdString(longInstrumentColor.toString()) });
+            longInstrumentAttributes.push_back({ "color", String::fromStdString(musicXmlColor(longInstrumentColor)) });
         }
         xml.tag("part-name", longInstrumentAttributes,
                 MScoreTextToMusicXml::toPlainText(partName).replace(u'♭', 'b').replace(u'♯', '#'));
@@ -7901,7 +7990,7 @@ static void partList(XmlWriter& xml, Score* score, MusicXmlInstrumentMap& instrM
         }
         if (!part->shortName().isEmpty()) {
             if (shortInstrumentColor != engravingConfiguration()->defaultColor()) {
-                shortInstrumentAttributes.push_back({ "color", String::fromStdString(shortInstrumentColor.toString()) });
+                shortInstrumentAttributes.push_back({ "color", String::fromStdString(musicXmlColor(shortInstrumentColor)) });
             }
             xml.tag("part-abbreviation", shortInstrumentAttributes,
                     MScoreTextToMusicXml::toPlainText(part->shortName()).replace(u'♭', 'b').replace(u'♯', '#'));
@@ -8116,7 +8205,7 @@ static void writeStaffDetails(XmlWriter& xml, const Part* part, const std::vecto
                 for (int lineIdx = 0; lineIdx < st->lines(Fraction(0, 1)); ++lineIdx) {
                     String ld = String(u"line-detail line=\"%1\"").arg(lineIdx + 1);
                     if (lineColor != engravingConfiguration()->defaultColor()) {
-                        ld += String(u" color=\"%1\"").arg(String::fromStdString(lineColor.toString()));
+                        ld += String(u" color=\"%1\"").arg(String::fromStdString(musicXmlColor(lineColor)));
                     }
                     if (invis) {
                         ld += u" print-object=\"no\"";
@@ -8255,7 +8344,9 @@ static void annotationsWithoutNote(ExportMusicXml* exp, const track_idx_t strack
                     }
                     const track_idx_t wtrack = findTrackForAnnotations(element->track(), segment);           // track to write annotation
                     if (strack <= element->track() && element->track() < (strack + VOICES * staves) && wtrack == muse::nidx) {
-                        commonAnnotations(exp, element, staves > 1 ? 1 : 0);
+                        // Pauta: keep the annotation on its own staff (it went to staff 1 before)
+                        const staff_idx_t partStaff = track2staff(element->track()) - track2staff(strack) + 1;
+                        commonAnnotations(exp, element, staves > 1 ? partStaff : 0);
                     }
                 }
             }
@@ -8534,7 +8625,7 @@ void ExportMusicXml::writeMeasureTracks(const Measure* const m,
                     }
                     m_tboxesBelowWritten = true;
                 }
-                harmonies(this, track, seg);
+                harmonies(this, track, seg, partRelStaffNo); // Pauta: keep chord symbols on their staff
                 annotations(this, strack, etrack, track, partRelStaffNo, seg);
                 figuredBass(m_xml, strack, etrack, track, toChordRest(el), fbMap, m_div);
                 spannerStart(this, strack, etrack, track, partRelStaffNo, seg);
@@ -9150,7 +9241,7 @@ static void writeMusicXml(const FretDiagram* item, XmlWriter& xml)
 //   harmony
 //---------------------------------------------------------
 
-void ExportMusicXml::harmony(Harmony const* const h, FretDiagram const* const fd, const Fraction& offset)
+void ExportMusicXml::harmony(Harmony const* const h, FretDiagram const* const fd, const Fraction& offset, staff_idx_t staff)
 {
     if (h->chords().empty()) {
         return;
@@ -9279,13 +9370,14 @@ void ExportMusicXml::harmony(Harmony const* const h, FretDiagram const* const fd
                 }
             }
         }
+        // Pauta: MusicXML wants <frame> before <offset>
+        if (fd) {
+            writeMusicXml(fd, m_xml);
+        }
         if (offset.isValid() && offset > Fraction(0, 1)) {
             m_xml.tag("offset", calculateDurationInDivisions(offset, m_div));
         } else {
             LOGD("invalid offset");
-        }
-        if (fd) {
-            writeMusicXml(fd, m_xml);
         }
     } else {
         //
@@ -9384,6 +9476,14 @@ void ExportMusicXml::harmony(Harmony const* const h, FretDiagram const* const fd
         }
         break;
         }
+        // Pauta: Roman numerals, Nashville numbers and other text chords also keep their place in the measure
+        if (offset.isValid() && offset > Fraction(0, 1)) {
+            m_xml.tag("offset", calculateDurationInDivisions(offset, m_div));
+        }
+    }
+    // Pauta: on grand staves, say which staff the chord symbol belongs to
+    if (staff) {
+        m_xml.tag("staff", static_cast<int>(staff));
     }
     m_xml.endElement();
 }

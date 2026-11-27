@@ -22,6 +22,8 @@
 
 #include "playbackmodel.h"
 
+#include <QtGlobal>
+
 #include <limits>
 
 #include "dom/fret.h"
@@ -106,6 +108,19 @@ void PlaybackModel::load(Score* score)
 
     m_tracksDataChanged.send(trackIdSet);
     m_changedTrackIdSet.clear();
+}
+
+// test hook: PAUTA_DEBUG_MUTE=<mask> starts with those voices muted (off unless the variable is set)
+static int s_pautaMutedVoices = qEnvironmentVariableIntValue("PAUTA_DEBUG_MUTE");
+
+void PlaybackModel::setPautaMutedVoices(int mask)
+{
+    s_pautaMutedVoices = mask;
+}
+
+int PlaybackModel::pautaMutedVoices()
+{
+    return s_pautaMutedVoices;
 }
 
 void PlaybackModel::reload()
@@ -559,6 +574,11 @@ void PlaybackModel::processSegment(const int tickPositionOffset, const Segment* 
         }
 
         if (item->isRest()) {
+            continue;
+        }
+
+        // Pauta: a muted voice is not played (e.g. hear only the soprano of a choir staff)
+        if (s_pautaMutedVoices & (1 << item->voice())) {
             continue;
         }
 

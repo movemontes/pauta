@@ -20,6 +20,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "notationinteraction.h"
+#include "pautapasteextras.h" // Pauta: complete copy and paste
 
 #include "log.h"
 
@@ -5232,6 +5233,11 @@ void NotationInteraction::copySelection()
         if (!mimeData) {
             return;
         }
+        // Pauta: whole measures also take their time/key signatures, repeats and tempo along
+        const QByteArray extras = pautaCapturePasteExtras(score());
+        if (!extras.isEmpty()) {
+            mimeData->setData(PAUTA_PASTE_EXTRAS_MIME, extras);
+        }
         QApplication::clipboard()->setMimeData(mimeData);
     }
 }
@@ -5355,8 +5361,44 @@ void NotationInteraction::pasteSelection(const Fraction& scale)
         pasteIntoTextEdit();
     } else {
         const QMimeData* mimeData = QApplication::clipboard()->mimeData();
+
+        // Pauta: complete paste (time/key signatures, repeats, tempo come along; see pautapasteextras.h)
+        PautaPasteExtras extras;
+        bool useExtras = mimeData && scale == Fraction(1, 1)
+                         && mimeData->hasFormat(PAUTA_PASTE_EXTRAS_MIME)
+                         && mimeData->hasFormat(QString::fromLatin1(mu::engraving::mimeStaffListFormat))
+                         && extras.load(mimeData->data(PAUTA_PASTE_EXTRAS_MIME));
+        Fraction destTick;
+        mu::engraving::staff_idx_t dstStaff = 0;
+        if (useExtras) {
+            mu::engraving::ChordRest* cr = nullptr;
+            const mu::engraving::Selection& sel = score()->selection();
+            if (sel.isRange()) {
+                cr = sel.firstChordRest();
+            } else if (sel.isSingle() && sel.element()) {
+                mu::engraving::Measure* m = sel.element()->findMeasure();
+                cr = m ? m->findChordRest(sel.element()->tick(), sel.element()->track()) : nullptr;
+            }
+            useExtras = cr && !cr->tuplet();
+            if (useExtras) {
+                destTick = cr->tick();
+                dstStaff = cr->staffIdx();
+                extras.prepare(score(), destTick, dstStaff);
+                if (extras.applyBefore(score(), destTick)) {
+                    // the barlines moved: point the paste at the same place again
+                    mu::engraving::ChordRest* ncr = score()->findCR(destTick, dstStaff * mu::engraving::VOICES);
+                    if (ncr && ncr->tick() == destTick) {
+                        score()->select(ncr, SelectType::SINGLE, 0);
+                    }
+                }
+            }
+        }
+
         QMimeDataAdapter ma(mimeData);
         succeeded = score()->cmdPaste(&ma, nullptr, scale);
+        if (succeeded && useExtras) {
+            extras.applyAfter(score(), destTick, dstStaff);
+        }
         m_editData.element = nullptr;
     }
 

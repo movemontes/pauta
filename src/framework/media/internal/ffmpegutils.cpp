@@ -27,6 +27,8 @@
 #include "io/fileinfo.h"
 #include "io/path.h"
 
+#include <QCoreApplication> // Pauta: FFmpeg shipped inside the app
+
 #if defined(Q_OS_WIN)
 #include <QSettings>
 #endif
@@ -56,6 +58,8 @@ io::paths_t defaultSearchPaths()
         settings.endGroup(); // Back to parent group.
     }
 #elif defined(Q_OS_MAC)
+    // Pauta: a small LGPL FFmpeg ships in Pauta.app/Contents/Frameworks/ffmpeg (see buildscripts/pauta/build_ffmpeg.sh)
+    paths.push_back(io::path_t(QCoreApplication::applicationDirPath() + "/../Frameworks/ffmpeg"));
     RetVal<io::paths_t> providers = io::Dir::scanFiles("/Library/Application Support/FFmpeg/Providers", { "*" },
                                                        io::ScanMode::FoldersInCurrentDir);
     if (providers.ret) {
@@ -255,7 +259,14 @@ FFmpegLibPathsList findLibraryPaths(const io::path_t& configPath, const io::path
         appendLibraryPathsForAllVersions(automaticCandidates, path, FFmpegCandidateOrigin::Automatic);
     }
 
-    std::sort(automaticCandidates.begin(), automaticCandidates.end(), [](const FFmpegLibPaths& first, const FFmpegLibPaths& second) {
+    // Pauta: the FFmpeg inside the app (first default path) always wins; it is the one we test
+    const String bundledKey = defaultPaths.empty() ? String() : searchPathKey(normalizedSearchPath(defaultPaths.front()));
+    std::sort(automaticCandidates.begin(), automaticCandidates.end(), [&bundledKey](const FFmpegLibPaths& first, const FFmpegLibPaths& second) {
+        const bool firstBundled = searchPathKey(first.searchDir) == bundledKey;
+        const bool secondBundled = searchPathKey(second.searchDir) == bundledKey;
+        if (firstBundled != secondBundled) {
+            return firstBundled;
+        }
         if (first.ffmpegVersion != second.ffmpegVersion) {
             return first.ffmpegVersion > second.ffmpegVersion;
         }

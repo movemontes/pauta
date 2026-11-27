@@ -149,6 +149,7 @@ const std::array<StyleDef::StyleValue, size_t(Sid::STYLES)> StyleDef::styleValue
     styleDef(endBarDistance,                             0.37_sp),
     styleDef(repeatBarlineDotSeparation,                 0.37_sp),
     styleDef(repeatBarTips,                              false),
+    styleDef(pautaRepeatDotScale,                        PropertyValue(1.0)),
     styleDef(startBarlineSingle,                         false),
     styleDef(startBarlineMultiple,                       true),
     styleDef(maskBarlinesForText,                        true),

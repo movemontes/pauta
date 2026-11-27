@@ -159,6 +159,7 @@ enum class Sid : short {
     endBarDistance,
     repeatBarlineDotSeparation,
     repeatBarTips,
+    pautaRepeatDotScale, // Pauta: size of the repeat dots (1 = normal)
     startBarlineSingle,
     startBarlineMultiple,
     maskBarlinesForText,

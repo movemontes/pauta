@@ -135,6 +135,11 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "action://redo", this, &ApplicationActionController::doGlobalRedo);
     dispatcher()->reg(this, "action://delete", this, &ApplicationActionController::doGlobalDelete);
     dispatcher()->reg(this, "action://cancel", this, &ApplicationActionController::doGlobalCancel);
+    dispatcher()->reg(this, "action://pauta-backspace", [this]() { // Pauta: Backspace (see pautaBackspace)
+        if (hasProjectAndIsFocused()) {
+            dispatcher()->dispatch("pauta-notation-backspace");
+        }
+    });
 }
 
 bool ApplicationActionController::eventFilter(QObject* watched, QEvent* event)

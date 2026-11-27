@@ -8697,6 +8697,26 @@ void MusicXmlParserNotations::ornaments()
 void MusicXmlParserNotations::technical()
 {
     while (m_e.readNextStartElement()) {
+        // Pauta: <technical><hammer-on/pull-off> (the standard place) turns the matching <slur> into a
+        // hammer-on/pull-off; without a matching slur it starts/stops one itself
+        if (m_e.name() == "hammer-on" || m_e.name() == "pull-off") {
+            const String hopoName = String::fromAscii(m_e.name().ascii());
+            const String type = m_e.attribute("type");
+            bool upgraded = false;
+            for (Notation& n : m_notations) {
+                if (n.name() == u"slur" && n.attribute(u"type") == type) {
+                    n.setName(hopoName);
+                    upgraded = true;
+                    break;
+                }
+            }
+            if (upgraded) {
+                m_e.skipCurrentElement();
+            } else {
+                slur();
+            }
+            continue;
+        }
         SymId id { SymId::noSym };
         const String smufl = m_e.attribute("smufl");
         if (!smufl.empty()) {

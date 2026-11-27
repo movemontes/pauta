@@ -20,9 +20,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "notationactioncontroller.h"
+#include <QClipboard> // Pauta: image capture
+#include <QImage>
+#include <QPainter>
+#include "engraving/dom/page.h"
+#include "engraving/dom/excerpt.h"
+#include "engraving/dom/system.h"
+#include "engraving/dom/systemlock.h"
+#include "engraving/dom/masterscore.h"
+#include "engraving/editing/editsystemlocks.h"
+#include "notation/internal/pautapasteextras.h" // Pauta
 #include <map>
 #include <set>
 #include "engraving/dom/chord.h"
+#include "engraving/dom/measure.h"
 #include "engraving/dom/staff.h"
 #include "engraving/dom/segment.h"
 #include "engraving/dom/factory.h"
@@ -42,6 +53,7 @@
 #include "log.h"
 
 #include <QGuiApplication>
+#include <QTimer>
 
 using namespace mu;
 using namespace muse;
@@ -324,6 +336,20 @@ void NotationActionController::init()
     registerAction("transpose", &Controller::openTransposeDialog);
     registerAction("pauta-change-key", &Controller::pautaChangeKey); // Pauta
     registerAction("pauta-finale-style", &Controller::pautaToggleFinaleStyle); // Pauta
+    registerAction("pauta-repeat-size-normal", [this]() { pautaSetRepeatSize(0); }); // Pauta
+    registerAction("pauta-repeat-size-large", [this]() { pautaSetRepeatSize(1); }); // Pauta
+    registerAction("pauta-repeat-size-xlarge", [this]() { pautaSetRepeatSize(2); }); // Pauta
+    registerAction("pauta-repeat-wings", [this]() { pautaToggleRepeatWings(); }); // Pauta
+    registerAction("pauta-capture-copy", [this]() { pautaCaptureSelection(false); }); // Pauta
+    registerAction("pauta-notation-backspace", [this]() { pautaBackspace(); }, &Controller::isNotationPage); // Pauta
+    registerAction("pauta-backspace-back-toggle", []() { pautaToggleFlag("backspaceBack", true); }); // Pauta
+    registerAction("pauta-capture-save", [this]() { pautaCaptureSelection(true); }); // Pauta
+    registerAction("pauta-copy-layout-to-parts", [this]() { pautaCopyLayoutToParts(); }); // Pauta
+    registerAction("pauta-repeat-more", [this]() { openEditStyleDialog(ActionData::make_arg1<QString>("barlines")); }); // Pauta
+    registerAction("pauta-paste-with-timesig", [] { pautaTogglePasteOption(pautaPasteOptionKey("pauta-paste-with-timesig")); }); // Pauta
+    registerAction("pauta-paste-with-keysig", [] { pautaTogglePasteOption(pautaPasteOptionKey("pauta-paste-with-keysig")); }); // Pauta
+    registerAction("pauta-paste-with-repeats", [] { pautaTogglePasteOption(pautaPasteOptionKey("pauta-paste-with-repeats")); }); // Pauta
+    registerAction("pauta-paste-with-tempo", [] { pautaTogglePasteOption(pautaPasteOptionKey("pauta-paste-with-tempo")); }); // Pauta
     registerAction("pauta-chord-from-notes", &Controller::pautaChordSymbolsFromNotes); // Pauta
     registerAction("parts", &Controller::openPartsDialog);
     registerAction("staff-text-properties", &Controller::openStaffTextPropertiesDialog);
@@ -570,6 +596,144 @@ void NotationActionController::init()
             }, Asyncable::Mode::SetReplace);
         }
         m_currentNotationNoteInputChanged.notify();
+
+        // Pauta test hook (off unless the variable is set): PAUTA_DEBUG_PASTE="first,last,dest" copies measures
+        // first..last (1-based) and pastes them at measure dest, through the real copy and paste.
+        static bool debugPasteDone = false;
+        const QString dbg = qEnvironmentVariable("PAUTA_DEBUG_PASTE");
+        if (!dbg.isEmpty() && notation && !debugPasteDone) {
+            debugPasteDone = true;
+            QTimer::singleShot(1500, [this, dbg]() {
+                auto n = globalContext()->currentNotation();
+                if (!n) {
+                    return;
+                }
+                const QStringList parts = dbg.split(',');
+                if (parts.size() != 3) {
+                    return;
+                }
+                mu::engraving::Score* sc = n->elements()->msScore();
+                auto measureNo = [sc](int no) -> mu::engraving::Measure* {
+                    mu::engraving::Measure* m = sc->firstMeasure();
+                    for (int i = 1; m && i < no; ++i) {
+                        m = m->nextMeasure();
+                    }
+                    return m;
+                };
+                auto inter = n->interaction();
+                inter->clearSelection();
+                inter->select({ measureNo(parts[0].toInt()) }, SelectType::RANGE, 0);
+                inter->select({ measureNo(parts[1].toInt()) }, SelectType::RANGE, 0);
+                inter->copySelection();
+                inter->clearSelection();
+                inter->select({ measureNo(parts[2].toInt()) }, SelectType::RANGE, 0);
+                inter->pasteSelection();
+            });
+        }
+
+        // Pauta test hook: PAUTA_DEBUG_CAPTURE="first,last,file.png" saves measures first..last as a picture
+        static bool debugCaptureDone = false;
+        const QString cap = qEnvironmentVariable("PAUTA_DEBUG_CAPTURE");
+        if (!cap.isEmpty() && notation && !debugCaptureDone) {
+            debugCaptureDone = true;
+            QTimer::singleShot(1500, [this, cap]() {
+                auto n = globalContext()->currentNotation();
+                const QStringList parts = cap.split(',');
+                if (!n || parts.size() != 3) {
+                    return;
+                }
+                mu::engraving::Score* sc = n->elements()->msScore();
+                auto measureNo = [sc](int no) -> mu::engraving::Measure* {
+                    mu::engraving::Measure* m = sc->firstMeasure();
+                    for (int i = 1; m && i < no; ++i) {
+                        m = m->nextMeasure();
+                    }
+                    return m;
+                };
+                auto inter = n->interaction();
+                inter->clearSelection();
+                inter->select({ measureNo(parts[0].toInt()) }, SelectType::RANGE, 0);
+                inter->select({ measureNo(parts[1].toInt()) }, SelectType::RANGE, 0);
+                pautaCaptureSelection(true, parts[2]);
+            });
+        }
+
+        // Pauta test hook: PAUTA_DEBUG_BACKSPACE=1 writes A B C from measure 2 and presses Backspace twice
+        static bool debugBackDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_BACKSPACE") && notation && !debugBackDone) {
+            debugBackDone = true;
+            QTimer::singleShot(1500, [this]() {
+                auto n = globalContext()->currentNotation();
+                if (!n) {
+                    return;
+                }
+                mu::engraving::Score* sc = n->elements()->msScore();
+                mu::engraving::Measure* m2 = sc->firstMeasure() ? sc->firstMeasure()->nextMeasure() : nullptr;
+                mu::engraving::ChordRest* cr = m2 ? m2->first(mu::engraving::SegmentType::ChordRest)->cr(0) : nullptr;
+                if (!cr) {
+                    return;
+                }
+                n->interaction()->select({ cr }, SelectType::SINGLE, 0);
+                // straight calls: the dispatched actions need the window in focus
+                const std::vector<std::function<void()> > steps = {
+                    [this]() { toggleNoteInput(); },
+                    [this]() { handleNoteAction(NoteName::A, NoteAddingMode::NextChord); },
+                    [this]() { handleNoteAction(NoteName::B, NoteAddingMode::NextChord); },
+                    [this]() { handleNoteAction(NoteName::C, NoteAddingMode::NextChord); },
+                    [this]() { pautaBackspace(); },
+                    [this]() { pautaBackspace(); },
+                };
+                int delay = 0;
+                for (const auto& step : steps) {
+                    delay += 400;
+                    QTimer::singleShot(delay, step);
+                }
+            });
+        }
+
+        // Pauta test hook: PAUTA_DEBUG_LAYOUT=1 makes the parts, gives part 1 a line break after measure 2,
+        // a wider measure 1 and a bigger staff size, copies that layout to the other parts and shows part 2
+        static bool debugLayoutDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_LAYOUT") && notation && !debugLayoutDone) {
+            debugLayoutDone = true;
+            QTimer::singleShot(1500, [this]() {
+                auto master = currentMasterNotation();
+                if (!master) {
+                    return;
+                }
+                master->setExcerpts(master->potentialExcerpts());
+                const auto& exs = master->excerpts();
+                if (exs.size() < 2) {
+                    return;
+                }
+                for (const auto& ex : exs) {
+                    master->setExcerptIsOpen(ex->notation(), true);
+                }
+                globalContext()->setCurrentNotation(exs[0]->notation());
+                QTimer::singleShot(800, [this, exs]() {
+                    auto n0 = exs[0]->notation();
+                    mu::engraving::Score* s0 = n0->elements()->msScore();
+                    n0->undoStack()->prepareChanges(muse::TranslatableString::untranslatable("test layout"));
+                    mu::engraving::Measure* m1 = s0->firstMeasure();
+                    m1->undoChangeProperty(mu::engraving::Pid::USER_STRETCH, 2.0);
+                    if (m1->nextMeasure()) {
+                        m1->nextMeasure()->undoSetBreak(true, mu::engraving::LayoutBreakType::LINE);
+                    }
+                    s0->undoChangeStyleVal(mu::engraving::Sid::spatium, s0->style().spatium() * 1.3);
+                    s0->setLayoutAll();
+                    n0->undoStack()->commitChanges();
+                    n0->notationChanged().notify();
+                    pautaCopyLayoutToParts(false);
+                    if (qEnvironmentVariableIsSet("PAUTA_DEBUG_LAYOUT_UNDO")) {
+                        n0->interaction()->undo(); // undoes only the copy (the test layout above stays)
+                    }
+                    QTimer::singleShot(800, [this, exs]() {
+                        const size_t show = std::clamp<size_t>(qEnvironmentVariableIntValue("PAUTA_DEBUG_LAYOUT"), 1, exs.size() - 1);
+                        globalContext()->setCurrentNotation(exs[show]->notation());
+                    });
+                });
+            });
+        }
     });
 
     // Register engraving debugging options actions
@@ -2011,6 +2175,339 @@ void NotationActionController::pautaToggleFinaleStyle()
                                                          "then press the duration: 4 eighth, 5 quarter, 6 half, 7 whole. "
                                                          "Use up and down arrows to change the pitch.")
                                  : muse::trc("notation", "Back to the usual way: press N, then type the note name (A to G)."));
+}
+
+//! Pauta: image capture. The selection (a range of measures or some elements) becomes a sharp 300 dpi
+//! picture with a white background: copied to the clipboard or saved as PNG. A selection over several
+//! systems gives one picture with the systems one under the other.
+void NotationActionController::pautaCaptureSelection(bool save, const QString& forcedPath)
+{
+    auto notation = currentNotation();
+    if (!notation) {
+        return;
+    }
+    auto selection = notation->interaction()->selection();
+    mu::engraving::Score* score = notation->elements()->msScore();
+    if (!score || selection->isNone()) {
+        interactive()->info(muse::trc("notation", "Nothing selected"),
+                            muse::trc("notation", "Select the measures (or the symbols) you want in the picture first."));
+        return;
+    }
+
+    const double sp = score->style().spatium();
+    std::vector<muse::RectF> rects;
+    if (selection->isRange()) {
+        const auto& sel = score->selection();
+        const bool allStaves = sel.staffStart() == 0 && sel.staffEnd() == score->nstaves();
+        const std::vector<mu::engraving::System*>& systems = score->systems();
+        for (muse::RectF r : selection->range()->boundingArea()) {
+            const mu::engraving::System* sys = nullptr;
+            size_t si = 0;
+            for (; si < systems.size(); ++si) {
+                if (systems[si]->firstMeasure() && systems[si]->canvasBoundingRect().intersects(r)) {
+                    sys = systems[si];
+                    break;
+                }
+            }
+            if (sys) {
+                const muse::RectF sr = sys->canvasBoundingRect();
+                // starts at the beginning of the line: take the clef, key and time signature too
+                const mu::engraving::Measure* startMeasure = sel.startSegment() ? sel.startSegment()->measure() : nullptr;
+                const bool startsLine = !startMeasure || startMeasure->system() != sys || startMeasure == sys->firstMeasure();
+                if (startsLine) {
+                    r.setLeft(sys->canvasPos().x() + sys->leftMargin());
+                }
+                // texts, voltas, lyrics... live between the systems: take half of each gap (trimmed later)
+                const mu::engraving::System* prev = nullptr;
+                const mu::engraving::System* next = nullptr;
+                if (si > 0 && systems[si - 1]->page() == sys->page()) {
+                    prev = systems[si - 1];
+                }
+                if (si + 1 < systems.size() && systems[si + 1]->page() == sys->page()) {
+                    next = systems[si + 1];
+                }
+                // a frame (title, text box) next to it is not part of the picture
+                const muse::RectF pr = sys->page()->canvasBoundingRect();
+                auto edgeAbove = [&]() {
+                    if (!prev) {
+                        return pr.top();
+                    }
+                    const double b = prev->canvasBoundingRect().bottom();
+                    return prev->firstMeasure() ? (b + sr.top()) / 2 : b;
+                };
+                auto edgeBelow = [&]() {
+                    if (!next) {
+                        return pr.bottom();
+                    }
+                    const double t = next->canvasBoundingRect().top();
+                    return next->firstMeasure() ? (sr.bottom() + t) / 2 : t;
+                };
+                const double top = edgeAbove();
+                const double bottom = edgeBelow();
+                if (allStaves) {
+                    r.setTop(std::min(r.top(), top));
+                    r.setBottom(std::max(r.bottom(), bottom));
+                } else {
+                    r.adjust(0, -4 * sp, 0, 4 * sp);
+                }
+            }
+            rects.push_back(r.adjusted(-sp, 0, sp, 0));
+        }
+    } else {
+        muse::RectF all;
+        for (const EngravingItem* e : selection->elements()) {
+            all = all.isNull() ? e->canvasBoundingRect() : all.united(e->canvasBoundingRect());
+        }
+        if (!all.isNull()) {
+            rects.push_back(all.adjusted(-sp, -sp, sp, sp));
+        }
+    }
+    if (rects.empty()) {
+        return;
+    }
+
+    const double dpi = 300.0;
+    const double scale = dpi / mu::engraving::DPI;
+    const int pad = int(dpi / 12); // white border around the music
+    const int gap = int(dpi / 4);  // between systems
+
+    // render each piece, then cut the white around it
+    auto trimmed = [](const QImage& img) -> QRect {
+        int top = img.height(), bottom = -1, left = img.width(), right = -1;
+        for (int y = 0; y < img.height(); ++y) {
+            const QRgb* line = reinterpret_cast<const QRgb*>(img.constScanLine(y));
+            for (int x = 0; x < img.width(); ++x) {
+                if (qGray(line[x]) < 245) {
+                    top = std::min(top, y);
+                    bottom = std::max(bottom, y);
+                    left = std::min(left, x);
+                    right = std::max(right, x);
+                }
+            }
+        }
+        return bottom < 0 ? QRect() : QRect(QPoint(left, top), QPoint(right, bottom));
+    };
+
+    std::vector<QImage> pieces;
+    score->setPrinting(true); // no selection colors, invisible items or break symbols
+    for (const muse::RectF& r : rects) {
+        QImage piece(int(std::ceil(r.width() * scale)), int(std::ceil(r.height() * scale)), QImage::Format_ARGB32_Premultiplied);
+        piece.fill(Qt::white);
+        {
+            muse::draw::Painter painter(&piece, "pautacapture");
+            painter.scale(scale, scale);
+            painter.translate(-r.x(), -r.y());
+            painter.setClipRect(r);
+            notation->painting()->paintView(&painter, r, true);
+            painter.endDraw();
+        }
+        const QRect content = trimmed(piece);
+        if (!content.isNull()) {
+            pieces.push_back(piece.copy(content));
+        }
+    }
+    score->setPrinting(false);
+    if (pieces.empty()) {
+        return;
+    }
+
+    int width = 0;
+    int height = 0;
+    for (const QImage& p : pieces) {
+        width = std::max(width, p.width());
+        height += p.height();
+    }
+    height += gap * int(pieces.size() - 1) + 2 * pad;
+    width += 2 * pad;
+
+    QImage image(width, height, QImage::Format_ARGB32_Premultiplied);
+    image.setDotsPerMeterX(std::lrint(dpi * 1000 / 25.4));
+    image.setDotsPerMeterY(std::lrint(dpi * 1000 / 25.4));
+    image.fill(Qt::white);
+    {
+        QPainter qp(&image);
+        int y = pad;
+        for (const QImage& p : pieces) {
+            qp.drawImage(pad, y, p);
+            y += p.height() + gap;
+        }
+    }
+
+    if (!save) {
+        QGuiApplication::clipboard()->setImage(image);
+        interactive()->info(muse::trc("notation", "Picture copied"),
+                            muse::trc("notation", "Paste it in an email, a document or a chat (⌘V)."));
+        return;
+    }
+
+    const muse::io::path_t path = !forcedPath.isEmpty() ? muse::io::path_t(forcedPath)
+                                  : interactive()->selectSavingFileSync(muse::trc("notation", "Save picture"),
+                                                                        muse::io::path_t(u"trecho.png"), { "PNG (*.png)" });
+    if (path.empty()) {
+        return;
+    }
+    QString file = path.toQString();
+    if (!file.endsWith(".png", Qt::CaseInsensitive)) {
+        file += ".png";
+    }
+    if (!image.save(file, "PNG")) {
+        interactive()->error(muse::trc("notation", "Could not save the picture"), file.toStdString());
+    }
+}
+
+//! Pauta: the layout of the part on screen (line and page breaks, "keep measures together", locked systems,
+//! measure widths, page size, margins, staff size and spacing) is copied to every other part.
+void NotationActionController::pautaCopyLayoutToParts(bool ask)
+{
+    auto notation = currentNotation();
+    auto master = currentMasterNotation();
+    if (!notation || !master) {
+        return;
+    }
+    mu::engraving::Score* src = notation->elements()->msScore();
+    mu::engraving::MasterScore* ms = master->masterScore();
+    if (!src || !ms || src->isMaster()) {
+        interactive()->info(muse::trc("notation", "Open a part first"),
+                            muse::trc("notation", "Open the part whose layout you like (in the tabs at the top), then use this again."));
+        return;
+    }
+    std::vector<mu::engraving::Score*> targets;
+    for (mu::engraving::Excerpt* ex : ms->excerpts()) {
+        if (ex->excerptScore() && ex->excerptScore() != src) {
+            targets.push_back(ex->excerptScore());
+        }
+    }
+    if (targets.empty()) {
+        interactive()->info(muse::trc("notation", "No other parts"),
+                            muse::trc("notation", "This score has no other parts to copy the layout to."));
+        return;
+    }
+
+    const auto answer = !ask ? IInteractive::Result(int(IInteractive::Button::Ok)) : interactive()->questionSync(
+        muse::trc("notation", "Copy this part's layout to the other parts?"),
+        muse::qtrc("notation", "Line and page breaks, locked systems, measure widths, page size, margins and staff size "
+                               "go to the other %1 part(s). Their own layout is replaced. You can undo it.")
+        .arg(targets.size()).toStdString(),
+        { IInteractive::Button::Cancel, IInteractive::Button::Ok }, IInteractive::Button::Ok);
+    if (!answer.isButton(IInteractive::Button::Ok)) {
+        return;
+    }
+
+    using namespace mu::engraving;
+    static const Sid styles[] = {
+        Sid::pageWidth, Sid::pageHeight, Sid::pagePrintableWidth, Sid::pageEvenTopMargin, Sid::pageEvenBottomMargin,
+        Sid::pageEvenLeftMargin, Sid::pageOddTopMargin, Sid::pageOddBottomMargin, Sid::pageOddLeftMargin, Sid::pageTwosided,
+        Sid::spatium, Sid::minSystemDistance, Sid::maxSystemDistance, Sid::staffUpperBorder, Sid::staffLowerBorder,
+        Sid::measureSpacing, Sid::minMeasureWidth, Sid::enableVerticalSpread, Sid::spreadSystem, Sid::maxSystemSpread,
+    };
+
+    notation->undoStack()->prepareChanges(muse::TranslatableString("undoableAction", "Copy layout to parts"));
+    for (Score* dst : targets) {
+        for (Sid sid : styles) {
+            if (dst->style().value(sid) != src->style().value(sid)) {
+                dst->undoChangeStyleVal(sid, src->style().value(sid));
+            }
+        }
+
+        // breaks and measure widths, measure by measure (the parts share the same measures)
+        for (Measure* sm = src->firstMeasure(); sm; sm = sm->nextMeasure()) {
+            Measure* dm = dst->tick2measure(sm->tick());
+            if (!dm || dm->tick() != sm->tick()) {
+                continue;
+            }
+            dm->undoSetBreak(sm->lineBreak(), LayoutBreakType::LINE);
+            dm->undoSetBreak(sm->pageBreak(), LayoutBreakType::PAGE);
+            dm->undoSetBreak(sm->noBreak(), LayoutBreakType::NOBREAK);
+            if (dm->userStretch() != sm->userStretch()) {
+                dm->undoChangeProperty(Pid::USER_STRETCH, sm->userStretch());
+            }
+        }
+
+        // locked systems
+        EditSystemLocks::undoRemoveAllLocks(dst);
+        const bool mm = dst->style().styleB(Sid::createMultiMeasureRests);
+        for (const SystemLock* lock : src->systemLocks()->allLocks()) {
+            if (!lock->startMB()->isMeasure() || !lock->endMB()->isMeasure()) {
+                continue; // locks that start or end on a frame are not copied
+            }
+            Measure* a = dst->tick2measure(lock->startMB()->tick());
+            Measure* b = dst->tick2measure(lock->endMB()->endTick() - Fraction::fromTicks(1));
+            if (!a || !b) {
+                continue;
+            }
+            if (mm) {
+                a = a->coveringMMRestOrThis();
+                b = b->coveringMMRestOrThis();
+            }
+            if (a == b || a->isBefore(b)) {
+                EditSystemLocks::undoAddSystemLock(dst, new SystemLock(a, b));
+            }
+        }
+        dst->setLayoutAll();
+    }
+    notation->undoStack()->commitChanges();
+    notation->notationChanged().notify();
+
+    if (!ask) {
+        return;
+    }
+    interactive()->info(muse::trc("notation", "Layout copied"),
+                        muse::qtrc("notation", "The other %1 part(s) now have this part's layout.").arg(targets.size()).toStdString());
+}
+
+//! Pauta: Backspace while writing notes goes back one place and deletes the note there, again and again,
+//! like in a text editor (MuseScore deletes only the selected note and stops). Elsewhere it is Delete.
+void NotationActionController::pautaBackspace()
+{
+    auto interaction = currentNotationInteraction();
+    if (!interaction) {
+        return;
+    }
+    const bool writing = interaction->noteInput() && interaction->noteInput()->isNoteInputMode();
+    if (writing && !interaction->isTextEditingStarted() && pautaFlag("backspaceBack", true)) {
+        move(MoveDirection::Left, false);
+    }
+    if (!interaction->selection()->isNone() || interaction->isTextEditingStarted()) {
+        interaction->deleteSelection();
+    }
+}
+
+void NotationActionController::pautaSetRepeatSize(int level)
+{
+    // Pauta: bigger repeat signs (dots, thick line and the space between them), in one undoable step.
+    // 0 = normal (the defaults), 1 = large, 2 = extra large
+    auto notation = currentNotation();
+    if (!notation) {
+        return;
+    }
+    auto style = notation->style();
+    struct Preset { double dots; double thick; double dotGap; double lineGap; };
+    static const Preset presets[] = {
+        { 1.0, 0.55, 0.37, 0.37 },
+        { 1.5, 0.8, 0.45, 0.4 },
+        { 2.0, 1.05, 0.5, 0.45 },
+    };
+    const Preset& p = presets[std::clamp(level, 0, 2)];
+    notation->undoStack()->prepareChanges(muse::TranslatableString("undoableAction", "Repeat sign size"));
+    style->setStyleValue(StyleId::pautaRepeatDotScale, p.dots);
+    style->setStyleValue(StyleId::endBarWidth, mu::engraving::Spatium(p.thick));
+    style->setStyleValue(StyleId::repeatBarlineDotSeparation, mu::engraving::Spatium(p.dotGap));
+    style->setStyleValue(StyleId::endBarDistance, mu::engraving::Spatium(p.lineGap));
+    notation->undoStack()->commitChanges();
+    notation->notationChanged().notify();
+}
+
+void NotationActionController::pautaToggleRepeatWings()
+{
+    auto notation = currentNotation();
+    if (!notation) {
+        return;
+    }
+    auto style = notation->style();
+    notation->undoStack()->prepareChanges(muse::TranslatableString("undoableAction", "Repeat sign wings"));
+    style->setStyleValue(StyleId::repeatBarTips, !style->styleValue(StyleId::repeatBarTips).toBool());
+    notation->undoStack()->commitChanges();
+    notation->notationChanged().notify();
 }
 
 void NotationActionController::pautaChangeKey()

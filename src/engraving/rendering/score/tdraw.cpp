@@ -680,8 +680,10 @@ static void drawDots(const BarLine* item, Painter* painter, double x)
         y2l += stYOffset;
     }
 
-    item->drawSymbol(SymId::repeatDot, painter, PointF(x, y1l));
-    item->drawSymbol(SymId::repeatDot, painter, PointF(x, y2l));
+    // Pauta: repeat dots can be bigger (style pautaRepeatDotScale); the glyph is centered on its origin
+    const double dotScale = item->style().styleD(Sid::pautaRepeatDotScale);
+    item->drawSymbol(SymId::repeatDot, painter, PointF(x, y1l), dotScale);
+    item->drawSymbol(SymId::repeatDot, painter, PointF(x, y2l), dotScale);
 }
 
 static void drawTips(const BarLine* item, const BarLine::LayoutData* data, Painter* painter, bool reversed, double x)
@@ -821,7 +823,7 @@ void TDraw::draw(const BarLine* item, Painter* painter, const PaintOptions& opt)
         double x = 0.0;
         drawDots(item, painter, x);
 
-        x += item->symBbox(SymId::repeatDot).width();
+        x += item->symBbox(SymId::repeatDot).width() * item->style().styleD(Sid::pautaRepeatDotScale);
         x += (item->style().styleMM(Sid::repeatBarlineDotSeparation) + (lw * .5)) * item->mag();
         painter->drawLine(LineF(x, data->y1, x, data->y2));
 
@@ -842,7 +844,7 @@ void TDraw::draw(const BarLine* item, Painter* painter, const PaintOptions& opt)
         double x = 0.0;
         drawDots(item, painter, x);
 
-        x += item->symBbox(SymId::repeatDot).width();
+        x += item->symBbox(SymId::repeatDot).width() * item->style().styleD(Sid::pautaRepeatDotScale);
         x += (item->style().styleMM(Sid::repeatBarlineDotSeparation) + (lw * .5)) * item->mag();
         painter->drawLine(LineF(x, data->y1, x, data->y2));
 

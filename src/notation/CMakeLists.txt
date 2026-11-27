@@ -69,6 +69,8 @@ target_sources(notation PRIVATE
     internal/notationelements.h
     internal/notationinteraction.cpp
     internal/notationinteraction.h
+    internal/pautapasteextras.cpp
+    internal/pautapasteextras.h
     internal/notationmidiinput.cpp
     internal/notationmidiinput.h
     internal/notationnoteinput.cpp

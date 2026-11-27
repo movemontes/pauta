@@ -271,6 +271,7 @@ public:
     muse::String attribute(const muse::String& name) const;
     const std::map<muse::String, muse::String>& attributes() const { return m_attributes; }
     muse::String name() const { return m_name; }
+    void setName(const muse::String& name) { m_name = name; } // Pauta
     muse::String parent() const { return m_parent; }
     void setSymId(const engraving::SymId& symId) { m_symId = symId; }
     engraving::SymId symId() const { return m_symId; }

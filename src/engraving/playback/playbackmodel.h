@@ -59,6 +59,10 @@ public:
     void load(Score* score);
     void reload();
 
+    // Pauta: voices left out of playback (bit 0 = voice 1 ... bit 3 = voice 4), for every score
+    static void setPautaMutedVoices(int mask);
+    static int pautaMutedVoices();
+
     void setSendEventsOnScoreChange(const InstrumentTrackId& trackId, bool send);
     void sendEventsForChangedTracks();
 

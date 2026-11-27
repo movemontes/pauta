@@ -156,6 +156,11 @@ private:
     void openTransposeDialog();
     void pautaChangeKey();
     void pautaToggleFinaleStyle();
+    void pautaSetRepeatSize(int level);
+    void pautaCaptureSelection(bool save, const QString& forcedPath = QString());
+    void pautaBackspace();
+    void pautaCopyLayoutToParts(bool ask = true);
+    void pautaToggleRepeatWings();
     void pautaChordSymbolsFromNotes();
     void openPartsDialog();
     void openTupletOtherDialog();

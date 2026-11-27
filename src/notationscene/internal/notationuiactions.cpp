@@ -20,6 +20,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "notationuiactions.h"
+#include "notation/internal/pautapasteextras.h" // Pauta
 
 #include <unordered_map>
 
@@ -425,6 +426,95 @@ const UiActionList NotationUiActions::s_actions = {
              mu::context::CTX_NOTATION_OPENED,
              TranslatableString("action", "Chord symbols from selected notes"),
              TranslatableString("action", "Chord symbols from selected notes")
+             ),
+    UiAction("pauta-paste-with-timesig",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Time signatures"),
+             TranslatableString("action", "Paste brings along: time signatures"),
+             Checkable::Yes
+             ),
+    UiAction("pauta-paste-with-keysig",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Key signatures"),
+             TranslatableString("action", "Paste brings along: key signatures"),
+             Checkable::Yes
+             ),
+    UiAction("pauta-paste-with-repeats",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Repeats, voltas and jumps"),
+             TranslatableString("action", "Paste brings along: repeats, voltas and jumps"),
+             Checkable::Yes
+             ),
+    UiAction("pauta-paste-with-tempo",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Tempo marks"),
+             TranslatableString("action", "Paste brings along: tempo marks"),
+             Checkable::Yes
+             ),
+    UiAction("pauta-repeat-size-normal",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Normal size"),
+             TranslatableString("action", "Repeat signs: normal size"), Checkable::Yes
+             ),
+    UiAction("pauta-repeat-size-large",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Large"),
+             TranslatableString("action", "Repeat signs: large"), Checkable::Yes
+             ),
+    UiAction("pauta-repeat-size-xlarge",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Extra large"),
+             TranslatableString("action", "Repeat signs: extra large"), Checkable::Yes
+             ),
+    UiAction("pauta-repeat-wings",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "With wings"),
+             TranslatableString("action", "Repeat signs with wings"), Checkable::Yes
+             ),
+    UiAction("pauta-repeat-more",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "More settings…"),
+             TranslatableString("action", "Repeat signs: more settings")
+             ),
+    UiAction("pauta-capture-copy",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Copy selection as picture"),
+             TranslatableString("action", "Copy the selected measures as a picture")
+             ),
+    UiAction("pauta-capture-save",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Save selection as picture…"),
+             TranslatableString("action", "Save the selected measures as a PNG picture")
+             ),
+    UiAction("pauta-copy-layout-to-parts",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Copy this part's layout to the other parts"),
+             TranslatableString("action", "Copy breaks, widths and page settings of this part to the other parts")
+             ),
+    UiAction("pauta-notation-backspace",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_FOCUSED,
+             TranslatableString("action", "Delete backwards"),
+             TranslatableString("action", "Delete backwards")
+             ),
+    UiAction("pauta-backspace-back-toggle",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Backspace deletes backwards while writing"),
+             TranslatableString("action", "Backspace deletes backwards while writing"),
+             Checkable::Yes
              ),
     UiAction("pauta-finale-style",
              mu::context::UiCtxProjectOpened,
@@ -2784,6 +2874,21 @@ NotationUiActions::NotationUiActions(std::shared_ptr<NotationActionController> c
 
 void NotationUiActions::init()
 {
+    m_controller->currentNotationChanged().onNotify(this, [this]() {
+        auto style = m_controller->currentNotationStyle();
+        if (style) {
+            style->styleChanged().onNotify(this, [this]() {
+                m_actionCheckedChanged.send({ "pauta-repeat-size-normal", "pauta-repeat-size-large", "pauta-repeat-size-xlarge",
+                                              "pauta-repeat-wings" });
+            }, Asyncable::Mode::SetReplace);
+        }
+    });
+
+    pautaPasteOptionChanged().onReceive(this, [this](const std::string&) {
+        m_actionCheckedChanged.send({ "pauta-paste-with-timesig", "pauta-paste-with-keysig", "pauta-paste-with-repeats",
+                                      "pauta-paste-with-tempo", "pauta-backspace-back-toggle" });
+    });
+
     m_controller->currentNotationNoteInputChanged().onNotify(this, [this]() {
         m_actionCheckedChanged.send({ NOTE_INPUT_ACTION_CODE });
     });
@@ -2932,6 +3037,29 @@ bool NotationUiActions::isScoreConfigChecked(const ActionCode& code, const Score
 
 bool NotationUiActions::actionChecked(const UiAction& act) const
 {
+    // Pauta: repeat sign size and wings
+    if (act.code.rfind("pauta-repeat-", 0) == 0 && act.code != "pauta-repeat-more") {
+        auto style = m_controller->currentNotationStyle();
+        if (!style) {
+            return false;
+        }
+        if (act.code == "pauta-repeat-wings") {
+            return style->styleValue(StyleId::repeatBarTips).toBool();
+        }
+        const double s = style->styleValue(StyleId::pautaRepeatDotScale).toDouble();
+        const double want = act.code == "pauta-repeat-size-xlarge" ? 2.0 : (act.code == "pauta-repeat-size-large" ? 1.5 : 1.0);
+        return std::abs(s - want) < 0.01;
+    }
+
+    if (act.code == "pauta-backspace-back-toggle") {
+        return pautaFlag("backspaceBack", true);
+    }
+
+    // Pauta: complete paste options
+    if (act.code.rfind("pauta-paste-with-", 0) == 0) {
+        return pautaPasteOption(pautaPasteOptionKey(act.code));
+    }
+
     if (act.code == NOTE_INPUT_ACTION_CODE) {
         auto noteInput = m_controller->currentNotationNoteInput();
         if (noteInput) {

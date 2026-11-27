@@ -58,7 +58,5 @@ void VideoExportModule::resolveImports()
 
 void VideoExportModule::onInit(const muse::IApplication::RunMode&)
 {
-    if (QFontDatabase::addApplicationFont(":/videoexport/internal/resources/MuseSans-Medium.ttf") == -1) {
-        LOGE() << "Unable load MuseSans font: `:/videoexport/internal/resources/MuseSans-Medium.ttf`";
-    }
+    // Pauta: the title card uses Pauta's own typeface (loaded with the app's fonts); no MuseScore font here
 }

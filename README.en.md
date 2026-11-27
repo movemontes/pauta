@@ -28,6 +28,9 @@ Free · No account · No ads · Nothing leaves your computer
 | Command palette (**Cmd+Shift+P**) | On-screen piano lights up while playing | Change key in one click | **Finale files (.musx, .mus)** |
 | Full **Drums** palette | | Chord symbols from notes | PDF → editable score (with Audiveris) |
 | Write like Finale (Speedy Entry) | | **Tabs**: many scores in one window | Export to another program |
+| **Complete paste**: time signature, key, repeats and tempo come along | **Choose which voices play** | **Copy one part's layout to the others** | **Error-free MusicXML**: passes the official validation |
+| **Backspace deletes backwards** while you write | | **Bigger repeat signs**: 3 sizes, with wings | **Picture capture** of the selection (300 dpi PNG) |
+| | | | **MP4 video** of the score scrolling |
 
 ## How to install
 
@@ -58,4 +61,4 @@ How to build: `buildscripts/pauta/COMPILAR.md` (in Portuguese). The app is C++/Q
 
 Pauta is free software **based on [MuseScore Studio](https://github.com/musescore/MuseScore)**, © 1999-2026 MuseScore Limited and others, so it is distributed under the **GNU General Public License version 3** (`LICENSE.txt`).
 Pauta is not affiliated with or endorsed by MuseScore Limited or Muse Group. "MuseScore" is their trademark.
-UI fonts: Archivo (SIL Open Font License). Sound: MS Basic (MIT license). Finale files: [Denigma](https://github.com/rpatters1/denigma) (MIT license), shipped inside the app.
+UI fonts: Archivo (SIL Open Font License). Sound: MS Basic (MIT license). Finale files: [Denigma](https://github.com/rpatters1/denigma) (MIT license), shipped inside the app. Video: [FFmpeg](https://ffmpeg.org) 7.1.5 (LGPL 2.1), a small build shipped inside the app; source at [ffmpeg.org/releases](https://ffmpeg.org/releases/ffmpeg-7.1.5.tar.xz), build steps in `buildscripts/pauta/build_ffmpeg.sh`.

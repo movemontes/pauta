@@ -1073,7 +1073,7 @@ void TLayout::layoutBarLine(const BarLine* item, BarLine::LayoutData* ldata, con
     const IEngravingFontPtr font = ctx.engravingFont();
     const double magS = ctx.conf().magS(ldata->mag());
 
-    double w = barLineWidth(item, ctx.conf().style(), font->width(SymId::repeatDot, magS)) * ldata->mag();
+    double w = barLineWidth(item, ctx.conf().style(), font->width(SymId::repeatDot, magS) * ctx.conf().style().styleD(Sid::pautaRepeatDotScale)) * ldata->mag();
     RectF r(0.0, ldata->y1, w, ldata->y2 - ldata->y1);
 
     if (ctx.conf().styleB(Sid::repeatBarTips)) {

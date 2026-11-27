@@ -403,6 +403,7 @@ EditStyle::EditStyle(QWidget* parent)
         { StyleId::doubleBarWidth,          false, doubleBarWidth,          resetDoubleBarWidth },
         { StyleId::doubleBarDistance,       false, doubleBarDistance,       resetDoubleBarDistance },
         { StyleId::repeatBarlineDotSeparation, false, repeatBarlineDotSeparation, resetRepeatBarlineDotSeparation },
+        { StyleId::pautaRepeatDotScale,     true,  pautaRepeatDotSize,      resetPautaRepeatDotSize }, // Pauta
 
         { StyleId::barGraceDistance,        false, barGraceDistance,        resetBarGraceDistance },
         { StyleId::concertPitch,            false, concertPitch,            0 },

@@ -28,6 +28,9 @@ Grátis · Sem conta · Sem anúncio · Nada sai do seu computador
 | Paleta de comandos (**Cmd+Shift+P**) | Piano na tela acende as notas tocando | Mudar tom com um botão | **Arquivos do Finale (.musx, .mus)** |
 | Paleta **Bateria** completa | | Cifras a partir das notas | PDF → partitura editável (com o Audiveris) |
 | Escrever como no Finale (Speedy Entry) | | **Abas**: várias partituras numa janela | Exportar para outro programa |
+| **Colar completo**: fórmula de compasso, armadura, ritornelos e andamento vêm junto | **Escolher quais vozes tocam** | **Copiar o layout de uma parte para as outras** | **MusicXML sem erros**: passa na validação oficial |
+| **Backspace apaga para trás** enquanto você escreve | | **Ritornelo maior**: 3 tamanhos e com asas | **Captura de imagem** da seleção (PNG 300 dpi) |
+| | | | **Vídeo MP4** da partitura rolando |
 
 ## Como instalar
 
@@ -59,4 +62,4 @@ Como compilar: `buildscripts/pauta/COMPILAR.md`. O app é C++/Qt 6, feito a part
 
 O Pauta é um programa livre **baseado no [MuseScore Studio](https://github.com/musescore/MuseScore)**, © 1999-2026 MuseScore Limited e colaboradores, e por isso é distribuído sob a **GNU General Public License versão 3** (`LICENSE.txt`), e não sob a MIT dos outros apps.
 O Pauta não tem ligação com a MuseScore Limited nem com o Muse Group. "MuseScore" é marca deles.
-Fontes da interface: Archivo (SIL Open Font License). Som: MS Basic (licença MIT). Arquivos do Finale: [Denigma](https://github.com/rpatters1/denigma) (licença MIT), que vai dentro do app.
+Fontes da interface: Archivo (SIL Open Font License). Som: MS Basic (licença MIT). Arquivos do Finale: [Denigma](https://github.com/rpatters1/denigma) (licença MIT), que vai dentro do app. Vídeo: [FFmpeg](https://ffmpeg.org) 7.1.5 (licença LGPL 2.1), numa versão enxuta que vai dentro do app; o código-fonte está em [ffmpeg.org/releases](https://ffmpeg.org/releases/ffmpeg-7.1.5.tar.xz) e o jeito de compilar em `buildscripts/pauta/build_ffmpeg.sh`.

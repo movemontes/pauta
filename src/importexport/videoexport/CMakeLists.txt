@@ -34,10 +34,4 @@ target_sources(iex_videoexport PRIVATE
 
 target_link_libraries(iex_videoexport PRIVATE Qt::Concurrent muse::media engraving)
 
-qt_add_resources(iex_videoexport iex_videoexport_resources
-    PREFIX
-        /videoexport
-    FILES
-        internal/resources/video_made_with.mp4
-        internal/resources/MuseSans-Medium.ttf
-)
+# Pauta: no "made with" clip and no MuseScore typeface in the videos

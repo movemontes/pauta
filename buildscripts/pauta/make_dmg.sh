@@ -42,6 +42,21 @@ else
     echo "AVISO: denigma não encontrado; o Pauta não vai abrir arquivos do Finale"
 fi
 
+# FFmpeg (LGPL 2.1, small build: MP4 video with the Mac's own H.264 encoder), for the score video export.
+# Built from the official source by buildscripts/pauta/build_ffmpeg.sh, outside Git.
+FFMPEG=$ROOT/ffmpeg/install/lib
+if [ -f "$FFMPEG/libavcodec.61.dylib" ]; then
+    mkdir -p "$APP/Contents/Frameworks/ffmpeg" "$APP/Contents/Resources/licenses"
+    for l in avutil.59 avcodec.61 avformat.61 swscale.8 swresample.5; do
+        cp "$FFMPEG/lib$l.dylib" "$APP/Contents/Frameworks/ffmpeg/"
+    done
+    cp "$ROOT/ffmpeg/ffmpeg-7.1.5/COPYING.LGPLv2.1" "$APP/Contents/Resources/licenses/ffmpeg-LGPL-2.1.txt"
+    echo "FFmpeg 7.1.5, https://ffmpeg.org (source: https://ffmpeg.org/releases/ffmpeg-7.1.5.tar.xz)" \
+        > "$APP/Contents/Resources/licenses/ffmpeg-SOURCE.txt"
+else
+    echo "AVISO: FFmpeg não encontrado em $FFMPEG; o vídeo só vai funcionar para quem tiver o FFmpeg instalado"
+fi
+
 # Clash Grotesk (ITF Free Font License): may ship inside the app, but not in a public repository.
 # The files live outside Git, in $ROOT/fontes-privadas. Without them Pauta uses Archivo (same look, a bit plainer).
 CLASH=$ROOT/fontes-privadas
