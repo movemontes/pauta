@@ -36,7 +36,9 @@
 
 #include "log.h"
 
+#ifndef _WIN32 // Pauta: backtrace() is only on the Mac and Linux
 #include <execinfo.h>
+#endif
 #include <csignal>
 
 #ifndef MUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT
@@ -56,9 +58,11 @@ static void crashCallback(int signum)
     }
     LOGE() << "Oops! Application crashed with signal: [" << signum << "] " << signame << "-" << sigdescript;
     // Pauta: print where it happened and let macOS write its crash report
+#ifndef _WIN32
     void* frames[64];
     int n = backtrace(frames, 64);
     backtrace_symbols_fd(frames, n, 2);
+#endif
     signal(signum, SIG_DFL);
     raise(signum);
 }
