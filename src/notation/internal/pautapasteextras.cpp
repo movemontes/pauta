@@ -22,6 +22,11 @@
 #include "engraving/dom/staff.h"
 #include "engraving/dom/timesig.h"
 #include "engraving/dom/volta.h"
+#include "engraving/dom/chord.h"
+#include "engraving/dom/rest.h"
+#include "engraving/dom/selectionfilter.h"
+#include "engraving/rw/xmlreader.h"
+#include "engraving/types/types.h"
 
 #include "log.h"
 
@@ -544,5 +549,126 @@ void PautaPasteExtras::applyAfter(Score* score, const Fraction& destTick, staff_
             score->undoAddElement(e);
         }
     }
+}
+
+//---------------------------------------------------------
+//   duration change that pushes the rest of the voice
+//---------------------------------------------------------
+
+static void selectVoiceOnly(Score* score, voice_idx_t voice)
+{
+    for (voice_idx_t v = 0; v < VOICES; ++v) {
+        score->selectionFilter().setFiltered(static_cast<VoicesSelectionFilterTypes>(1u << v), v == voice);
+    }
+}
+
+static Segment* crSegmentAt(Score* score, const Fraction& tick)
+{
+    Measure* m = score->tick2measure(tick);
+    return m ? m->undoGetSegment(SegmentType::ChordRest, tick) : nullptr;
+}
+
+static bool selectVoiceRange(Score* score, const Fraction& from, const Fraction& to, staff_idx_t staff)
+{
+    // setRangeTicks also replaces the range a paste leaves planned (setRange would be overridden by it)
+    score->deselectAll();
+    score->selection().setRangeTicks(from, to, staff, staff + 1);
+    score->selection().updateSelectedElements();
+    const Segment* s1 = score->selection().startSegment();
+    return score->selection().isRange() && s1 && s1->tick() == from;
+}
+
+bool pautaRippleDuration(Score* score, ChordRest* cr, const TDuration& newDuration)
+{
+    if (!score || !cr || cr->tuplet() || cr->isMeasureRepeat() || cr->isMMRest() || !newDuration.isValid()) {
+        return false;
+    }
+    if (cr->isRest() && toRest(cr)->isFullMeasureRest()) {
+        return false;
+    }
+    const staff_idx_t staff = cr->staffIdx();
+    if (cr->staff()->timeStretch(cr->tick()) != Fraction(1, 1)) {
+        return false;
+    }
+    const track_idx_t track = cr->track();
+    const voice_idx_t voice = cr->voice();
+    const Fraction start = cr->tick();
+    const Fraction oldLen = cr->ticks();
+    const Fraction newLen = newDuration.fraction();
+    if (oldLen == newLen) {
+        return true;
+    }
+    const Fraction delta = newLen - oldLen;
+    const Fraction oldEnd = start + oldLen;
+    const Fraction newEnd = start + newLen;
+    const Fraction last = score->lastMeasure()->endTick();
+
+    // what follows in this voice moves by delta; when it grows, the end of the score makes room if notes would fall off
+    Fraction moveEnd = last;
+    if (delta > Fraction(0, 1)) {
+        bool notesAtEnd = false;
+        for (Segment* s = score->tick2segment(last - delta, true, SegmentType::ChordRest); s; s = s->next1(SegmentType::ChordRest)) {
+            EngravingItem* e = s->element(track);
+            if (e && e->isChord()) {
+                notesAtEnd = true;
+                break;
+            }
+        }
+        // a chord that starts before the cut but lasts into it also needs room
+        if (ChordRest* across = score->findCR(last - delta, track)) {
+            notesAtEnd |= across->isChord() && across->tick() + across->ticks() > last - delta;
+        }
+        if (notesAtEnd) {
+            while (score->lastMeasure()->endTick() < last + delta) {
+                score->appendMeasures(1);
+            }
+        } else {
+            moveEnd = last - delta;
+        }
+    }
+
+    const SelectionFilter savedFilter = score->selectionFilter();
+    QByteArray clip;
+    if (oldEnd < moveEnd) {
+        selectVoiceOnly(score, voice);
+        const bool ok = selectVoiceRange(score, oldEnd, moveEnd, staff) && score->selection().canCopy();
+        if (ok) {
+            clip = score->selection().mimeData().toQByteArray(); // a range gives the staff list
+        }
+        score->selectionFilter() = savedFilter;
+        score->deselectAll();
+        if (!ok) {
+            return false; // a tuplet or something else that can't be cut here
+        }
+    }
+
+    score->changeCRlen(cr, newDuration);
+
+    if (!clip.isEmpty()) {
+        Segment* dst = crSegmentAt(score, newEnd);
+        if (!dst) {
+            return true;
+        }
+        XmlReader e(muse::ByteArray::fromQByteArray(clip));
+        score->pasteStaff(e, dst, staff, Fraction(1, 1));
+    }
+
+    // it got shorter: the old ending of this voice, now repeated at the end, becomes rest
+    if (delta < Fraction(0, 1)) {
+        const Fraction from = last + delta;
+        if (from > newEnd) {
+            selectVoiceOnly(score, voice);
+            if (selectVoiceRange(score, from, last, staff)) {
+                score->cmdDeleteSelection();
+            }
+            score->selectionFilter() = savedFilter;
+        }
+    }
+
+    score->deselectAll();
+    if (ChordRest* changed = score->findCR(start, track)) {
+        score->select(changed->isChord() ? static_cast<EngravingItem*>(toChord(changed)->upNote()) : changed, SelectType::SINGLE, 0);
+    }
+    return true;
 }
 }

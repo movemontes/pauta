@@ -377,6 +377,12 @@ const UiActionList ApplicationUiActions::m_actions = {
              TranslatableString("action", "Delete"),
              IconCode::Code::DELETE_TANK
              ),
+    UiAction("pauta-midi-channels",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "MIDI channels…"),
+             TranslatableString("action", "Port and channel of each instrument in the MIDI export")
+             ),
     UiAction("action://pauta-backspace",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,

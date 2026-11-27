@@ -520,6 +520,8 @@ enum class Pid : short {
     STAFF_MERGE_MATCHING_RESTS,
     STAFF_REFLECT_TRANSPOSITION,
 
+    PAUTA_PLAY_PASSES, // Pauta: which passes through a repeat a chord/rest plays on (0 = every pass)
+
     END
 };
 

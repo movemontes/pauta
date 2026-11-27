@@ -159,6 +159,8 @@ private:
     void pautaSetRepeatSize(int level);
     void pautaCaptureSelection(bool save, const QString& forcedPath = QString());
     void pautaBackspace();
+    void pautaSetPlayPasses(int mask);
+    bool pautaRippleSelected(mu::engraving::Pad pad);
     void pautaCopyLayoutToParts(bool ask = true);
     void pautaToggleRepeatWings();
     void pautaChordSymbolsFromNotes();

@@ -57,6 +57,17 @@ else
     echo "AVISO: FFmpeg não encontrado em $FFMPEG; o vídeo só vai funcionar para quem tiver o FFmpeg instalado"
 fi
 
+# GeneralUser GS (S. Christian Collins, free to use and to ship with software): a fuller instrument sound,
+# chosen in View > Instrument sound. Kept outside Git (32 MB), in $ROOT/downloads.
+GUGS="$ROOT/downloads/GeneralUser-GS"
+if [ -f "$GUGS/GeneralUser-GS.sf2" ]; then
+    cp "$GUGS/GeneralUser-GS.sf2" "$APP/Contents/Resources/sound/GeneralUser GS.sf2"
+    mkdir -p "$APP/Contents/Resources/licenses"
+    cp "$GUGS/LICENSE.txt" "$APP/Contents/Resources/licenses/GeneralUser-GS-LICENSE.txt"
+else
+    echo "AVISO: GeneralUser GS não encontrado em $GUGS; só o MS Basic vai junto"
+fi
+
 # Clash Grotesk (ITF Free Font License): may ship inside the app, but not in a public repository.
 # The files live outside Git, in $ROOT/fontes-privadas. Without them Pauta uses Archivo (same look, a bit plainer).
 CLASH=$ROOT/fontes-privadas

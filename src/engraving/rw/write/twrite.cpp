@@ -1103,6 +1103,7 @@ void TWrite::writeProperties(const ChordRest* item, XmlWriter& xml, WriteContext
         xml.tag("BeamMode", TConv::toXml(item->beamMode()));
     }
     writeProperty(item, xml, Pid::SMALL);
+    writeProperty(item, xml, Pid::PAUTA_PLAY_PASSES); // Pauta
     if (item->actualDurationType().dots()) {
         xml.tag("dots", item->actualDurationType().dots());
     }

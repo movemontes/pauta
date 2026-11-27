@@ -63,6 +63,11 @@ public:
     static void setPautaMutedVoices(int mask);
     static int pautaMutedVoices();
 
+private:
+    int m_pautaCurrentPass = 1; // Pauta: pass through the repeat being processed
+    std::map<const RepeatSegment*, std::map<const Measure*, int> > m_pautaPassesBefore;
+public:
+
     void setSendEventsOnScoreChange(const InstrumentTrackId& trackId, bool send);
     void sendEventsForChangedTracks();
 

@@ -29,6 +29,7 @@
 #include "playbacktypes.h"
 
 #include "engraving/dom/masterscore.h"
+#include <QSettings>
 #include "engraving/playback/playbackmodel.h" // Pauta: voices that play
 #include "engraving/dom/stafftext.h"
 #include "engraving/dom/utils.h"
@@ -140,6 +141,27 @@ void PlaybackController::init()
         updateAuxMuteStates();
         notifyActionCheckedChanged("pauta-toggle-reverb");
     });
+    // Pauta: one sound for every instrument of the score (and the default for new ones): MS Basic or GeneralUser GS
+    for (const auto& [code, name] : std::vector<std::pair<std::string, std::string> > {
+        { "pauta-sound-msbasic", "MS Basic" }, { "pauta-sound-generaluser", "GeneralUser GS" } }) {
+        dispatcher()->reg(this, code, [this, name]() {
+            QSettings().setValue("pauta/soundFont", QString::fromStdString(name));
+            for (const auto& [instrumentTrackId, trackId] : m_instrumentTrackIdMap) {
+                AudioInputParams params = audioSettings()->trackInputParams(instrumentTrackId);
+                if (params.resourceMeta.type != AudioResourceType::FluidSoundfont) {
+                    continue; // VST instruments and the like stay as they are
+                }
+                params.resourceMeta.id = name;
+                params.resourceMeta.attributes = {
+                    { u"playbackSetupData", muse::mpe::GENERIC_SETUP_DATA_STRING },
+                    { u"soundFontName", String::fromStdString(name) },
+                };
+                playback()->setInputParams(m_currentSequenceId, trackId, params);
+            }
+            notifyActionCheckedChanged("pauta-sound-msbasic");
+            notifyActionCheckedChanged("pauta-sound-generaluser");
+        });
+    }
     // Pauta: choose which voices play (all by default; not saved, so a new session plays everything)
     for (int v = 0; v < 4; ++v) {
         const std::string code = "pauta-play-voice-" + std::to_string(v + 1);
@@ -1605,6 +1627,8 @@ bool PlaybackController::actionChecked(const ActionCode& actionCode) const
         { COUNT_IN_CODE, notationConfiguration()->isCountInEnabled() },
         { TOGGLE_HEAR_PLAYBACK_WHEN_EDITING_CODE, configuration()->playNotesWhenEditing() },
         { "pauta-toggle-reverb", globalContext()->currentProject() ? !audioSettings()->auxSoloMuteState(REVERB_CHANNEL_IDX).mute : true },
+        { "pauta-sound-msbasic", QSettings().value("pauta/soundFont", "MS Basic").toString() == "MS Basic" },
+        { "pauta-sound-generaluser", QSettings().value("pauta/soundFont", "MS Basic").toString() == "GeneralUser GS" },
         { "pauta-play-voice-1", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 1) },
         { "pauta-play-voice-2", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 2) },
         { "pauta-play-voice-3", !(mu::engraving::PlaybackModel::pautaMutedVoices() & 4) },

@@ -88,6 +88,9 @@ public:
     virtual double rightEdge() const = 0;
 
     bool isSmall() const { return m_isSmall; }
+    // Pauta: passes through a repeat this plays on (bit 0 = 1st pass, bit 1 = 2nd...; 0 = every pass)
+    int pautaPlayPasses() const { return m_pautaPlayPasses; }
+    void setPautaPlayPasses(int v) { m_pautaPlayPasses = v; }
     void setSmall(bool val) { m_isSmall = val; }
 
     int staffMove() const { return m_staffMove; }
@@ -216,6 +219,7 @@ protected:
     BeamSegment* m_beamlet = nullptr;
     BeamMode m_beamMode = BeamMode::INVALID;
     bool m_isSmall = false;
+    int m_pautaPlayPasses = 0; // Pauta
     bool m_melismaEnd = false;
 
     // CrossMeasure: combine 2 tied notes if across a bar line and can be combined in a single duration

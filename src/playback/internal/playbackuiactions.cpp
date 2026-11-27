@@ -178,6 +178,20 @@ const UiActionList PlaybackUiActions::s_settingsActions = {
              TranslatableString("action", "Play voice 4"),
              Checkable::Yes
              ),
+    UiAction("pauta-sound-msbasic",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "MS Basic (light)"),
+             TranslatableString("action", "Instrument sound: MS Basic"),
+             Checkable::Yes
+             ),
+    UiAction("pauta-sound-generaluser",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_ANY,
+             TranslatableString("action", "GeneralUser GS (fuller)"),
+             TranslatableString("action", "Instrument sound: GeneralUser GS"),
+             Checkable::Yes
+             ),
     UiAction("pauta-toggle-reverb",
              mu::context::UiCtxAny,
              mu::context::CTX_ANY,

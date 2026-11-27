@@ -2608,6 +2608,8 @@ bool TRead::readProperties(ChordRest* ch, XmlReader& e, ReadContext& ctx)
         e.skipCurrentElement();
     } else if (tag == "small") {
         ch->setSmall(e.readInt());
+    } else if (tag == "pautaPlayPasses") { // Pauta
+        ch->setPautaPlayPasses(e.readInt());
     } else if (tag == "duration") {
         ch->setTicks(e.readFraction());
     } else if (tag == "dots") {

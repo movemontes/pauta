@@ -54,6 +54,7 @@
 
 #include <QGuiApplication>
 #include <QTimer>
+#include <QFile>
 
 using namespace mu;
 using namespace muse;
@@ -343,6 +344,10 @@ void NotationActionController::init()
     registerAction("pauta-capture-copy", [this]() { pautaCaptureSelection(false); }); // Pauta
     registerAction("pauta-notation-backspace", [this]() { pautaBackspace(); }, &Controller::isNotationPage); // Pauta
     registerAction("pauta-backspace-back-toggle", []() { pautaToggleFlag("backspaceBack", true); }); // Pauta
+    registerAction("pauta-ripple-duration-toggle", []() { pautaToggleFlag("rippleDuration", false); }); // Pauta
+    registerAction("pauta-play-passes-all", [this]() { pautaSetPlayPasses(0); }); // Pauta
+    registerAction("pauta-play-passes-1", [this]() { pautaSetPlayPasses(1); }); // Pauta
+    registerAction("pauta-play-passes-2", [this]() { pautaSetPlayPasses(2); }); // Pauta
     registerAction("pauta-capture-save", [this]() { pautaCaptureSelection(true); }); // Pauta
     registerAction("pauta-copy-layout-to-parts", [this]() { pautaCopyLayoutToParts(); }); // Pauta
     registerAction("pauta-repeat-more", [this]() { openEditStyleDialog(ActionData::make_arg1<QString>("barlines")); }); // Pauta
@@ -691,6 +696,50 @@ void NotationActionController::init()
             });
         }
 
+        // Pauta test hook: PAUTA_DEBUG_RIPPLE=<pad> gives the first note of the score that duration with
+        // "a new duration pushes the next notes" (4 = half, 5 = quarter, 6 = eighth: Pad enum order)
+        static bool debugRippleDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_RIPPLE") && notation && !debugRippleDone) {
+            debugRippleDone = true;
+            QTimer::singleShot(1500, [this]() {
+                auto n = globalContext()->currentNotation();
+                mu::engraving::Score* sc = n ? n->elements()->msScore() : nullptr;
+                mu::engraving::ChordRest* cr = sc ? sc->firstMeasure()->first(mu::engraving::SegmentType::ChordRest)->cr(0) : nullptr;
+                if (!cr) {
+                    return;
+                }
+                n->interaction()->select({ cr->isChord() ? static_cast<EngravingItem*>(toChord(cr)->upNote()) : cr }, SelectType::SINGLE, 0);
+                pautaRippleSelected(static_cast<mu::engraving::Pad>(qEnvironmentVariableIntValue("PAUTA_DEBUG_RIPPLE") - 1));
+                // write the first staff, measure by measure (pitch/duration in quarters; R = rest)
+                QFile out(qEnvironmentVariable("PAUTA_DEBUG_OUT"));
+                if (out.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                    int no = 1;
+                    for (mu::engraving::Measure* m = sc->firstMeasure(); m; m = m->nextMeasure(), ++no) {
+                        QString line = QString("m%1:").arg(no);
+                        for (mu::engraving::Segment* sg = m->first(mu::engraving::SegmentType::ChordRest); sg;
+                             sg = sg->next(mu::engraving::SegmentType::ChordRest)) {
+                            mu::engraving::EngravingItem* e = sg->element(0);
+                            if (!e) {
+                                continue;
+                            }
+                            mu::engraving::ChordRest* c = toChordRest(e);
+                            const double q = c->ticks().toDouble() * 4;
+                            line += c->isChord() ? QString(" %1/%2").arg(toChord(c)->upNote()->pitch()).arg(q)
+                                                 : QString(" R/%1").arg(q);
+                        }
+                        out.write((line + "\n").toUtf8());
+                    }
+                }
+            });
+        }
+
+        // Pauta test hook: PAUTA_DEBUG_ACTION=<action> runs one action after the score opens
+        static bool debugActionDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_ACTION") && notation && !debugActionDone) {
+            debugActionDone = true;
+            QTimer::singleShot(2000, [this]() { dispatcher()->dispatch(qEnvironmentVariable("PAUTA_DEBUG_ACTION").toStdString()); });
+        }
+
         // Pauta test hook: PAUTA_DEBUG_LAYOUT=1 makes the parts, gives part 1 a line break after measure 2,
         // a wider measure 1 and a bigger staff size, copies that layout to the other parts and shows part 2
         static bool debugLayoutDone = false;
@@ -1036,6 +1085,11 @@ void NotationActionController::padNote(const Pad& pad)
             interaction->toggleDotsForSelection(pad);
             return;
         }
+    }
+
+    // Pauta: with "a new duration pushes the next notes" on, the rest of the voice moves instead of being overwritten
+    if (!noteInput->isNoteInputMode() && pad <= Pad::NOTE1024 && pautaFlag("rippleDuration", false) && pautaRippleSelected(pad)) {
+        return;
     }
 
     noteInput->padNote(pad);
@@ -2457,6 +2511,67 @@ void NotationActionController::pautaCopyLayoutToParts(bool ask)
 
 //! Pauta: Backspace while writing notes goes back one place and deletes the note there, again and again,
 //! like in a text editor (MuseScore deletes only the selected note and stops). Elsewhere it is Delete.
+//! Pauta: the selected notes/rests play only on some passes through a repeat (mask: bit 0 = 1st time...; 0 = always)
+void NotationActionController::pautaSetPlayPasses(int mask)
+{
+    auto notation = currentNotation();
+    if (!notation) {
+        return;
+    }
+    mu::engraving::Score* score = notation->elements()->msScore();
+    std::set<mu::engraving::ChordRest*> crs;
+    for (EngravingItem* e : score->selection().elements()) {
+        if (mu::engraving::ChordRest* cr = mu::engraving::InputState::chordRest(e)) {
+            crs.insert(cr);
+        }
+    }
+    if (crs.empty()) {
+        interactive()->info(muse::trc("notation", "Nothing selected"),
+                            muse::trc("notation", "Select the notes that should play only on one of the times first."));
+        return;
+    }
+    notation->undoStack()->prepareChanges(muse::TranslatableString("undoableAction", "Play on repeat"));
+    for (mu::engraving::ChordRest* cr : crs) {
+        cr->undoChangeProperty(mu::engraving::Pid::PAUTA_PLAY_PASSES, mask);
+    }
+    notation->undoStack()->commitChanges();
+    notation->notationChanged().notify();
+}
+
+bool NotationActionController::pautaRippleSelected(Pad pad)
+{
+    auto notation = currentNotation();
+    if (!notation) {
+        return false;
+    }
+    mu::engraving::Score* score = notation->elements()->msScore();
+    const auto& sel = score->selection();
+    if (!sel.isSingle()) {
+        return false;
+    }
+    mu::engraving::ChordRest* cr = mu::engraving::InputState::chordRest(sel.element());
+    if (!cr) {
+        return false;
+    }
+    static const mu::engraving::DurationType types[] = {
+        mu::engraving::DurationType::V_LONG, mu::engraving::DurationType::V_BREVE, mu::engraving::DurationType::V_WHOLE,
+        mu::engraving::DurationType::V_HALF, mu::engraving::DurationType::V_QUARTER, mu::engraving::DurationType::V_EIGHTH,
+        mu::engraving::DurationType::V_16TH, mu::engraving::DurationType::V_32ND, mu::engraving::DurationType::V_64TH,
+        mu::engraving::DurationType::V_128TH, mu::engraving::DurationType::V_256TH, mu::engraving::DurationType::V_512TH,
+        mu::engraving::DurationType::V_1024TH,
+    };
+    const mu::engraving::TDuration d(types[static_cast<int>(pad)]);
+
+    notation->undoStack()->prepareChanges(muse::TranslatableString("undoableAction", "Change duration"));
+    if (!pautaRippleDuration(score, cr, d)) {
+        notation->undoStack()->rollbackChanges();
+        return false;
+    }
+    notation->undoStack()->commitChanges();
+    notation->notationChanged().notify();
+    return true;
+}
+
 void NotationActionController::pautaBackspace()
 {
     auto interaction = currentNotationInteraction();

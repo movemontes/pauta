@@ -19,6 +19,8 @@
 
 namespace mu::engraving {
 class Score;
+class ChordRest;
+class TDuration;
 }
 
 namespace mu::notation {
@@ -47,6 +49,11 @@ inline const char* pautaPasteOptionKey(const std::string& actionCode)
     }
     return "timeSig";
 }
+
+// Pauta option "rippleDuration": a new duration for one chord/rest pushes (or pulls) the rest of its voice,
+// across barlines, instead of writing over the next notes. Returns false when it can't (tuplets, etc.):
+// then the normal change is used.
+bool pautaRippleDuration(mu::engraving::Score* score, mu::engraving::ChordRest* cr, const mu::engraving::TDuration& newDuration);
 
 // Called on copy: the extras of the current range selection (empty if there is nothing to add).
 QByteArray pautaCapturePasteExtras(mu::engraving::Score* score);

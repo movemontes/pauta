@@ -268,6 +268,7 @@ MenuItem* AppMenuModel::makeEditMenu()
         makeMenuItem("pauta-command-palette"),
         makeMenuItem("pauta-finale-style"),
         makeMenuItem("pauta-backspace-back-toggle"),
+        makeMenuItem("pauta-ripple-duration-toggle"),
         makeSeparator(),
         makeMenuItem("preference-dialog", MenuItemRole::PreferencesRole)
     };
@@ -324,6 +325,9 @@ MenuItem* AppMenuModel::makeViewMenu()
         makeMenu(TranslatableString("appshell/menu/view", "Voices that play"),
                  { makeMenuItem("pauta-play-voice-1"), makeMenuItem("pauta-play-voice-2"),
                    makeMenuItem("pauta-play-voice-3"), makeMenuItem("pauta-play-voice-4") }, "menu-pauta-voices"),
+        makeMenu(TranslatableString("appshell/menu/view", "Instrument sound"),
+                 { makeMenuItem("pauta-sound-msbasic"), makeMenuItem("pauta-sound-generaluser") }, "menu-pauta-sound"),
+        makeMenuItem("pauta-midi-channels"),
         makeMenu(TranslatableString("appshell/menu/view", "Interface colors"), {
             makeMenuItem("pauta-theme-orange"), makeMenuItem("pauta-theme-blue"), makeMenuItem("pauta-theme-green"),
             makeMenuItem("pauta-theme-pink"), makeMenuItem("pauta-theme-purple"), makeMenuItem("pauta-theme-custom"),
@@ -426,6 +430,9 @@ MenuItem* AppMenuModel::makeToolsMenu()
         makeMenuItem("explode"),
         makeMenuItem("implode"),
         makeMenuItem("realize-chord-symbols"),
+        makeMenu(TranslatableString("appshell/menu/tools", "Play on repeat"),
+                 { makeMenuItem("pauta-play-passes-all"), makeMenuItem("pauta-play-passes-1"), makeMenuItem("pauta-play-passes-2") },
+                 "menu-pauta-play-passes"),
         makeMenu(TranslatableString("appshell/menu/tools", "&Voices"), voicesItems, "menu-voices"),
         makeMenu(TranslatableString("appshell/menu/tools", "&Measures"), measuresItems, "menu-tools-measures"),
         makeMenuItem("time-delete"),

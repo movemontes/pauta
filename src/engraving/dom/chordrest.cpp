@@ -93,6 +93,7 @@ ChordRest::ChordRest(const ChordRest& cr, bool link)
 
     m_beamMode     = cr.m_beamMode;
     m_isSmall     = cr.m_isSmall;
+    m_pautaPlayPasses = cr.m_pautaPlayPasses; // Pauta
     m_melismaEnd   = cr.m_melismaEnd;
     m_crossMeasure = cr.m_crossMeasure;
 
@@ -708,6 +709,7 @@ PropertyValue ChordRest::getProperty(Pid propertyId) const
     case Pid::BEAM_MODE:  return beamMode();
     case Pid::STAFF_MOVE: return staffMove();
     case Pid::DURATION_TYPE_WITH_DOTS: return actualDurationType().typeWithDots();
+    case Pid::PAUTA_PLAY_PASSES: return m_pautaPlayPasses;
     default:              return DurationElement::getProperty(propertyId);
     }
 }
@@ -735,6 +737,9 @@ bool ChordRest::setProperty(Pid propertyId, const PropertyValue& v)
     case Pid::DURATION_TYPE_WITH_DOTS:
         setDurationType(v.value<DurationTypeWithDots>());
         break;
+    case Pid::PAUTA_PLAY_PASSES:
+        m_pautaPlayPasses = v.toInt();
+        break;
     default:
         return DurationElement::setProperty(propertyId, v);
     }
@@ -754,6 +759,8 @@ PropertyValue ChordRest::propertyDefault(Pid propertyId) const
     case Pid::BEAM_MODE:
         return BeamMode::AUTO;
     case Pid::STAFF_MOVE:
+        return 0;
+    case Pid::PAUTA_PLAY_PASSES:
         return 0;
     default:
         return DurationElement::propertyDefault(propertyId);

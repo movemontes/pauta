@@ -28,6 +28,8 @@ qt_add_qml_module(appshell_qml
         aboutmodel.h
         commandpalettemodel.cpp
         commandpalettemodel.h
+        pautamidichannelsmodel.cpp
+        pautamidichannelsmodel.h
         pautatoolsmodel.cpp
         pautatoolsmodel.h
         pautatourmodel.cpp
@@ -59,6 +61,7 @@ qt_add_qml_module(appshell_qml
         AboutMusicXMLDialog.qml
         CommandPaletteDialog.qml
         ExportToProgramDialog.qml
+        PautaMidiChannelsDialog.qml
         QuickGuideDialog.qml
         PautaToolsBar.qml
         PautaTour.qml

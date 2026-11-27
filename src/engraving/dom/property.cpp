@@ -510,6 +510,8 @@ static constexpr PropertyMetaData propertyList[] = {
     { Pid::STAFF_MERGE_MATCHING_RESTS,          P_TYPE::INT,                       PropertyGroup::APPEARANCE, false, "",                                QT_TRANSLATE_NOOP("engraving/propertyName", "merge matching rests") },
     { Pid::STAFF_REFLECT_TRANSPOSITION,         P_TYPE::BOOL,                      PropertyGroup::APPEARANCE, false, "",                                QT_TRANSLATE_NOOP("engraving/propertyName", "reflect transposition") },
 
+    { Pid::PAUTA_PLAY_PASSES,                   P_TYPE::INT,                       PropertyGroup::NONE,       false, "pautaPlayPasses",                 QT_TRANSLATE_NOOP("engraving/propertyName", "play on passes") },
+
     { Pid::END,                                 P_TYPE::INT,                       PropertyGroup::NONE,       false, "++end++",                         nullptr }
 };
 /* *INDENT-ON* */

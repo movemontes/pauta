@@ -509,12 +509,37 @@ const UiActionList NotationUiActions::s_actions = {
              TranslatableString("action", "Delete backwards"),
              TranslatableString("action", "Delete backwards")
              ),
+    UiAction("pauta-ripple-duration-toggle",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "A new duration pushes the next notes"),
+             TranslatableString("action", "A new duration pushes the next notes"),
+             Checkable::Yes
+             ),
     UiAction("pauta-backspace-back-toggle",
              mu::context::UiCtxProjectOpened,
              mu::context::CTX_NOTATION_OPENED,
              TranslatableString("action", "Backspace deletes backwards while writing"),
              TranslatableString("action", "Backspace deletes backwards while writing"),
              Checkable::Yes
+             ),
+    UiAction("pauta-play-passes-all",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Every time"),
+             TranslatableString("action", "Play the selection every time")
+             ),
+    UiAction("pauta-play-passes-1",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Only the 1st time"),
+             TranslatableString("action", "Play the selection only the 1st time")
+             ),
+    UiAction("pauta-play-passes-2",
+             mu::context::UiCtxProjectOpened,
+             mu::context::CTX_NOTATION_OPENED,
+             TranslatableString("action", "Only the 2nd time"),
+             TranslatableString("action", "Play the selection only the 2nd time")
              ),
     UiAction("pauta-finale-style",
              mu::context::UiCtxProjectOpened,
@@ -2886,7 +2911,7 @@ void NotationUiActions::init()
 
     pautaPasteOptionChanged().onReceive(this, [this](const std::string&) {
         m_actionCheckedChanged.send({ "pauta-paste-with-timesig", "pauta-paste-with-keysig", "pauta-paste-with-repeats",
-                                      "pauta-paste-with-tempo", "pauta-backspace-back-toggle" });
+                                      "pauta-paste-with-tempo", "pauta-backspace-back-toggle", "pauta-ripple-duration-toggle" });
     });
 
     m_controller->currentNotationNoteInputChanged().onNotify(this, [this]() {
@@ -3051,6 +3076,9 @@ bool NotationUiActions::actionChecked(const UiAction& act) const
         return std::abs(s - want) < 0.01;
     }
 
+    if (act.code == "pauta-ripple-duration-toggle") {
+        return pautaFlag("rippleDuration", false);
+    }
     if (act.code == "pauta-backspace-back-toggle") {
         return pautaFlag("backspaceBack", true);
     }

@@ -112,6 +112,7 @@ void ApplicationActionController::init()
     dispatcher()->reg(this, "pauta-quick-guide", [this]() { interactive()->open("musescore://pauta/guide"); });
     dispatcher()->reg(this, "pauta-import-pdf", this, &ApplicationActionController::pautaImportPdf);
     dispatcher()->reg(this, "pauta-export-to-program", [this]() { interactive()->open("musescore://pauta/exportto"); });
+    dispatcher()->reg(this, "pauta-midi-channels", [this]() { interactive()->open("musescore://pauta/midichannels"); });
     dispatcher()->reg(this, "pauta-command-palette", [this]() { interactive()->open("musescore://pauta/commandpalette"); });
     dispatcher()->reg(this, "pauta-support", [this]() { interactive()->open("musescore://welcomedialog"); });
     dispatcher()->reg(this, "pauta-language-system", [this]() { pautaSetLanguage("system"); });

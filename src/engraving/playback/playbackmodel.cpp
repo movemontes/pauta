@@ -581,6 +581,13 @@ void PlaybackModel::processSegment(const int tickPositionOffset, const Segment* 
         if (s_pautaMutedVoices & (1 << item->voice())) {
             continue;
         }
+        // Pauta: "only on the 1st/2nd time" (the 3rd and later passes count as the 3rd)
+        if (const int passMask = toChordRest(item)->pautaPlayPasses()) {
+            const int pass = std::clamp(m_pautaCurrentPass, 1, 3);
+            if (!(passMask & (1 << (pass - 1)))) {
+                continue;
+            }
+        }
 
         ArticulationsProfilePtr profile = defaultActiculationProfile(trackId);
         if (!profile) {
@@ -644,6 +651,17 @@ void PlaybackModel::updateEvents(const int tickFrom, const int tickTo, const tra
     const ArticulationsProfilePtr metronomeProfile = defaultActiculationProfile(METRONOME_TRACK_ID);
     PlaybackEventsMap& metronomeEvents = m_playbackDataMap[METRONOME_TRACK_ID].originEvents;
 
+    // Pauta: count the passes through each measure, so chords marked "only on the 2nd time" play right
+    {
+        std::map<const Measure*, int> passes;
+        m_pautaPassesBefore.clear();
+        for (const RepeatSegment* repeatSegment : repeatList()) {
+            for (const Measure* measure : repeatSegment->measureList()) {
+                m_pautaPassesBefore[repeatSegment][measure] = ++passes[measure];
+            }
+        }
+    }
+
     for (const RepeatSegment* repeatSegment : repeatList()) {
         int tickPositionOffset = repeatSegment->utick - repeatSegment->tick;
         int repeatStartTick = repeatSegment->tick;
@@ -662,6 +680,7 @@ void PlaybackModel::updateEvents(const int tickFrom, const int tickTo, const tra
             }
 
             int chordRestSegmentNum = -1;
+            m_pautaCurrentPass = m_pautaPassesBefore[repeatSegment][measure];
 
             for (const Segment* segment = measure->first(); segment; segment = segment->next()) {
                 if (!segment->isChordRestType() && !segment->isTimeTickType()) {
