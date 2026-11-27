@@ -33,6 +33,8 @@ target_sources(notationscene PRIVATE
     internal/midiinputoutputcontroller.h
     internal/notationactioncontroller.cpp
     internal/notationactioncontroller.h
+    internal/pautabenchmark.cpp
+    internal/pautabenchmark.h
     internal/notationuiactions.cpp
     internal/notationuiactions.h
     internal/notationactionsshortcutsmigrator.cpp

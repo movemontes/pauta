@@ -31,6 +31,7 @@
 #include "engraving/editing/editsystemlocks.h"
 #include "notation/internal/pautapasteextras.h" // Pauta
 #include "notation/internal/pautachordsheet.h" // Pauta
+#include "pautabenchmark.h" // Pauta
 #include <map>
 #include <set>
 #include "engraving/dom/chord.h"
@@ -766,6 +767,17 @@ void NotationActionController::init()
             QTimer::singleShot(2500, [this]() {
                 for (const QString& f : qEnvironmentVariable("PAUTA_DEBUG_CHORD_SHEET").split(u',')) {
                     pautaExportChordSheet(f);
+                }
+            });
+        }
+
+        // Pauta speed test: PAUTA_DEBUG_BENCH=<file.tsv> times common edits on the opened score (see pautabenchmark.h)
+        static bool benchDone = false;
+        if (qEnvironmentVariableIsSet("PAUTA_DEBUG_BENCH") && notation && !benchDone) {
+            benchDone = true;
+            QTimer::singleShot(4000, [this]() {
+                if (auto n = globalContext()->currentNotation()) {
+                    pautaRunBenchmark(n, dispatcher().get(), qEnvironmentVariable("PAUTA_DEBUG_BENCH"));
                 }
             });
         }

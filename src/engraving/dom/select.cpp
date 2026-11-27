@@ -465,6 +465,7 @@ void Selection::clear()
         }
     }
     m_el.clear();
+    m_appendedBeams.clear();
     m_startSegment  = 0;
     m_endSegment    = 0;
     m_activeSegment = 0;
@@ -477,6 +478,7 @@ void Selection::clear()
 void Selection::remove(EngravingItem* el)
 {
     const bool removed = muse::remove(m_el, el);
+    m_appendedBeams.erase(el);
     el->setSelected(false);
     if (removed) {
         updateState();
@@ -620,7 +622,8 @@ void Selection::appendChordRest(ChordRest* cr)
     if (totalAppendedNotes < totalNotesInChord) {
         return;
     }
-    if (chord->beam() && !muse::contains(m_el, static_cast<EngravingItem*>(chord->beam()))) {
+    // Pauta: a set instead of searching the whole list for every beamed chord (select all took about 1 s in a big score)
+    if (chord->beam() && m_appendedBeams.insert(chord->beam()).second) {
         m_el.push_back(chord->beam());
     }
     if (chord->stem()) {
@@ -726,6 +729,7 @@ void Selection::updateSelectedElements()
         e->setSelected(false);
     }
     m_el.clear();
+    m_appendedBeams.clear();
 
     // assert:
     size_t staves = m_score->nstaves();

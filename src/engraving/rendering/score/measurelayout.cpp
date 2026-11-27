@@ -985,6 +985,7 @@ void MeasureLayout::layoutMeasure(MeasureBase* currentMB, LayoutContext& ctx)
         return;
     }
 
+
     if (ctx.dom().allStavesInvisible()) {
         return;
     }

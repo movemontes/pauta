@@ -71,6 +71,20 @@ std::vector<Clef*> InsertRemoveMeasures::getCourtesyClefs(Measure* m)
     return startClefs;
 }
 
+// Pauta: after inserting or removing measures, lay out from that point to the end instead of the whole score:
+// the pages before it don't change (in a big score this halves the time on average). Multi-measure rests and
+// continuous view still get a full layout, to be safe.
+static void pautaLayoutFrom(Score* score, const Fraction& tick)
+{
+    static const bool pautaAll = qEnvironmentVariableIsSet("PAUTA_LAYOUT_INSERT_ALL"); // to compare with the original
+    // page view only: there the result was checked to be identical to a full layout (continuous view keeps the original)
+    if (!pautaAll && tick > Fraction(0, 1) && !score->linearMode() && !score->style().styleB(Sid::createMultiMeasureRests)) {
+        score->setLayout(tick, Fraction::max(), 0, score->nstaves() - 1, nullptr);
+    } else {
+        score->setLayoutAll();
+    }
+}
+
 //---------------------------------------------------------
 //   insertMeasures
 //---------------------------------------------------------
@@ -131,7 +145,7 @@ void InsertRemoveMeasures::insertMeasures()
         }
     }
 
-    score->setLayoutAll();
+    pautaLayoutFrom(score, fm->tick());
 
     // move subsequent StaffTypeChanges
     Fraction tickStart = fm->tick();
@@ -353,7 +367,7 @@ void InsertRemoveMeasures::removeMeasures()
         }
     }
 
-    score->setLayoutAll();
+    pautaLayoutFrom(score, tick1);
 }
 
 //---------------------------------------------------------

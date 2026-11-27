@@ -184,6 +184,7 @@ private:
     Score* m_score = nullptr;
     SelState m_state = SelState::NONE;
     std::vector<EngravingItem*> m_el;            // valid in mode SelState::LIST
+    std::unordered_set<const EngravingItem*> m_appendedBeams; // Pauta: beams already in m_el (was a slow linear search)
 
     staff_idx_t m_staffStart = 0;            // valid if selState is SelState::RANGE
     staff_idx_t m_staffEnd = 0;

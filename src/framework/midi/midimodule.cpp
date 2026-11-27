@@ -33,6 +33,8 @@
 #elif defined(Q_OS_MACOS)
 #include "internal/platform/osx/coremidioutport.h"
 #include "internal/platform/osx/coremidiinport.h"
+#include <thread>
+#include <CoreMIDI/CoreMIDI.h>
 #else
 #include "internal/dummymidioutport.h"
 #include "internal/dummymidiinport.h"
@@ -68,13 +70,34 @@ void MidiModule::registerExports()
     ioc()->registerExport<IMidiInPort>(moduleName(), m_midiInPort);
 }
 
+// Pauta: the first CoreMIDI call waits for the Mac's MIDI service, about 1 s, and it used to block the app
+// before its window appeared. Now that wait starts in the background as soon as the app starts, and the ports are
+// set up only after all the other modules (by then the service is usually ready). A connected MIDI keyboard is
+// still found: the controller re-checks the devices when we announce the list changed.
+void MidiModule::onPreInit(const IApplication::RunMode& mode)
+{
+#if defined(Q_OS_MACOS)
+    if (mode == IApplication::RunMode::GuiApp) {
+        std::thread([]() { MIDIGetNumberOfDevices(); }).detach();
+    }
+#else
+    (void)mode;
+#endif
+}
+
 void MidiModule::onInit(const IApplication::RunMode& mode)
 {
     m_configuration->init();
+    (void)mode;
+}
 
+void MidiModule::onAllInited(const IApplication::RunMode& mode)
+{
     if (mode == IApplication::RunMode::GuiApp) {
         m_midiOutPort->init();
         m_midiInPort->init();
+        m_midiOutPort->availableDevicesChanged().notify();
+        m_midiInPort->availableDevicesChanged().notify();
     }
 }
 

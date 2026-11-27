@@ -84,6 +84,11 @@ MidiDeviceList CoreMidiInPort::availableDevices() const
 
     ret.push_back({ NONE_DEVICE_ID, muse::trc("midi", "No device") });
 
+    // Pauta: the ports are set up after startup (see MidiModule::onAllInited); until then don't wait for CoreMIDI
+    if (!m_core->client) {
+        return ret;
+    }
+
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, false);
     ItemCount sources = MIDIGetNumberOfSources();
     for (ItemCount sourceIndex = 0; sourceIndex <= sources; sourceIndex++) {

@@ -240,6 +240,7 @@ public:
     const MeasureBase* curMeasure() const { return m_curMeasure; }
     const MeasureBase* nextMeasure() const { return m_nextMeasure; }
     const MeasureBase* systemOldMeasure() const { return m_systemOldMeasure; }
+    const MeasureBase* systemOldFirstMeasure() const { return m_systemOldFirstMeasure; } // Pauta
     const MeasureBase* pageOldMeasure() const { return m_pageOldMeasure; }
     int measureNo() const { return m_measureNo; }
 
@@ -277,6 +278,7 @@ public:
     MeasureBase* nextMeasure() { return m_nextMeasure; }
     void setNextMeasure(MeasureBase* m) { m_nextMeasure = m; }
     void setSystemOldMeasure(MeasureBase* m) { m_systemOldMeasure = m; }
+    void setSystemOldFirstMeasure(MeasureBase* m) { m_systemOldFirstMeasure = m; } // Pauta
     void setPageOldMeasure(MeasureBase* m) { m_pageOldMeasure = m; }
     void setMeasureNo(int no) { m_measureNo = no; }
 
@@ -310,6 +312,7 @@ private:
     MeasureBase* m_curMeasure = nullptr;
     MeasureBase* m_nextMeasure = nullptr;
     MeasureBase* m_systemOldMeasure = nullptr;
+    MeasureBase* m_systemOldFirstMeasure = nullptr; // Pauta: first measure of the line this one replaces
     MeasureBase* m_pageOldMeasure = nullptr;
     int m_measureNo = 0;
 

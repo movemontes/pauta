@@ -70,6 +70,8 @@ install(DIRECTORY
       04-Solo/02-Guitar_+_Tablature
       04-Solo/03-Guitar_Tablature
       04-Solo/04-Piano
+      04-Solo/05-Bass_+_Tablature
+      04-Solo/06-Voice_+_Guitar
       DESTINATION ${Mscore_SHARE_NAME}${Mscore_INSTALL_NAME}templates/04-Solo
       )
 

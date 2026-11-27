@@ -143,7 +143,7 @@ static bool pautaFitSystemsToPage(mu::engraving::MasterScore* score)
         score->style().set(mu::engraving::Sid::spatium, newSpatium);
         score->spatiumChanged(oldSpatium, newSpatium);
         score->setLayoutAll();
-        score->doLayout();
+        score->update(); // lays out and clears the request (doLayout() left it pending, so the first edit laid out all again)
         changed = true;
         LOGI() << "[Pauta] staff size reduced so the systems fit the page: " << oldSpatium << " -> " << newSpatium;
     }

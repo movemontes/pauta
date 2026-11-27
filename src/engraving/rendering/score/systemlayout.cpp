@@ -150,9 +150,35 @@ System* SystemLayout::collectSystem(LayoutContext& ctx)
     const SystemLock* systemLock = ctx.conf().viewMode() == LayoutMode::PAGE || ctx.conf().viewMode() == LayoutMode::SYSTEM
                                    ? ctx.dom().systemLocks()->lockStartingAt(ctx.state().curMeasure()) : nullptr;
 
+    // Pauta: "firm" line breaks while editing. A small edit (an accidental, one more note) used to push one measure
+    // to the next line, and that shift ran through every following page: in a big score one pitch change
+    // re-laid out dozens of pages (about half a second). During a partial layout we now keep the line breaks of the
+    // previous layout when the line overflows only a little (it is squeezed a bit instead) and we don't pull up a
+    // measure from the next line into a line that is already almost full. A full layout (opening a file, changing
+    // the style) still breaks lines from scratch. PAUTA_LAYOUT_GREEDY=1 turns this off (to compare).
+    static const bool pautaGreedy = qEnvironmentVariableIsSet("PAUTA_LAYOUT_GREEDY");
+    const bool pautaFirmBreaks = !pautaGreedy && !ctx.state().isLayoutAll() && !systemLock
+                                 && (ctx.conf().viewMode() == LayoutMode::PAGE || ctx.conf().viewMode() == LayoutMode::SYSTEM);
+    static constexpr double PAUTA_MAX_OVERFLOW = 1.03;   // keep a measure if the line is at most 3% too wide
+    static constexpr double PAUTA_FULL_ENOUGH = 0.90;    // don't pull a measure up into a line already 90% full
+    // the line this one replaces in the previous layout (compared by pointer only: those measures may be gone)
+    const MeasureBase* pautaOldFirst = ctx.state().systemOldFirstMeasure();
+    const MeasureBase* pautaOldLast = ctx.state().systemOldMeasure();
+    bool pautaSameStart = false;                          // this line starts where the old one started
+    bool pautaPassedOldEnd = false;                       // the old line's last measure is already on this line
+    double pautaWidthBefore = 0.0;                        // line width before the measure being added
+
     while (ctx.state().curMeasure()) {      // collect measure for system
         oldSystem = ctx.mutState().curMeasure()->system();
+        const bool pautaWasOnThisLine = system->measures().empty()
+                                        ? (pautaSameStart = (ctx.state().curMeasure() == pautaOldFirst && pautaOldLast))
+                                        : (pautaSameStart && !pautaPassedOldEnd);
+        const bool pautaFirstAfterOldEnd = pautaSameStart && pautaPassedOldEnd && ctx.state().prevMeasure() == pautaOldLast;
+        pautaWidthBefore = curSysWidth;
         system->appendMeasure(ctx.mutState().curMeasure());
+        if (ctx.state().curMeasure() == pautaOldLast) {
+            pautaPassedOldEnd = true;
+        }
 
         if (ctx.state().curMeasure()->isMeasure()) {
             Measure* m = toMeasure(ctx.mutState().curMeasure());
@@ -203,7 +229,16 @@ System* SystemLayout::collectSystem(LayoutContext& ctx)
             return system;
         }
 
-        bool doBreak = !systemLock && system->measures().size() > 1 && curSysWidth > targetSystemWidth
+        bool overflow = curSysWidth > targetSystemWidth;
+        bool keepOldBreak = false;
+        if (pautaFirmBreaks && ctx.state().curMeasure()->isMeasure()) {
+            if (overflow && pautaWasOnThisLine && curSysWidth <= targetSystemWidth * PAUTA_MAX_OVERFLOW) {
+                overflow = false;   // it was on this line before: stay, the line gets squeezed a little below
+            } else if (!overflow && pautaFirstAfterOldEnd && pautaWidthBefore >= targetSystemWidth * PAUTA_FULL_ENOUGH) {
+                keepOldBreak = true; // it was on the next line before and this one is already full enough
+            }
+        }
+        bool doBreak = !systemLock && system->measures().size() > 1 && (overflow || keepOldBreak)
                        && !ctx.state().prevMeasure()->noBreak();
         if (doBreak) {
             breakMeasure = ctx.mutState().curMeasure();
@@ -520,9 +555,11 @@ System* SystemLayout::getNextSystem(LayoutContext& ctx)
     if (ctx.state().systemList().empty()) {
         system = Factory::createSystem(ctx.mutDom().dummyParent()->page());
         ctx.mutState().setSystemOldMeasure(nullptr);
+        ctx.mutState().setSystemOldFirstMeasure(nullptr);
     } else {
         system = muse::takeFirst(ctx.mutState().systemList());
         ctx.mutState().setSystemOldMeasure(system->measures().empty() ? 0 : system->measures().back());
+        ctx.mutState().setSystemOldFirstMeasure(system->measures().empty() ? 0 : system->measures().front());
         system->clear();       // remove measures from system
     }
     ctx.mutDom().systems().push_back(system);

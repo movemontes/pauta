@@ -50,6 +50,42 @@ Page::Page(RootItem* parent)
 
 std::vector<EngravingItem*> Page::items(const RectF& rect)
 {
+    // Pauta: in continuous view the whole score is one very long page, and every edit made the next paint rebuild
+    // the index of all its items (two full scans, ~80 ms in a big score) just to find the few on screen. There we
+    // now look only at the measures near the visible area (with a wide margin for long texts) and keep the same
+    // test the index uses (item rect intersects the area).
+    if (score()->linearMode()) {
+        std::vector<EngravingItem*> found;
+        auto take = [&](EngravingItem* item) {
+            if (item->collectForDrawing() && item->pageBoundingRect().intersects(rect)) {
+                found.push_back(item);
+            }
+        };
+        const double margin = 80.0 * spatium();
+        for (System* s : m_systems) {
+            for (MeasureBase* m : s->measures()) {
+                const double x = m->pagePos().x();
+                if (x + m->width() + margin < rect.left() || x - margin > rect.right()) {
+                    continue;
+                }
+                m->scanElements(take);
+            }
+            s->scanElements(take);
+        }
+        take(this);
+        for (int i = 0; i < MAX_HEADERS; i++) {
+            if (Text* t = headerText(i)) {
+                take(t);
+            }
+        }
+        for (int i = 0; i < MAX_FOOTERS; i++) {
+            if (Text* t = footerText(i)) {
+                take(t);
+            }
+        }
+        return found;
+    }
+
     if (!m_bspTreeValid) {
         doRebuildBspTree();
     }

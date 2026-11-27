@@ -22,6 +22,8 @@ Item {
     readonly property var models: [
         { "dir": "04-Solo/04-Piano", "name": qsTrc("project", "Piano"), "info": qsTrc("project", "Two staves, left and right hand") },
         { "dir": "04-Solo/02-Guitar_+_Tablature", "name": qsTrc("project", "Guitar"), "info": qsTrc("project", "Staff and tablature together") },
+        { "dir": "04-Solo/05-Bass_+_Tablature", "name": qsTrc("project", "Bass"), "info": qsTrc("project", "Bass staff and 4-string tablature") },
+        { "dir": "04-Solo/06-Voice_+_Guitar", "name": qsTrc("project", "Voice and guitar"), "info": qsTrc("project", "Melody with lyrics, guitar staff and tablature") },
         { "dir": "05-Jazz/01-Jazz_Lead_Sheet", "name": qsTrc("project", "Melody with chords"), "info": qsTrc("project", "One line of melody, chords on top") },
         { "dir": "02-Choral/07-Voice_+_Piano", "name": qsTrc("project", "Voice and piano"), "info": qsTrc("project", "A song with accompaniment") },
         { "dir": "02-Choral/01-SATB", "name": qsTrc("project", "Choir"), "info": qsTrc("project", "Soprano, alto, tenor and bass") },

@@ -20,6 +20,8 @@ Item {
     readonly property var models: [
         { "dir": "04-Solo/04-Piano", "name": qsTrc("project", "Piano") },
         { "dir": "04-Solo/02-Guitar_+_Tablature", "name": qsTrc("project", "Guitar") },
+        { "dir": "04-Solo/05-Bass_+_Tablature", "name": qsTrc("project", "Bass") },
+        { "dir": "04-Solo/06-Voice_+_Guitar", "name": qsTrc("project", "Voice and guitar") },
         { "dir": "05-Jazz/01-Jazz_Lead_Sheet", "name": qsTrc("project", "Melody with chords") },
         { "dir": "02-Choral/07-Voice_+_Piano", "name": qsTrc("project", "Voice and piano") },
         { "dir": "02-Choral/01-SATB", "name": qsTrc("project", "Choir") },
